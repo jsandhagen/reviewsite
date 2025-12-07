@@ -1,0 +1,256 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Games - PeerPulse</title>
+    <link rel="stylesheet" href="/static/style.css">
+  </head>
+  <body>
+    {% include 'header.html' %}
+    
+    <!-- Page-specific controls -->
+    <div style="position: sticky; top: 0; z-index: 100; display: flex; justify-content: flex-start; align-items: center; padding: 16px 24px; background: #1a1a1a; border-bottom: 1px solid #333;">
+      <div style="display: flex; gap: 12px; align-items: center;">
+        <form id="search" method="get" action="/" style="margin: 0;">
+          <div style="position: relative; display: flex; gap: 8px;">
+            <input id="search-input" name="q" placeholder="Search games..." value="{{ q }}" autocomplete="off" style="width: 300px; background: #2a2a2a; color: var(--text); border: 1px solid #444; padding: 8px 12px; border-radius: 6px; font-size: 14px;">
+            <button type="submit" class="btn" style="background: #667eea; color: white; border: none;">Search</button>
+            <div id="search-results" style="display: none; position: absolute; top: 100%; left: 0; width: 500px; background: #1a1a1a; border: 1px solid #333; border-top: none; border-radius: 0 0 8px 8px; max-height: 400px; overflow-y: auto; z-index: 1000; box-shadow: 0 4px 12px rgba(0,0,0,0.5);"></div>
+          </div>
+        </form>
+        
+        <div style="display: flex; gap: 8px; align-items: center;">
+          <label style="color: var(--muted); font-size: 14px;">Sort by:</label>
+          <select id="sort-select" onchange="window.location.href='/?sort='+this.value+(document.getElementById('search-input').value ? '&q='+encodeURIComponent(document.getElementById('search-input').value) : '')" style="background: #2a2a2a; color: var(--text); border: 1px solid #444; padding: 8px 12px; border-radius: 6px; font-size: 14px; cursor: pointer;">
+            <option value="enjoyment" {% if sort_by == 'enjoyment' %}selected{% endif %}>Overall Score</option>
+            <option value="gameplay" {% if sort_by == 'gameplay' %}selected{% endif %}>Gameplay</option>
+            <option value="music" {% if sort_by == 'music' %}selected{% endif %}>Music</option>
+            <option value="narrative" {% if sort_by == 'narrative' %}selected{% endif %}>Narrative</option>
+            <option value="value" {% if sort_by == 'value' %}selected{% endif %}>Playtime Value</option>
+            <option value="reviews" {% if sort_by == 'reviews' %}selected{% endif %}># of Reviews</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <main>
+      <div class="grid">
+        {% for game in games %}
+        <div class="card">
+          <div class="cover">
+            {% if game['cover_path'] %}
+              <img src="{{ game['cover_path'] }}" alt="cover" onerror="this.style.display='none'; this.parentElement.querySelector('.nocover').style.display='flex';">
+              <div class="nocover" style="display:none;">No Image</div>
+            {% else %}
+              <div class="nocover">No Image</div>
+            {% endif %}
+            {% if game.get('user_reviewed') %}
+              <div class="review-badge" title="You have reviewed this game">✓</div>
+            {% endif %}
+          </div>
+          <div class="meta">
+            <a href="{{ url_for('game_detail', game_id=game['id']) }}" style="text-decoration: none; color: inherit;">
+              <h2>{{ game['name'] }} <span class="year">({{ game['release_date'] }})</span></h2>
+            </a>
+            <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-top: 6px;">
+              {% if game.get('price') %}
+                <div class="game-price">
+                  <span class="price-label">Price:</span>
+                  {% if game.get('original_price') is not none and game['original_price'] > game['price'] %}
+                    <span style="text-decoration: line-through;">${{ "%.2f" % game['original_price'] }}</span>
+                    <span style="color: #4ade80; font-weight: bold; margin-left: 4px;">${{ "%.2f" % game['price'] }}</span>
+                  {% else %}
+                    ${{ "%.2f" % game['price'] }}
+                  {% endif %}
+                </div>
+              {% endif %}
+              {% if game.get('is_new_game') %}
+                <div class="game-price" style="background: #1a4d4d; border: 1px solid #06b6d4;" title="Released within the last 2 months">
+                  <span class="price-label">Status:</span>
+                  <span style="color: #06b6d4; font-weight: bold;">New Game</span>
+                </div>
+              {% elif game.get('playtime_value') is not none %}
+                <div class="game-price" style="{% if game['playtime_value'] < 1 %}background: #1a4d2e; border: 1px solid #4ade80;{% endif %}" title="Calculated by dividing current price by average hours played across all users">
+                  <span class="price-label">Playtime Value:</span>
+                  <span style="{% if game['playtime_value'] < 1 %}color: #4ade80; font-weight: bold;{% endif %}">${{ "%.2f" % game['playtime_value'] }}/hr</span>
+                </div>
+              {% endif %}
+              {% if game.get('genres') %}
+                <div class="game-tags">{{ game['genres'] }}</div>
+              {% endif %}
+            </div>
+            {% if game.get('average_enjoyment_score') %}
+              <div class="avg-score">
+                <small>Community Average:</small>
+                <strong>{{ "%.1f" % game['average_enjoyment_score'] }}/10</strong>
+                <span class="rating-count">({{ game.get('num_ratings', 0) }} rating{{ 's' if game.get('num_ratings', 0) != 1 else '' }})</span>
+              </div>
+            {% endif %}
+            <div style="margin-top: 8px; margin-bottom: 4px;">
+              <small style="color: var(--muted); font-size: 11px; text-transform: uppercase;">Community Scores</small>
+            </div>
+            <div class="scores">
+            {% for k, label in [('enjoyment_score', 'Overall'), ('gameplay_score', 'Gameplay'), ('music_score', 'Music'), ('narrative_score', 'Narrative')] %}
+              {% set v = game.get(k) %}
+              {% set score = (v|float(0)) if v else 0 %}
+              {% set is_enjoyment = (k == 'enjoyment_score') %}
+              {% if score == 10 %}
+                {% set hue = 120 %}
+                {% set sat = 95 %}
+                {% set light = 35 %}
+                {% set border = 'box-shadow: inset 0 0 0 2px #ffd700;' %}
+              {% elif score >= 7 %}
+                {% set hue = 60 + ((score - 7) / 3) * 60 %}
+                {% set sat = 78 %}
+                {% set light = 42 %}
+                {% set border = '' %}
+              {% elif score >= 5 %}
+                {% set hue = ((score - 5) / 2) * 60 %}
+                {% set sat = 78 %}
+                {% set light = 42 %}
+                {% set border = '' %}
+              {% else %}
+                {% set hue = 0 %}
+                {% set sat = 78 %}
+                {% set light = 42 %}
+                {% set border = '' %}
+              {% endif %}
+              <div class="score{% if is_enjoyment %} score-featured{% endif %}" style="background-color: {{ 'hsl(%.1f, %d%%, %d%%)' % (hue, sat, light) if v else '#444' }}; {{ border }}">
+                <div class="label">{{ label }}</div>
+                <div class="value">{{ v if v else 'N/A' }}</div>
+              </div>
+            {% endfor %}
+            </div>
+            <div class="actions">
+              <a class="btn" href="https://www.youtube.com/results?search_query={{ game['name']|urlencode }}+official+trailer" target="_blank">Trailer</a>
+              <a class="btn" href="https://www.youtube.com/results?search_query={{ game['name'] }}+OST" target="_blank">Music</a>
+              {% if game.get('app_id') %}
+                <a class="btn steam-btn" href="https://store.steampowered.com/app/{{ game['app_id'] }}/" target="_blank" title="View on Steam">
+                  <img src="/static/steam.svg" alt="" style="width:16px;height:16px;vertical-align:middle;filter:invert(1);margin-right:4px;">Steam
+                </a>
+              {% endif %}
+              {% if game.get('user_reviewed') %}
+                <button class="btn" disabled style="opacity:0.5;cursor:not-allowed;">Reviewed</button>
+              {% elif game.get('in_backlog') %}
+                <button class="btn" disabled style="opacity:0.5;cursor:not-allowed;">In Backlog</button>
+              {% else %}
+                <button class="btn" onclick="addToBacklog({{ game['id'] }}, this)">Add to Backlog</button>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      {% if not games %}
+        <p class="empty">No games loaded. Upload a CSV using the button above.</p>
+      {% endif %}
+    </main>
+    <script>
+      // Search autocomplete
+      const searchInput = document.getElementById('search-input');
+      const searchResults = document.getElementById('search-results');
+      let searchTimeout;
+
+      searchInput.addEventListener('input', function(e) {
+        clearTimeout(searchTimeout);
+        const query = e.target.value.trim();
+        
+        if (query.length < 2) {
+          searchResults.style.display = 'none';
+          return;
+        }
+
+        searchTimeout = setTimeout(() => {
+          fetch('/api/search_games?q=' + encodeURIComponent(query), {
+            credentials: 'same-origin'
+          })
+            .then(r => {
+              if (!r.ok) {
+                throw new Error('Search failed');
+              }
+              return r.json();
+            })
+            .then(data => {
+              if (data.games && data.games.length > 0) {
+                searchResults.innerHTML = data.games.map(game => {
+                  // Extract year from release_date or use formatted_date
+                  let year = game.formatted_date || 'Unknown';
+                  if (year === 'Unknown' && game.release_date) {
+                    const match = game.release_date.match(/\d{4}/);
+                    if (match) year = match[0];
+                  }
+                  return `
+                    <a href="/game/${game.game_id}" style="display: flex; align-items: center; padding: 8px 16px; text-decoration: none; color: #fff; border-bottom: 1px solid #333; transition: background 0.2s;">
+                      <img src="${game.cover_path || '/static/covers/placeholder.png'}" 
+                           style="width: 160px; height: 75px; object-fit: contain; border-radius: 4px; margin-right: 16px; flex-shrink: 0; background: #0a0a0a;" 
+                           onerror="this.src='/static/covers/placeholder.png'">
+                      <div style="flex: 1; min-width: 0;">
+                        <div style="font-weight: 600; font-size: 16px; margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                          ${game.name} <span style="color: #999; font-weight: 400; font-size: 13px;">(${year})</span>
+                        </div>
+                        ${game.developer ? `<div style="font-size: 12px; color: #888; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${game.developer}</div>` : ''}
+                      </div>
+                    </a>
+                  `;
+                }).join('');
+                searchResults.style.display = 'block';
+              } else {
+                searchResults.innerHTML = '<div style="padding: 12px; color: #999; text-align: center;">No results found</div>';
+                searchResults.style.display = 'block';
+              }
+            })
+            .catch(err => {
+              console.error('Search failed:', err);
+              searchResults.innerHTML = '<div style="padding: 12px; color: #ff6b6b; text-align: center;">Search error - please try again</div>';
+              searchResults.style.display = 'block';
+            });
+        }, 300);
+      });
+
+      // Close search results when clicking outside
+      document.addEventListener('click', function(e) {
+        if (!searchInput.contains(e.target) && !searchResults.contains(e.target)) {
+          searchResults.style.display = 'none';
+        }
+      });
+
+      // Add hover effect for search results
+      searchResults.addEventListener('mouseover', function(e) {
+        const link = e.target.closest('a');
+        if (link) {
+          link.style.background = '#2a2a2a';
+        }
+      });
+
+      searchResults.addEventListener('mouseout', function(e) {
+        const link = e.target.closest('a');
+        if (link) {
+          link.style.background = '#1a1a1a';
+        }
+      });
+
+      function addToBacklog(gameId, button) {
+        fetch('/api/add_to_backlog/' + gameId, {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'}
+        })
+        .then(r => r.json())
+        .then(data => {
+          if(data.success) {
+            button.textContent = 'In Backlog';
+            button.disabled = true;
+            button.style.opacity = '0.5';
+            button.style.cursor = 'not-allowed';
+          } else {
+            alert('Failed to add to backlog');
+          }
+        })
+        .catch(err => {
+          console.error('Failed to add to backlog:', err);
+          alert('Failed to add to backlog');
+        });
+      }
+    </script>
+  </body>
+  </html>

@@ -1,0 +1,229 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Pulse Points - PeerPulse</title>
+    <link rel="stylesheet" href="/static/style.css">
+  </head>
+  <body>
+    {% include 'header.html' %}
+
+    <main style="padding-top: 16px;">
+      <div class="superlatives-container" style="max-width: 1200px; margin: 0 auto; padding: 0 20px;">
+        <!-- Header Section -->
+        <div style="text-align: center; margin-bottom: 40px;">
+          <h1 style="font-size: 48px; margin: 0; background: linear-gradient(135deg, #667eea, #764ba2); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">
+            ⚡ Pulse Points
+          </h1>
+          <p style="color: #888; font-size: 18px; margin-top: 12px;">
+            Unlock random titles to showcase on your profile
+          </p>
+          <div style="display: flex; gap: 24px; justify-content: center; margin-top: 20px; flex-wrap: wrap;">
+            <div style="background: #2a2a2a; padding: 16px 32px; border-radius: 12px; border: 1px solid #444;">
+              <div style="font-size: 32px; font-weight: 700; color: #667eea;">{{ review_points }}</div>
+              <div style="font-size: 14px; color: #888; text-transform: uppercase;">RP Earned</div>
+            </div>
+            <div style="background: #2a2a2a; padding: 16px 32px; border-radius: 12px; border: 1px solid #444;">
+              <div style="font-size: 32px; font-weight: 700; color: #764ba2;">{{ unlocked_slots }}</div>
+              <div style="font-size: 14px; color: #888; text-transform: uppercase;">RP Balance</div>
+            </div>
+            <div style="background: #2a2a2a; padding: 16px 32px; border-radius: 12px; border: 1px solid #444;">
+              <div style="font-size: 32px; font-weight: 700; color: #0a7ea4;">{{ total_unlocked }}</div>
+              <div style="font-size: 14px; color: #888; text-transform: uppercase;">Unlocked</div>
+            </div>
+          </div>
+
+          <div style="margin-top: 16px; padding: 12px 20px; background: rgba(102, 126, 234, 0.1); border: 1px solid rgba(102, 126, 234, 0.3); border-radius: 8px; max-width: 700px; margin-left: auto; margin-right: auto; text-align: center;">
+            <p style="margin: 0; color: #ccc; font-size: 14px;">
+              <strong>How it works:</strong> Earn 1 RP for each game review. Unlock 1 Pulse Point slot for every 5 RP earned. Spend <span style="color: #667eea; font-weight: 600;">10 RP</span> to unlock a random title.
+              <br><span style="color: #888; font-size: 13px; margin-top: 4px; display: inline-block;">Set your active title from your <a href="/profile" style="color: #667eea;">profile page</a>.</span>
+            </p>
+          </div>
+
+          <!-- Spend RP Button -->
+          {% if total_unlocked < total_available and total_unlocked < unlocked_slots %}
+          <div style="margin-top: 24px;">
+            <button id="unlockBtn" onclick="unlockRandomTitle()" class="btn" style="background: linear-gradient(135deg, #667eea, #764ba2); border: none; padding: 16px 48px; font-size: 18px; font-weight: 600; border-radius: 8px; cursor: pointer; color: #fff; box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 8px;">
+                <rect x="3" y="8" width="18" height="4" rx="1"></rect>
+                <path d="M12 8v13"></path>
+                <path d="M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7"></path>
+                <path d="M7.5 8a2.5 2.5 0 0 1 0-5A4.8 8 0 0 1 12 8a4.8 8 0 0 1 4.5-5 2.5 2.5 0 0 1 0 5"></path>
+              </svg>
+              Spend 10 RP for Random Title
+            </button>
+          </div>
+          {% elif total_unlocked >= total_available %}
+          <div style="margin-top: 24px; padding: 20px; background: rgba(102, 126, 234, 0.1); border: 2px solid rgba(102, 126, 234, 0.3); border-radius: 12px; max-width: 500px; margin-left: auto; margin-right: auto;">
+            <div style="font-size: 48px; margin-bottom: 12px;">🎉</div>
+            <div style="font-size: 18px; font-weight: 600; color: #667eea;">All Titles Unlocked!</div>
+            <div style="font-size: 14px; color: #888; margin-top: 8px;">You've collected all available Pulse Points</div>
+          </div>
+          {% elif total_unlocked >= unlocked_slots %}
+          <div style="margin-top: 24px; padding: 20px; background: rgba(245, 158, 11, 0.1); border: 2px solid rgba(245, 158, 11, 0.3); border-radius: 12px; max-width: 500px; margin-left: auto; margin-right: auto;">
+            <div style="font-size: 48px; margin-bottom: 12px;">🔒</div>
+            <div style="font-size: 18px; font-weight: 600; color: #f59e0b;">No Available Slots</div>
+            <div style="font-size: 14px; color: #888; margin-top: 8px;">Earn {{ 5 - (review_points % 5) }} more RP to unlock the next slot</div>
+          </div>
+          {% endif %}
+        </div>
+
+        {% if total_unlocked == 0 %}
+        <!-- No Titles Yet -->
+        <div style="text-align: center; padding: 60px 20px; background: #2a2a2a; border-radius: 12px; border: 1px solid #444;">
+          <div style="font-size: 64px; margin-bottom: 16px;">🎮</div>
+          <h2 style="color: #fff; margin-bottom: 12px;">No Titles Unlocked Yet</h2>
+          <p style="color: #888; max-width: 600px; margin: 0 auto;">
+            Click "Spend 10 RP for Random Title" above to unlock your first Pulse Point title!
+          </p>
+        </div>
+        {% else %}
+        <!-- Solo Superlatives -->
+        {% if solo_superlatives %}
+        <div style="margin-bottom: 48px;">
+          <h2 style="color: #fff; margin-bottom: 24px; font-size: 28px; display: flex; align-items: center; gap: 12px;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#667eea" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path>
+              <circle cx="12" cy="7" r="4"></circle>
+            </svg>
+            Solo Titles
+          </h2>
+          <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 20px;">
+            {% for sup in solo_superlatives %}
+            <div class="superlative-card">
+              <div style="display: flex; gap: 16px;">
+                <!-- Game Cover -->
+                {% if sup.game_cover %}
+                <div style="flex-shrink: 0; width: 120px; height: 56px; overflow: hidden; border-radius: 6px; border: 1px solid #444;">
+                  <img src="{{ sup.game_cover }}" alt="{{ sup.game_name }}" style="width: 100%; height: 100%; object-fit: cover;">
+                </div>
+                {% endif %}
+
+                <!-- Content -->
+                <div style="flex: 1; min-width: 0;">
+                  <h3 style="margin: 0 0 8px 0; font-size: 18px; color: #667eea;">{{ sup.name }}</h3>
+                  <p style="margin: 0 0 8px 0; color: #ccc; font-size: 14px; line-height: 1.4;">{{ sup.description }}</p>
+                  {% if sup.game_name %}
+                  <div style="font-size: 13px; color: #888;">
+                    <strong>{{ sup.game_name }}</strong>
+                  </div>
+                  {% endif %}
+                  <div style="font-size: 12px; color: #666; margin-top: 8px;">
+                    Unlocked {{ sup.unlocked_at.split(' ')[0] if sup.unlocked_at else 'recently' }}
+                  </div>
+                </div>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+        {% endif %}
+
+        <!-- Friend Superlatives -->
+        {% if friend_superlatives %}
+        <div style="margin-bottom: 48px;">
+          <h2 style="color: #fff; margin-bottom: 24px; font-size: 28px; display: flex; align-items: center; gap: 12px;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#764ba2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+              <circle cx="9" cy="7" r="4"></circle>
+              <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+              <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+            </svg>
+            Friend Titles
+          </h2>
+          <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 20px;">
+            {% for sup in friend_superlatives %}
+            <div class="superlative-card friend-card">
+              <div style="display: flex; gap: 16px;">
+                <!-- Game Cover -->
+                {% if sup.game_cover %}
+                <div style="flex-shrink: 0; width: 120px; height: 56px; overflow: hidden; border-radius: 6px; border: 1px solid #444;">
+                  <img src="{{ sup.game_cover }}" alt="{{ sup.game_name }}" style="width: 100%; height: 100%; object-fit: cover;">
+                </div>
+                {% endif %}
+
+                <!-- Content -->
+                <div style="flex: 1; min-width: 0;">
+                  <h3 style="margin: 0 0 8px 0; font-size: 18px; color: #764ba2;">{{ sup.name }}</h3>
+                  <p style="margin: 0 0 8px 0; color: #ccc; font-size: 14px; line-height: 1.4;">{{ sup.description }}</p>
+                  <div style="font-size: 13px; color: #888;">
+                    {% if sup.game_name %}
+                    <strong>{{ sup.game_name }}</strong>
+                    {% endif %}
+                    {% if sup.friend_username %}
+                    <span> with <strong>{{ sup.friend_username }}</strong></span>
+                    {% endif %}
+                  </div>
+                  <div style="font-size: 12px; color: #666; margin-top: 8px;">
+                    Unlocked {{ sup.unlocked_at.split(' ')[0] if sup.unlocked_at else 'recently' }}
+                  </div>
+                </div>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+        {% endif %}
+        {% endif %}
+      </div>
+    </main>
+
+    <script>
+      function unlockRandomTitle() {
+        const btn = document.getElementById('unlockBtn');
+        const originalText = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = '<span style="display: inline-block; animation: spin 1s linear infinite;">⚡</span> Unlocking...';
+
+        fetch('/api/unlock_superlative', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' }
+        })
+        .then(res => res.json())
+        .then(data => {
+          if (data.success) {
+            alert(`🎉 ${data.message}`);
+            location.reload();
+          } else {
+            alert(data.message);
+            btn.disabled = false;
+            btn.innerHTML = originalText;
+          }
+        })
+        .catch(err => {
+          console.error(err);
+          alert('Error unlocking title');
+          btn.disabled = false;
+          btn.innerHTML = originalText;
+        });
+      }
+    </script>
+
+    <style>
+      @keyframes spin {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+      }
+
+      .superlative-card {
+        background: #2a2a2a;
+        border: 1px solid #444;
+        border-radius: 12px;
+        padding: 20px;
+        transition: all 0.2s ease;
+      }
+
+      .superlative-card:hover {
+        border-color: #667eea;
+        background: #333;
+        box-shadow: 0 4px 16px rgba(102, 126, 234, 0.2);
+      }
+
+      .friend-card:hover {
+        border-color: #764ba2;
+        box-shadow: 0 4px 16px rgba(118, 75, 162, 0.2);
+      }
+    </style>
+  </body>
+</html>

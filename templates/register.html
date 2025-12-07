@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Register - PeerPulse</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <style>
+      body {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        background: linear-gradient(135deg, #0f0f0f 0%, #1a1a1a 100%);
+      }
+      .register-container {
+        max-width: 420px;
+        width: 100%;
+        padding: 48px;
+        background: #1a1a1a;
+        border-radius: 12px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+        border: 1px solid #333;
+      }
+      .logo {
+        text-align: center;
+        margin-bottom: 32px;
+      }
+      .logo h1 {
+        margin: 0;
+        font-size: 36px;
+        font-weight: bold;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+      .logo p {
+        margin: 8px 0 0 0;
+        color: var(--muted);
+        font-size: 14px;
+      }
+      .register-form {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+      }
+      .register-form label {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+      .register-form label span {
+        font-weight: 600;
+        color: #fff;
+        font-size: 14px;
+      }
+      .register-form input[type="text"],
+      .register-form input[type="password"] {
+        padding: 12px 16px;
+        border: 1px solid #444;
+        border-radius: 8px;
+        background: #0f0f0f;
+        color: #fff;
+        font-size: 15px;
+        transition: all 0.2s;
+      }
+      .register-form input[type="text"]:focus,
+      .register-form input[type="password"]:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+      }
+      .register-form button {
+        padding: 14px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-size: 16px;
+        cursor: pointer;
+        font-weight: 600;
+        margin-top: 8px;
+        transition: transform 0.2s, box-shadow 0.2s;
+      }
+      .register-form button:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+      }
+      .register-form button:active {
+        transform: translateY(0);
+      }
+      .error {
+        background: #6e1f1f;
+        color: #ffb3b3;
+        padding: 14px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        text-align: center;
+        font-size: 14px;
+        border: 1px solid #8b2e2e;
+      }
+      .login-link {
+        text-align: center;
+        margin-top: 24px;
+        padding-top: 24px;
+        border-top: 1px solid #333;
+      }
+      .login-link a {
+        color: #667eea;
+        text-decoration: none;
+        font-weight: 500;
+      }
+      .login-link a:hover {
+        text-decoration: underline;
+      }
+      .steam-optional {
+        margin-top: 24px;
+        padding-top: 24px;
+        border-top: 1px solid #333;
+      }
+      .steam-optional h3 {
+        margin: 0 0 16px 0;
+        font-size: 16px;
+        color: #aaa;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .steam-help {
+        font-size: 12px;
+        color: #888;
+        margin-top: 6px;
+        line-height: 1.4;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="register-container">
+      <div class="logo">
+        <h1>PeerPulse</h1>
+        <p>Track and share your gaming journey</p>
+      </div>
+      {% if error %}
+        <div class="error">{{ error }}</div>
+      {% endif %}
+      <form class="register-form" method="post">
+        <label>
+          <span>Username</span>
+          <input type="text" name="username" required autofocus>
+        </label>
+        <label>
+          <span>Password</span>
+          <input type="password" name="password" required>
+        </label>
+        <label>
+          <span>Confirm Password</span>
+          <input type="password" name="confirm_password" required>
+        </label>
+        <div class="steam-optional">
+          <h3>
+            <img src="/static/steam.svg" alt="Steam" style="width:18px;height:18px;filter:invert(0.7)">
+            Steam Profile (Optional)
+          </h3>
+          <label>
+            <span>Steam Profile URL</span>
+            <input type="text" name="steam_url" placeholder="https://steamcommunity.com/id/yourname">
+            <div class="steam-help">Link your Steam profile to automatically import your library</div>
+          </label>
+        </div>
+        <button type="submit">Create Account</button>
+      </form>
+      <div class="login-link">
+        Already have an account? <a href="{{ url_for('login') }}">Login here</a>
+      </div>
+    </div>
+  </body>
+</html>

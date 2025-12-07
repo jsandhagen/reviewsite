@@ -1,0 +1,800 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>{{ profile_username }}'s Profile</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <style>
+      /* Background with cover art */
+      body {
+        position: relative;
+        min-height: 100vh;
+      }
+
+      {% if profile.favorite_game and profile.favorite_game.cover_path %}
+      body::before {
+        content: '';
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-image: url('{{ profile.favorite_game.cover_path }}');
+        background-size: cover;
+        background-position: center;
+        background-attachment: fixed;
+        opacity: 0.15;
+        z-index: -1;
+        filter: blur(8px);
+      }
+      {% endif %}
+
+      .profile-container {
+        max-width: 1200px;
+        margin: 32px auto;
+        padding: 0 20px;
+      }
+
+      .profile-card {
+        background: rgba(27, 27, 27, 0.95);
+        backdrop-filter: blur(10px);
+        border-radius: 12px;
+        padding: 24px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.6);
+        margin-bottom: 24px;
+      }
+
+      .profile-header {
+        display: flex;
+        gap: 24px;
+        align-items: flex-start;
+        margin-bottom: 24px;
+      }
+
+      .avatar-section {
+        flex-shrink: 0;
+      }
+
+      .avatar {
+        width: 128px;
+        height: 128px;
+        border-radius: 50%;
+        object-fit: cover;
+        background: #333;
+        display: block;
+        border: 3px solid #667eea;
+      }
+
+      .avatar-placeholder {
+        width: 128px;
+        height: 128px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: #fff;
+        font-weight: 700;
+        font-size: 48px;
+        border: 3px solid #667eea;
+      }
+
+      .profile-info {
+        flex: 1;
+      }
+
+      .profile-username {
+        font-size: 32px;
+        font-weight: 700;
+        margin: 0 0 12px 0;
+        color: #fff;
+      }
+
+      .title-badge {
+        margin-bottom: 16px;
+        padding: 8px 16px;
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.3), rgba(118, 75, 162, 0.3));
+        border: 2px solid #667eea;
+        border-radius: 8px;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 16px;
+        font-weight: 600;
+        color: #fff;
+      }
+
+      .edit-btn {
+        background: rgba(102, 126, 234, 0.3);
+        border: 1px solid #667eea;
+        border-radius: 4px;
+        padding: 4px 8px;
+        font-size: 12px;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+
+      .edit-btn:hover {
+        background: rgba(102, 126, 234, 0.5);
+      }
+
+      .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 12px;
+        margin-bottom: 12px;
+      }
+
+      .stat-box {
+        padding: 12px 16px;
+        background: #2a2a2a;
+        border: 1px solid #444;
+        border-radius: 8px;
+      }
+
+      .stat-label {
+        font-size: 11px;
+        color: #888;
+        text-transform: uppercase;
+        margin-bottom: 4px;
+      }
+
+      .stat-value {
+        font-size: 24px;
+        font-weight: 700;
+        color: #667eea;
+      }
+
+      .stat-value.purple {
+        color: #764ba2;
+      }
+
+      .member-since {
+        color: #aaa;
+        font-size: 13px;
+        margin-top: 8px;
+      }
+
+      .upload-section {
+        margin-top: 16px;
+        display: flex;
+        gap: 8px;
+        align-items: center;
+      }
+
+      .upload-section input[type=file] {
+        background: #222;
+        border: 1px solid #444;
+        border-radius: 6px;
+        padding: 8px;
+        color: #ddd;
+      }
+
+      /* Favorite Game Card */
+      .favorite-game-card {
+        background: rgba(27, 27, 27, 0.95);
+        backdrop-filter: blur(10px);
+        border-radius: 12px;
+        padding: 24px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.6);
+        margin-bottom: 24px;
+        border: 2px solid #667eea;
+      }
+
+      .favorite-game-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+      }
+
+      .favorite-game-title {
+        font-size: 24px;
+        font-weight: 700;
+        color: #667eea;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .game-review-content {
+        display: grid;
+        grid-template-columns: 300px 1fr;
+        gap: 24px;
+      }
+
+      @media (max-width: 768px) {
+        .game-review-content {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      .game-cover-large {
+        width: 100%;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+      }
+
+      .game-review-details h3 {
+        margin: 0 0 16px 0;
+        font-size: 28px;
+        color: #fff;
+      }
+
+      .scores-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+        margin-bottom: 16px;
+      }
+
+      .score-item {
+        background: #2a2a2a;
+        padding: 12px;
+        border-radius: 8px;
+        border: 1px solid #444;
+      }
+
+      .score-label {
+        font-size: 12px;
+        color: #888;
+        margin-bottom: 4px;
+      }
+
+      .score-value {
+        font-size: 28px;
+        font-weight: 700;
+        color: #667eea;
+      }
+
+      .game-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-bottom: 16px;
+      }
+
+      .meta-tag {
+        background: #333;
+        padding: 6px 12px;
+        border-radius: 6px;
+        font-size: 13px;
+        color: #aaa;
+      }
+
+      .review-text {
+        background: #222;
+        padding: 16px;
+        border-radius: 8px;
+        border-left: 3px solid #667eea;
+        font-style: italic;
+        color: #ddd;
+        line-height: 1.6;
+      }
+
+      .steam-section {
+        background: rgba(27, 27, 27, 0.95);
+        backdrop-filter: blur(10px);
+        border-radius: 12px;
+        padding: 24px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.6);
+        margin-bottom: 24px;
+      }
+
+      .steam-section h3 {
+        margin: 0 0 12px 0;
+        font-size: 18px;
+      }
+
+      .steam-form {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        flex-wrap: wrap;
+      }
+
+      .steam-form input[type=text] {
+        flex: 1;
+        min-width: 300px;
+        background: #222;
+        border: 1px solid #444;
+        border-radius: 6px;
+        padding: 10px;
+        color: #ddd;
+      }
+
+      .steam-status {
+        margin-top: 12px;
+        padding: 12px;
+        background: #222;
+        border-radius: 6px;
+        font-size: 14px;
+      }
+
+      .steam-status.linked {
+        border-left: 3px solid #6be16b;
+      }
+
+      .error {
+        color: #e16b6b;
+        margin-top: 8px;
+      }
+
+      .success {
+        color: #6be16b;
+        margin-top: 8px;
+      }
+
+      .no-favorite {
+        text-align: center;
+        padding: 40px;
+        color: #888;
+        font-style: italic;
+      }
+
+      /* Modal Styles */
+      .modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgba(0,0,0,0.7);
+        backdrop-filter: blur(4px);
+      }
+
+      .modal.show {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .modal-content {
+        background: #1b1b1b;
+        margin: auto;
+        padding: 24px;
+        border: 2px solid #667eea;
+        border-radius: 12px;
+        width: 90%;
+        max-width: 800px;
+        max-height: 80vh;
+        overflow-y: auto;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.8);
+      }
+
+      .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+      }
+
+      .modal-header h2 {
+        margin: 0;
+        color: #667eea;
+      }
+
+      .close {
+        color: #aaa;
+        font-size: 32px;
+        font-weight: bold;
+        cursor: pointer;
+        line-height: 1;
+      }
+
+      .close:hover,
+      .close:focus {
+        color: #fff;
+      }
+
+      .selector-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 12px;
+      }
+
+      .selector-item {
+        background: #2a2a2a;
+        border: 2px solid #444;
+        border-radius: 8px;
+        padding: 12px;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+
+      .selector-item:hover {
+        border-color: #667eea;
+        transform: translateY(-2px);
+      }
+
+      .selector-item.selected {
+        border-color: #667eea;
+        background: rgba(102, 126, 234, 0.2);
+      }
+
+      .selector-item .item-name {
+        font-weight: 600;
+        color: #fff;
+        margin-bottom: 4px;
+      }
+
+      .selector-item .item-score {
+        font-size: 20px;
+        font-weight: 700;
+        color: #667eea;
+      }
+
+      .selector-item .item-desc {
+        font-size: 12px;
+        color: #888;
+        margin-top: 4px;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>{{ profile_username }}'s Profile</h1>
+      <nav>
+        <a class="btn" href="/">Games</a>
+        <a class="btn" href="/full">Full Reviews</a>
+      </nav>
+      <div class="user-menu">
+        {% if profile and profile.profile_picture %}
+          <a href="/profile" aria-label="Profile"><img class="avatar-small" src="{{ profile.profile_picture }}" alt="avatar"></a>
+        {% else %}
+          <a href="/profile" aria-label="Profile"><div class="avatar-small placeholder">{{ (username or 'U')[:1] }}</div></a>
+        {% endif %}
+        <a class="username" href="/profile">{{ username }}</a>
+        <a class="btn logout-btn" href="/logout">Logout</a>
+      </div>
+    </header>
+
+    <main>
+      <div class="profile-container">
+        <!-- Profile Card -->
+        <div class="profile-card">
+          <div class="profile-header">
+            <div class="avatar-section">
+              {% if profile and profile.profile_picture %}
+                <img class="avatar" src="{{ profile.profile_picture }}" alt="avatar">
+              {% else %}
+                <div class="avatar-placeholder">{{ (profile_username or 'U')[:1] }}</div>
+              {% endif %}
+            </div>
+
+            <div class="profile-info">
+              <h2 class="profile-username">{{ profile_username }}</h2>
+
+              {% if active_title %}
+              <div class="title-badge">
+                <span>⚡ {{ active_title }}</span>
+                {% if is_own_profile %}
+                <button class="edit-btn" onclick="openTitleModal()">Edit</button>
+                {% endif %}
+              </div>
+              {% elif is_own_profile %}
+              <div class="title-badge">
+                <span>No Title Set</span>
+                <button class="edit-btn" onclick="openTitleModal()">Set Title</button>
+              </div>
+              {% endif %}
+
+              <div class="stats-grid">
+                <div class="stat-box">
+                  <div class="stat-label">Review Points</div>
+                  <div class="stat-value">{{ review_points }} RP</div>
+                </div>
+                <div class="stat-box">
+                  <div class="stat-label">Pulse Point Slots</div>
+                  <div class="stat-value purple">{{ unlocked_slots }}</div>
+                </div>
+              </div>
+
+              <div class="member-since">Member since: {{ (profile.created_at if profile else '')[:10] }}</div>
+
+              {% if error %}<div class="error">{{ error }}</div>{% endif %}
+              {% if success %}<div class="success">{{ success }}</div>{% endif %}
+
+              {% if is_own_profile %}
+              <form class="upload-section" method="post" enctype="multipart/form-data">
+                <input type="file" name="avatar" accept="image/png,image/jpeg,image/webp,image/gif">
+                <button class="btn" type="submit">Upload Picture</button>
+              </form>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+
+        <!-- Favorite Game Card -->
+        {% if profile.favorite_game %}
+        <div class="favorite-game-card">
+          <div class="favorite-game-header">
+            <div class="favorite-game-title">
+              ⭐ Favorite Game
+            </div>
+            {% if is_own_profile %}
+            <button class="btn" onclick="openGameModal()">Change Game</button>
+            {% endif %}
+          </div>
+
+          <div class="game-review-content">
+            <div>
+              {% if profile.favorite_game.cover_path %}
+              <img class="game-cover-large" src="{{ profile.favorite_game.cover_path }}" alt="{{ profile.favorite_game.name }}">
+              {% endif %}
+            </div>
+
+            <div class="game-review-details">
+              <h3>{{ profile.favorite_game.name }}</h3>
+
+              <div class="scores-grid">
+                {% if profile.favorite_game.enjoyment_score %}
+                <div class="score-item">
+                  <div class="score-label">Enjoyment</div>
+                  <div class="score-value">{{ "%.1f"|format(profile.favorite_game.enjoyment_score) }}</div>
+                </div>
+                {% endif %}
+
+                {% if profile.favorite_game.gameplay_score %}
+                <div class="score-item">
+                  <div class="score-label">Gameplay</div>
+                  <div class="score-value">{{ "%.1f"|format(profile.favorite_game.gameplay_score) }}</div>
+                </div>
+                {% endif %}
+
+                {% if profile.favorite_game.music_score %}
+                <div class="score-item">
+                  <div class="score-label">Music</div>
+                  <div class="score-value">{{ "%.1f"|format(profile.favorite_game.music_score) }}</div>
+                </div>
+                {% endif %}
+
+                {% if profile.favorite_game.narrative_score %}
+                <div class="score-item">
+                  <div class="score-label">Narrative</div>
+                  <div class="score-value">{{ "%.1f"|format(profile.favorite_game.narrative_score) }}</div>
+                </div>
+                {% endif %}
+              </div>
+
+              <div class="game-meta">
+                {% if profile.favorite_game.hours_played %}
+                <span class="meta-tag">⏱️ {{ "%.1f"|format(profile.favorite_game.hours_played) }} hours</span>
+                {% endif %}
+                {% if profile.favorite_game.difficulty %}
+                <span class="meta-tag">🎯 {{ profile.favorite_game.difficulty }}</span>
+                {% endif %}
+                {% if profile.favorite_game.graphics_quality %}
+                <span class="meta-tag">🎨 {{ profile.favorite_game.graphics_quality }}</span>
+                {% endif %}
+                {% if profile.favorite_game.style %}
+                <span class="meta-tag">✨ {{ profile.favorite_game.style }}</span>
+                {% endif %}
+              </div>
+
+              {% if profile.favorite_game.review_text %}
+              <div class="review-text">
+                "{{ profile.favorite_game.review_text }}"
+              </div>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+        {% elif is_own_profile %}
+        <div class="favorite-game-card">
+          <div class="no-favorite">
+            <p>You haven't selected a favorite game yet!</p>
+            <button class="btn" onclick="openGameModal()" style="margin-top: 16px;">Select Favorite Game</button>
+          </div>
+        </div>
+        {% endif %}
+
+        <!-- Steam Integration (only for own profile) -->
+        {% if is_own_profile %}
+        <div class="steam-section">
+          <h3><img src="/static/steam.svg" alt="Steam" style="width:20px;height:20px;vertical-align:middle;margin-right:6px;filter:invert(1)"> Steam Integration</h3>
+
+          {% if profile and profile.steam_profile_url %}
+            <div class="steam-status linked">
+              <div>✓ Steam profile linked</div>
+              <div style="color:#aaa;font-size:13px;margin-top:4px">{{ profile.steam_profile_url }}</div>
+              {% if profile.steam_last_sync %}
+                <div style="color:#888;font-size:12px;margin-top:4px">Last synced: {{ profile.steam_last_sync[:16].replace('T', ' ') }}</div>
+              {% endif %}
+            </div>
+            <form method="post" action="/import_steam" style="margin-top:12px">
+              <button class="btn" type="submit">Sync Now (Re-import Games)</button>
+            </form>
+            <div style="margin-top:8px;font-size:12px;color:#888">
+              Note: Your library automatically syncs every 24 hours
+            </div>
+            <form method="post" action="/unlink_steam" style="margin-top:8px;display:inline">
+              <button class="btn" type="submit" style="background:#c44">Unlink Steam</button>
+            </form>
+          {% else %}
+            <form class="steam-form" method="post" action="/link_steam">
+              <input type="text" name="steam_url" placeholder="Enter Steam profile URL (e.g., https://steamcommunity.com/id/yourname)" required>
+              <button class="btn" type="submit">Link Steam Profile</button>
+            </form>
+            <div style="margin-top:8px;font-size:13px;color:#aaa">
+              Your games will be imported to your backlog sorted by most hours played.
+            </div>
+          {% endif %}
+        </div>
+
+        <!-- Admin Controls (only for admins viewing own profile) -->
+        {% if is_admin %}
+        <div class="steam-section">
+          <h3>🔧 Admin Controls</h3>
+          <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
+            <form method="post" action="/admin/trigger_steam_update" style="display:inline">
+              <button class="btn" type="submit" style="background:#0066cc">Trigger Steam Update for All Users</button>
+            </form>
+            <form method="post" action="/admin/update_all_games" style="display:inline" id="updateAllGamesForm">
+              <button class="btn" type="submit" style="background:#cc6600" id="updateAllGamesBtn">Update All Games from Steam</button>
+            </form>
+          </div>
+        </div>
+        {% endif %}
+        {% endif %}
+      </div>
+    </main>
+
+    <!-- Game Selector Modal -->
+    {% if is_own_profile and reviewed_games %}
+    <div id="gameModal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>🎮 Select Your Favorite Game</h2>
+          <span class="close" onclick="closeGameModal()">&times;</span>
+        </div>
+        <div class="selector-grid">
+          {% for game in reviewed_games[:20] %}
+          <div class="selector-item {% if profile.favorite_game_id == game.game_id %}selected{% endif %}"
+               onclick="setFavoriteGame({{ game.game_id }})">
+            <div class="item-name">{{ game.name[:30] }}{% if game.name|length > 30 %}...{% endif %}</div>
+            <div class="item-score">{{ "%.1f"|format(game.enjoyment_score) }}</div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Title Selector Modal -->
+    {% if is_own_profile %}
+    <div id="titleModal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>⚡ Select Your Active Title</h2>
+          <span class="close" onclick="closeTitleModal()">&times;</span>
+        </div>
+        <div class="selector-grid">
+          <div class="selector-item {% if not active_title %}selected{% endif %}"
+               onclick="clearTitle()">
+            <div class="item-name">No Title</div>
+            <div class="item-desc">Clear your active title</div>
+          </div>
+          {% for sup in unlocked_superlatives %}
+          <div class="selector-item {% if active_title == sup.name %}selected{% endif %}"
+               onclick="setTitle({{ sup.id }})">
+            <div class="item-name">{{ sup.name }}</div>
+            <div class="item-desc">{{ sup.description }}</div>
+          </div>
+          {% endfor %}
+        </div>
+        {% if not unlocked_superlatives %}
+        <div style="text-align:center;padding:40px;color:#888">
+          <p>You haven't unlocked any titles yet!</p>
+          <p style="margin-top:8px;font-size:14px;">Visit the <a href="/superlatives" style="color:#667eea">Superlatives page</a> to unlock achievements.</p>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+    {% endif %}
+
+    <script>
+      // Modal functions
+      function openGameModal() {
+        document.getElementById('gameModal').classList.add('show');
+      }
+
+      function closeGameModal() {
+        document.getElementById('gameModal').classList.remove('show');
+      }
+
+      function openTitleModal() {
+        document.getElementById('titleModal').classList.add('show');
+      }
+
+      function closeTitleModal() {
+        document.getElementById('titleModal').classList.remove('show');
+      }
+
+      // Close modal when clicking outside
+      window.onclick = function(event) {
+        const gameModal = document.getElementById('gameModal');
+        const titleModal = document.getElementById('titleModal');
+        if (event.target == gameModal) {
+          closeGameModal();
+        }
+        if (event.target == titleModal) {
+          closeTitleModal();
+        }
+      }
+
+      // Set favorite game
+      function setFavoriteGame(gameId) {
+        fetch('/api/set_favorite_game', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ game_id: gameId })
+        })
+        .then(res => res.json())
+        .then(data => {
+          if (data.success) {
+            location.reload();
+          } else {
+            alert(data.message || 'Error setting favorite game');
+          }
+        })
+        .catch(err => {
+          console.error('Error:', err);
+          alert('Error setting favorite game');
+        });
+      }
+
+      // Set active title
+      function setTitle(superlativeId) {
+        fetch('/api/set_active_title', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ superlative_id: superlativeId })
+        })
+        .then(res => res.json())
+        .then(data => {
+          if (data.success) {
+            location.reload();
+          } else {
+            alert(data.message || 'Error setting title');
+          }
+        })
+        .catch(err => {
+          console.error('Error:', err);
+          alert('Error setting title');
+        });
+      }
+
+      // Clear title
+      function clearTitle() {
+        fetch('/api/set_active_title', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ superlative_id: null })
+        })
+        .then(res => res.json())
+        .then(data => {
+          if (data.success) {
+            location.reload();
+          } else {
+            alert(data.message || 'Error clearing title');
+          }
+        })
+        .catch(err => {
+          console.error('Error:', err);
+          alert('Error clearing title');
+        });
+      }
+    </script>
+  </body>
+</html>

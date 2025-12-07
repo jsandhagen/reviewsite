@@ -1,0 +1,813 @@
+[2025-12-05 14:09:42] INFO: Steam updater service started
+[2025-12-05 14:09:54] INFO: Steam updater service started
+[2025-12-05 14:11:51] INFO: Steam updater service started
+[2025-12-05 14:12:56] INFO: Steam updater service started
+[2025-12-05 14:14:44] INFO: Steam updater service started
+[2025-12-05 14:14:44] INFO: Steam updater service started
+[2025-12-05 14:15:45] INFO: Steam updater service started
+[2025-12-05 14:16:00] INFO: Steam updater service started
+[2025-12-05 14:16:01] INFO: Steam updater service started
+[2025-12-05 14:17:29] INFO: Steam updater service started
+[2025-12-05 14:17:29] INFO: Steam updater service started
+[2025-12-05 14:21:16] INFO: Steam updater service started
+[2025-12-05 14:21:17] INFO: Steam updater service started
+[2025-12-05 14:22:11] INFO: Steam updater service started
+[2025-12-05 14:22:11] INFO: Steam updater service started
+[2025-12-05 14:24:43] INFO: Steam updater service started
+[2025-12-05 14:24:58] INFO: Steam updater service started
+[2025-12-05 14:30:00] INFO: Steam updater service started
+[2025-12-05 14:30:11] INFO: Steam updater service started
+[2025-12-05 14:31:11] INFO: Steam updater service started
+[2025-12-05 14:42:08] INFO: Steam updater service started
+[2025-12-05 14:43:57] INFO: Steam updater service started
+[2025-12-05 14:48:04] INFO: Steam updater service started
+[2025-12-05 14:48:04] INFO: Steam updater service started
+[2025-12-05 14:49:44] INFO: Steam updater service started
+[2025-12-05 14:49:44] INFO: Steam updater service started
+[2025-12-05 14:50:10] INFO: Steam updater service started
+[2025-12-05 14:50:11] INFO: Steam updater service started
+[2025-12-05 14:50:40] INFO: Steam updater service started
+[2025-12-05 14:57:17] INFO: Steam updater service started
+[2025-12-05 14:57:23] INFO: Steam updater service started
+[2025-12-05 15:01:27] INFO: Steam updater service started
+[2025-12-05 15:01:27] INFO: Steam updater service started
+[2025-12-05 15:01:51] ERROR: Error in manual Steam update: Working outside of request context.
+
+This typically means that you attempted to use functionality that needed
+an active HTTP request. Consult the documentation on testing for
+information about how to avoid this problem.
+Traceback (most recent call last):
+  File "c:\Users\jakob\Documents\RatingsProject\app.py", line 1154, in run_update
+    logger.info(f"Manual Steam update triggered by admin user {session.get('username')}")
+                                                               ^^^^^^^^^^^
+  File "C:\Users\jakob\AppData\Roaming\Python\Python312\site-packages\werkzeug\local.py", line 318, in __get__
+    obj = instance._get_current_object()
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\jakob\AppData\Roaming\Python\Python312\site-packages\werkzeug\local.py", line 519, in _get_current_object
+    raise RuntimeError(unbound_message) from None
+RuntimeError: Working outside of request context.
+
+This typically means that you attempted to use functionality that needed
+an active HTTP request. Consult the documentation on testing for
+information about how to avoid this problem.
+[2025-12-05 15:05:30] INFO: Steam updater service started
+[2025-12-05 15:06:15] INFO: Steam updater service started
+[2025-12-05 15:09:21] INFO: [BULK UPDATE] Starting bulk game update for 274 games
+[2025-12-05 15:09:21] INFO: Admin admin triggered bulk game update for 274 games
+[2025-12-05 15:09:21] INFO: Updating game: 7 Days to Die (App ID: 251570)
+[2025-12-05 15:09:22] INFO: Successfully updated 7 Days to Die: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:09:23] INFO: Updating game: A Short Hike (App ID: 1055540)
+[2025-12-05 15:09:24] INFO: Successfully updated A Short Hike: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:09:24] INFO: Updating game: A Story About My Uncle (App ID: 278360)
+[2025-12-05 15:09:25] INFO: Successfully updated A Story About My Uncle: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:09:25] INFO: Updating game: Abiotic Factor (App ID: 427410)
+[2025-12-05 15:09:26] INFO: Successfully updated Abiotic Factor: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:09:27] INFO: Updating game: Age of Empires II (2013) (App ID: 221380)
+[2025-12-05 15:09:28] INFO: Successfully updated Age of Empires II (2013): ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:09:28] INFO: Updating game: Age of Wonders III (App ID: 226840)
+[2025-12-05 15:09:29] INFO: Successfully updated Age of Wonders III: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:09:30] INFO: Updating game: Among Us (App ID: 945360)
+[2025-12-05 15:09:30] INFO: Successfully updated Among Us: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:09:31] INFO: Updating game: ARC Raiders (App ID: 1808500)
+[2025-12-05 15:09:32] INFO: Successfully updated ARC Raiders: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:09:32] INFO: Updating game: Arizona Sunshine (App ID: 342180)
+[2025-12-05 15:09:33] INFO: Successfully updated Arizona Sunshine: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:09:34] INFO: Updating game: ARK: Survival Evolved (App ID: 346110)
+[2025-12-05 15:09:34] INFO: Successfully updated ARK: Survival Evolved: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:09:35] INFO: Updating game: ARK: Survival Of The Fittest (App ID: 407530)
+[2025-12-05 15:09:36] INFO: Successfully updated ARK: Survival Of The Fittest: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'cover_path', 'cover_etag']
+[2025-12-05 15:09:36] INFO: Updating game: Arma 3 (App ID: 107410)
+[2025-12-05 15:09:37] INFO: Successfully updated Arma 3: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'sale_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:09:38] INFO: Updating game: Assetto Corsa (App ID: 244210)
+[2025-12-05 15:09:39] INFO: Successfully updated Assetto Corsa: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:09:39] INFO: Updating game: ASTRONEER (App ID: 361420)
+[2025-12-05 15:09:40] INFO: Successfully updated ASTRONEER: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:09:40] INFO: Updating game: Backrooms: Escape Together (App ID: 2141730)
+[2025-12-05 15:09:41] INFO: Successfully updated Backrooms: Escape Together: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:09:42] INFO: Updating game: Baldur's Gate 3 (App ID: 1086940)
+[2025-12-05 15:09:43] INFO: Successfully updated Baldur's Gate 3: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:09:43] INFO: Updating game: BALL x PIT (App ID: 2062430)
+[2025-12-05 15:09:44] INFO: Successfully updated BALL x PIT: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price']
+[2025-12-05 15:09:44] INFO: Updating game: Banished (App ID: 242920)
+[2025-12-05 15:09:45] INFO: Successfully updated Banished: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:09:46] INFO: Updating game: Batman™: Arkham Origins (App ID: 209000)
+[2025-12-05 15:09:47] INFO: Successfully updated Batman™: Arkham Origins: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'sale_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:09:47] INFO: Updating game: BeamNG.drive (App ID: 284160)
+[2025-12-05 15:09:48] INFO: Successfully updated BeamNG.drive: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:09:48] INFO: Updating game: Beat Saber (App ID: 620980)
+[2025-12-05 15:09:49] INFO: Successfully updated Beat Saber: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:09:50] INFO: Updating game: Bellwright (App ID: 1812450)
+[2025-12-05 15:09:51] INFO: Successfully updated Bellwright: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'sale_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:09:51] INFO: Updating game: Besiege (App ID: 346010)
+[2025-12-05 15:09:52] INFO: Successfully updated Besiege: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'sale_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:09:53] INFO: Updating game: BioShock Infinite (App ID: 8870)
+[2025-12-05 15:09:54] INFO: Successfully updated BioShock Infinite: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'sale_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:09:54] INFO: Updating game: Black Myth: Wukong (App ID: 2358720)
+[2025-12-05 15:09:55] INFO: Successfully updated Black Myth: Wukong: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:09:56] INFO: Updating game: Blackwake (App ID: 420290)
+[2025-12-05 15:09:57] INFO: Successfully updated Blackwake: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'cover_path', 'cover_etag']
+[2025-12-05 15:09:57] INFO: Updating game: Blade & Sorcery (App ID: 629730)
+[2025-12-05 15:09:58] INFO: Successfully updated Blade & Sorcery: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:09:59] INFO: Updating game: Blightbound (App ID: 1263070)
+[2025-12-05 15:10:00] INFO: Successfully updated Blightbound: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:10:01] INFO: Updating game: Bloons TD 6 (App ID: 960090)
+[2025-12-05 15:10:01] INFO: Successfully updated Bloons TD 6: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:10:02] INFO: Updating game: BONEWORKS (App ID: 823500)
+[2025-12-05 15:10:03] INFO: Successfully updated BONEWORKS: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:10:04] INFO: Updating game: Borderlands 2 (App ID: 49520)
+[2025-12-05 15:10:05] INFO: Successfully updated Borderlands 2: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:10:05] INFO: Updating game: Borderlands 3 (App ID: 397540)
+[2025-12-05 15:10:06] INFO: Successfully updated Borderlands 3: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:10:07] INFO: Updating game: Borderlands® 4 (App ID: 1285190)
+[2025-12-05 15:10:08] INFO: Successfully updated Borderlands® 4: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:10:08] INFO: Updating game: Call of Duty: World at War (App ID: 10090)
+[2025-12-05 15:10:09] INFO: Successfully updated Call of Duty: World at War: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:10:10] INFO: Updating game: Cat Quest III (App ID: 2305840)
+[2025-12-05 15:10:11] INFO: Successfully updated Cat Quest III: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:10:11] INFO: Updating game: Cities: Skylines (App ID: 255710)
+[2025-12-05 15:10:12] INFO: Successfully updated Cities: Skylines: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:10:13] INFO: Updating game: Clair Obscur: Expedition 33 (App ID: 1903340)
+[2025-12-05 15:10:14] INFO: Successfully updated Clair Obscur: Expedition 33: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:10:14] INFO: Updating game: Cockroach Simulator (App ID: 527450)
+[2025-12-05 15:10:15] INFO: Successfully updated Cockroach Simulator: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:10:16] INFO: Updating game: Company of Heroes 2 (App ID: 231430)
+[2025-12-05 15:10:17] INFO: Successfully updated Company of Heroes 2: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:10:17] INFO: Updating game: Content Warning (App ID: 2881650)
+[2025-12-05 15:10:18] INFO: Successfully updated Content Warning: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'sale_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:10:19] INFO: Updating game: Core Keeper (App ID: 1621690)
+[2025-12-05 15:10:20] INFO: Successfully updated Core Keeper: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'sale_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:10:20] INFO: Updating game: Counter-Strike 2 (App ID: 730)
+[2025-12-05 15:10:21] INFO: Successfully updated Counter-Strike 2: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'cover_path', 'cover_etag']
+[2025-12-05 15:10:21] INFO: Updating game: CRSED: Cuisine Royale (App ID: 884660)
+[2025-12-05 15:10:23] INFO: Successfully updated CRSED: Cuisine Royale: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'cover_path', 'cover_etag']
+[2025-12-05 15:10:23] INFO: Updating game: CryoFall (App ID: 829590)
+[2025-12-05 15:10:24] INFO: Successfully updated CryoFall: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'sale_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:10:25] INFO: Updating game: Cult of the Lamb (App ID: 1313140)
+[2025-12-05 15:10:26] INFO: Successfully updated Cult of the Lamb: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'sale_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:10:26] INFO: Updating game: Cuphead (App ID: 268910)
+[2025-12-05 15:10:27] INFO: Successfully updated Cuphead: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:10:27] INFO: Updating game: Cyberpunk 2077 (App ID: 1091500)
+[2025-12-05 15:10:28] INFO: Successfully updated Cyberpunk 2077: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'sale_price']
+[2025-12-05 15:10:28] INFO: Updating game: DAVE THE DIVER (App ID: 1868140)
+[2025-12-05 15:10:29] INFO: Successfully updated DAVE THE DIVER: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:10:30] INFO: Updating game: Dead Cells (App ID: 588650)
+[2025-12-05 15:10:31] INFO: Successfully updated Dead Cells: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:10:31] INFO: Updating game: Dead Island (App ID: 91310)
+[2025-12-05 15:10:32] WARNING: Steam API returned no data for Dead Island (App ID: 91310)
+[2025-12-05 15:10:32] INFO: Updating game: Deadlock (App ID: 1422450)
+[2025-12-05 15:10:33] INFO: Successfully updated Deadlock: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'cover_path', 'cover_etag']
+[2025-12-05 15:10:33] INFO: Updating game: Deadside (App ID: 895400)
+[2025-12-05 15:10:35] INFO: Successfully updated Deadside: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:10:35] INFO: Updating game: Deep Rock Galactic (App ID: 548430)
+[2025-12-05 15:10:36] INFO: Successfully updated Deep Rock Galactic: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'sale_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:10:37] INFO: Updating game: Devil May Cry 5 (App ID: 601150)
+[2025-12-05 15:10:38] INFO: Successfully updated Devil May Cry 5: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:10:38] INFO: Updating game: DICEOMANCER (App ID: 2501600)
+[2025-12-05 15:10:39] INFO: Successfully updated DICEOMANCER: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:10:39] INFO: Updating game: Dinkum (App ID: 1062520)
+[2025-12-05 15:10:40] INFO: Successfully updated Dinkum: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'sale_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:10:41] INFO: Updating game: DiRT Rally (App ID: 310560)
+[2025-12-05 15:10:42] INFO: Successfully updated DiRT Rally: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'cover_path', 'cover_etag']
+[2025-12-05 15:10:42] INFO: Updating game: Dispatch (App ID: 2592160)
+[2025-12-05 15:10:43] INFO: Successfully updated Dispatch: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:10:43] INFO: Updating game: Divinity: Original Sin 2 (App ID: 435150)
+[2025-12-05 15:10:45] INFO: Steam updater service started
+[2025-12-05 15:11:11] INFO: Steam updater service started
+[2025-12-05 15:11:25] INFO: Steam updater service started
+[2025-12-05 15:11:31] INFO: Steam updater service started
+[2025-12-05 15:12:14] INFO: [BULK UPDATE] Starting bulk game update for 274 games
+[2025-12-05 15:12:14] INFO: Admin admin triggered bulk game update for 274 games
+[2025-12-05 15:12:14] INFO: Updating game: 7 Days to Die (App ID: 251570)
+[2025-12-05 15:12:15] INFO: Successfully updated 7 Days to Die: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:12:15] INFO: Updating game: A Short Hike (App ID: 1055540)
+[2025-12-05 15:12:16] INFO: Successfully updated A Short Hike: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:12:17] INFO: Updating game: A Story About My Uncle (App ID: 278360)
+[2025-12-05 15:12:18] INFO: Successfully updated A Story About My Uncle: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:12:18] INFO: Updating game: Abiotic Factor (App ID: 427410)
+[2025-12-05 15:12:19] INFO: Successfully updated Abiotic Factor: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:12:20] INFO: Updating game: Age of Empires II (Retired) (App ID: 221380)
+[2025-12-05 15:12:21] INFO: Successfully updated Age of Empires II (Retired): ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:12:21] INFO: Updating game: Age of Wonders III (App ID: 226840)
+[2025-12-05 15:12:22] INFO: Successfully updated Age of Wonders III: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:12:23] INFO: Updating game: Among Us (App ID: 945360)
+[2025-12-05 15:12:24] INFO: Successfully updated Among Us: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:12:24] INFO: Updating game: ARC Raiders (App ID: 1808500)
+[2025-12-05 15:12:25] INFO: Successfully updated ARC Raiders: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:12:26] INFO: Updating game: Arizona Sunshine® (App ID: 342180)
+[2025-12-05 15:12:26] INFO: Successfully updated Arizona Sunshine®: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:12:27] INFO: Updating game: ARK: Survival Evolved (App ID: 346110)
+[2025-12-05 15:12:28] INFO: Successfully updated ARK: Survival Evolved: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:12:29] INFO: Updating game: ARK: The Survival Of The Fittest (App ID: 407530)
+[2025-12-05 15:12:30] INFO: Successfully updated ARK: The Survival Of The Fittest: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'cover_path', 'cover_etag']
+[2025-12-05 15:12:31] INFO: Updating game: Arma 3 (App ID: 107410)
+[2025-12-05 15:12:32] INFO: Successfully updated Arma 3: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'sale_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:12:33] INFO: Updating game: Assetto Corsa (App ID: 244210)
+[2025-12-05 15:12:34] INFO: Successfully updated Assetto Corsa: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:12:34] INFO: Updating game: ASTRONEER (App ID: 361420)
+[2025-12-05 15:12:35] INFO: Successfully updated ASTRONEER: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:12:35] INFO: Updating game: Backrooms: Escape Together (App ID: 2141730)
+[2025-12-05 15:12:36] INFO: Successfully updated Backrooms: Escape Together: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:12:37] INFO: Updating game: Baldur's Gate 3 (App ID: 1086940)
+[2025-12-05 15:12:38] INFO: Successfully updated Baldur's Gate 3: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:12:38] INFO: Updating game: BALL x PIT (App ID: 2062430)
+[2025-12-05 15:12:39] INFO: Successfully updated BALL x PIT: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price']
+[2025-12-05 15:12:39] INFO: Updating game: Banished (App ID: 242920)
+[2025-12-05 15:12:40] INFO: Successfully updated Banished: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:12:41] INFO: Updating game: Batman™: Arkham Origins (App ID: 209000)
+[2025-12-05 15:12:42] INFO: Successfully updated Batman™: Arkham Origins: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'sale_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:12:42] INFO: Updating game: BeamNG.drive (App ID: 284160)
+[2025-12-05 15:12:43] INFO: Successfully updated BeamNG.drive: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:12:44] INFO: Updating game: Beat Saber (App ID: 620980)
+[2025-12-05 15:12:45] INFO: Successfully updated Beat Saber: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:12:45] INFO: Updating game: Bellwright (App ID: 1812450)
+[2025-12-05 15:12:46] INFO: Successfully updated Bellwright: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'sale_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:12:47] INFO: Updating game: Besiege (App ID: 346010)
+[2025-12-05 15:12:47] INFO: Successfully updated Besiege: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'sale_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:12:48] INFO: Updating game: BioShock Infinite (App ID: 8870)
+[2025-12-05 15:12:49] INFO: Successfully updated BioShock Infinite: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'sale_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:12:49] INFO: Updating game: Black Myth: Wukong (App ID: 2358720)
+[2025-12-05 15:12:50] INFO: Successfully updated Black Myth: Wukong: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:12:51] INFO: Updating game: Blackwake (App ID: 420290)
+[2025-12-05 15:12:51] INFO: Successfully updated Blackwake: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'cover_path', 'cover_etag']
+[2025-12-05 15:12:52] INFO: Updating game: Blade and Sorcery (App ID: 629730)
+[2025-12-05 15:12:53] INFO: Successfully updated Blade and Sorcery: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:12:53] INFO: Updating game: Blightbound (App ID: 1263070)
+[2025-12-05 15:12:54] INFO: Successfully updated Blightbound: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:12:55] INFO: Updating game: Bloons TD 6 (App ID: 960090)
+[2025-12-05 15:12:55] INFO: Successfully updated Bloons TD 6: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:12:56] INFO: Updating game: BONEWORKS (App ID: 823500)
+[2025-12-05 15:12:57] INFO: Successfully updated BONEWORKS: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:12:57] INFO: Updating game: Borderlands 2 (App ID: 49520)
+[2025-12-05 15:12:58] INFO: Successfully updated Borderlands 2: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:12:59] INFO: Updating game: Borderlands 3 (App ID: 397540)
+[2025-12-05 15:12:59] INFO: Successfully updated Borderlands 3: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:13:00] INFO: Updating game: Borderlands 4 (App ID: 1285190)
+[2025-12-05 15:13:01] INFO: Successfully updated Borderlands 4: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:13:01] INFO: Updating game: Call of Duty: World at War (App ID: 10090)
+[2025-12-05 15:13:02] INFO: Successfully updated Call of Duty: World at War: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:13:03] INFO: Updating game: Cat Quest III (App ID: 2305840)
+[2025-12-05 15:13:03] INFO: Successfully updated Cat Quest III: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:13:04] INFO: Updating game: Cities: Skylines (App ID: 255710)
+[2025-12-05 15:13:05] INFO: Successfully updated Cities: Skylines: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:13:06] INFO: Updating game: Clair Obscur: Expedition 33 (App ID: 1903340)
+[2025-12-05 15:13:06] INFO: Successfully updated Clair Obscur: Expedition 33: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:13:07] INFO: Updating game: Cockroach Simulator (App ID: 527450)
+[2025-12-05 15:13:08] INFO: Successfully updated Cockroach Simulator: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:13:08] INFO: Updating game: Company of Heroes 2 (App ID: 231430)
+[2025-12-05 15:13:09] INFO: Successfully updated Company of Heroes 2: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:13:10] INFO: Updating game: Content Warning (App ID: 2881650)
+[2025-12-05 15:13:11] INFO: Successfully updated Content Warning: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'sale_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:13:11] INFO: Updating game: Core Keeper (App ID: 1621690)
+[2025-12-05 15:13:12] INFO: Successfully updated Core Keeper: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'sale_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:13:12] INFO: Updating game: Counter-Strike 2 (App ID: 730)
+[2025-12-05 15:13:13] INFO: Successfully updated Counter-Strike 2: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'cover_path', 'cover_etag']
+[2025-12-05 15:13:14] INFO: Updating game: CRSED: Cuisine Royale (App ID: 884660)
+[2025-12-05 15:13:15] INFO: Successfully updated CRSED: Cuisine Royale: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'cover_path', 'cover_etag']
+[2025-12-05 15:13:15] INFO: Updating game: CryoFall (App ID: 829590)
+[2025-12-05 15:13:16] INFO: Successfully updated CryoFall: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'sale_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:13:17] INFO: Updating game: Cult of the Lamb (App ID: 1313140)
+[2025-12-05 15:13:18] INFO: Successfully updated Cult of the Lamb: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'sale_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:13:18] INFO: Updating game: Cuphead (App ID: 268910)
+[2025-12-05 15:13:19] INFO: Successfully updated Cuphead: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:13:19] INFO: Updating game: Cyberpunk 2077 (App ID: 1091500)
+[2025-12-05 15:13:20] INFO: Successfully updated Cyberpunk 2077: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'sale_price']
+[2025-12-05 15:13:20] INFO: Updating game: DAVE THE DIVER (App ID: 1868140)
+[2025-12-05 15:13:21] INFO: Successfully updated DAVE THE DIVER: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:13:22] INFO: Updating game: Dead Cells (App ID: 588650)
+[2025-12-05 15:13:23] INFO: Successfully updated Dead Cells: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:13:23] INFO: Updating game: Dead Island (App ID: 91310)
+[2025-12-05 15:13:23] WARNING: Steam API returned no data for Dead Island (App ID: 91310)
+[2025-12-05 15:13:24] INFO: Updating game: Deadlock (App ID: 1422450)
+[2025-12-05 15:13:25] INFO: Successfully updated Deadlock: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'cover_path', 'cover_etag']
+[2025-12-05 15:13:25] INFO: Updating game: Deadside (App ID: 895400)
+[2025-12-05 15:13:26] INFO: Successfully updated Deadside: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:13:27] INFO: Updating game: Deep Rock Galactic (App ID: 548430)
+[2025-12-05 15:13:28] INFO: Successfully updated Deep Rock Galactic: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'sale_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:13:28] INFO: Updating game: Devil May Cry 5 (App ID: 601150)
+[2025-12-05 15:13:29] INFO: Successfully updated Devil May Cry 5: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:13:29] INFO: Updating game: DICEOMANCER (App ID: 2501600)
+[2025-12-05 15:13:30] INFO: Successfully updated DICEOMANCER: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:13:31] INFO: Updating game: Dinkum (App ID: 1062520)
+[2025-12-05 15:13:32] INFO: Successfully updated Dinkum: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'sale_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:13:32] INFO: Updating game: DiRT Rally (App ID: 310560)
+[2025-12-05 15:13:33] INFO: Successfully updated DiRT Rally: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'cover_path', 'cover_etag']
+[2025-12-05 15:13:33] INFO: Updating game: Dispatch (App ID: 2592160)
+[2025-12-05 15:13:34] INFO: Successfully updated Dispatch: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:13:35] INFO: Updating game: Divinity: Original Sin 2 (App ID: 435150)
+[2025-12-05 15:13:36] INFO: Successfully updated Divinity: Original Sin 2: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:13:36] INFO: Updating game: DmC Devil May Cry (App ID: 220440)
+[2025-12-05 15:13:37] INFO: Successfully updated DmC Devil May Cry: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:13:38] INFO: Updating game: Don't Starve Together (App ID: 322330)
+[2025-12-05 15:13:39] INFO: Successfully updated Don't Starve Together: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:13:39] INFO: Updating game: Door Kickers (App ID: 248610)
+[2025-12-05 15:13:40] INFO: Successfully updated Door Kickers: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:13:40] INFO: Updating game: Dread Hunger (App ID: 1418630)
+[2025-12-05 15:13:42] INFO: Successfully updated Dread Hunger: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'cover_path', 'cover_etag']
+[2025-12-05 15:13:42] INFO: Updating game: Eco (App ID: 382310)
+[2025-12-05 15:13:43] INFO: Successfully updated Eco: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:13:44] INFO: Updating game: ELDEN RING (App ID: 1245620)
+[2025-12-05 15:13:44] INFO: Successfully updated ELDEN RING: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:13:45] INFO: Updating game: Empyrion - Galactic Survival (App ID: 383120)
+[2025-12-05 15:13:46] INFO: Successfully updated Empyrion - Galactic Survival: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:13:46] INFO: Updating game: Enshrouded (App ID: 1203620)
+[2025-12-05 15:13:47] INFO: Successfully updated Enshrouded: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:13:48] INFO: Updating game: EVE Online (App ID: 8500)
+[2025-12-05 15:13:49] INFO: Successfully updated EVE Online: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'cover_path', 'cover_etag']
+[2025-12-05 15:13:49] INFO: Updating game: Factorio (App ID: 427520)
+[2025-12-05 15:13:50] INFO: Successfully updated Factorio: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:13:51] INFO: Updating game: Fallout 4 (App ID: 377160)
+[2025-12-05 15:13:51] INFO: Successfully updated Fallout 4: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:13:52] INFO: Updating game: Fallout: New Vegas (App ID: 22380)
+[2025-12-05 15:13:53] INFO: Successfully updated Fallout: New Vegas: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:13:53] INFO: Updating game: FANTASY LIFE i: The Girl Who Steals Time (App ID: 2993780)
+[2025-12-05 15:13:54] INFO: Successfully updated FANTASY LIFE i: The Girl Who Steals Time: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:13:55] INFO: Updating game: Far Cry 5 (App ID: 552520)
+[2025-12-05 15:13:56] INFO: Successfully updated Far Cry 5: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:13:56] INFO: Updating game: Farming Simulator 15 (App ID: 313160)
+[2025-12-05 15:13:57] INFO: Successfully updated Farming Simulator 15: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:13:58] INFO: Updating game: Farming Simulator 17 (App ID: 447020)
+[2025-12-05 15:13:59] INFO: Successfully updated Farming Simulator 17: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:13:59] INFO: Updating game: Farming Simulator 22 (App ID: 1248130)
+[2025-12-05 15:14:00] INFO: Successfully updated Farming Simulator 22: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:14:00] INFO: Updating game: FATE (App ID: 246840)
+[2025-12-05 15:14:02] INFO: Successfully updated FATE: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:14:02] INFO: Updating game: FATE: The Cursed King (App ID: 303690)
+[2025-12-05 15:14:04] INFO: Successfully updated FATE: The Cursed King: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:14:04] INFO: Updating game: FATE: The Traitor Soul (App ID: 303680)
+[2025-12-05 15:14:06] INFO: Successfully updated FATE: The Traitor Soul: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:14:06] INFO: Updating game: FATE: Undiscovered Realms (App ID: 276890)
+[2025-12-05 15:14:07] INFO: Successfully updated FATE: Undiscovered Realms: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:14:07] INFO: Updating game: Five Nights at Freddy's: Sister Location (App ID: 506610)
+[2025-12-05 15:14:09] INFO: Successfully updated Five Nights at Freddy's: Sister Location: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:14:09] INFO: Updating game: Fly Simulator (App ID: 655790)
+[2025-12-05 15:14:10] INFO: Successfully updated Fly Simulator: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:14:10] INFO: Updating game: For The King (App ID: 527230)
+[2025-12-05 15:14:11] INFO: Successfully updated For The King: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:14:12] INFO: Updating game: For The King II (App ID: 1676840)
+[2025-12-05 15:14:13] INFO: Successfully updated For The King II: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:14:13] INFO: Updating game: For The King II Closed Beta (App ID: 1907700)
+[2025-12-05 15:14:14] INFO: Successfully updated For The King II Closed Beta: ['name', 'release_date', 'cover_path', 'cover_etag']
+[2025-12-05 15:14:15] INFO: Updating game: Frog Detective 3: Corruption at Cowboy County (App ID: 1171320)
+[2025-12-05 15:14:16] INFO: Successfully updated Frog Detective 3: Corruption at Cowboy County: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:14:17] INFO: Updating game: FTL: Faster Than Light (App ID: 212680)
+[2025-12-05 15:14:17] INFO: Successfully updated FTL: Faster Than Light: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'sale_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:14:18] INFO: Updating game: Garry's Mod (App ID: 4000)
+[2025-12-05 15:14:19] INFO: Successfully updated Garry's Mod: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:14:19] INFO: Updating game: Goat Simulator (App ID: 265930)
+[2025-12-05 15:14:20] INFO: Successfully updated Goat Simulator: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:14:21] INFO: Updating game: Golf With Your Friends (App ID: 431240)
+[2025-12-05 15:14:22] INFO: Successfully updated Golf With Your Friends: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'sale_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:14:22] INFO: Updating game: GORN (App ID: 578620)
+[2025-12-05 15:14:23] INFO: Successfully updated GORN: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'sale_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:14:23] INFO: Updating game: Gothic Playable Teaser (App ID: 950670)
+[2025-12-05 15:14:24] INFO: Successfully updated Gothic Playable Teaser: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'cover_path', 'cover_etag']
+[2025-12-05 15:14:25] INFO: Updating game: Grim Dawn (App ID: 219990)
+[2025-12-05 15:14:26] INFO: Successfully updated Grim Dawn: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:14:26] INFO: Updating game: Grounded (App ID: 962130)
+[2025-12-05 15:14:27] INFO: Successfully updated Grounded: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:14:28] INFO: Updating game: GTFO (App ID: 493520)
+[2025-12-05 15:14:28] INFO: Successfully updated GTFO: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'sale_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:14:29] INFO: Updating game: Hacknet (App ID: 365450)
+[2025-12-05 15:14:30] INFO: Successfully updated Hacknet: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:14:30] INFO: Updating game: Hades (App ID: 1145360)
+[2025-12-05 15:14:31] INFO: Successfully updated Hades: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:14:32] INFO: Updating game: Hades II (App ID: 1145350)
+[2025-12-05 15:14:33] INFO: Successfully updated Hades II: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:14:33] INFO: Updating game: Half-Life: Alyx (App ID: 546560)
+[2025-12-05 15:14:34] INFO: Successfully updated Half-Life: Alyx: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:14:35] INFO: Updating game: Hand Simulator (App ID: 657200)
+[2025-12-05 15:14:35] INFO: Successfully updated Hand Simulator: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:14:36] INFO: Updating game: Hand Simulator: Horror (App ID: 1027820)
+[2025-12-05 15:14:37] INFO: Successfully updated Hand Simulator: Horror: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:14:37] INFO: Updating game: Hand Simulator: Survival (App ID: 924140)
+[2025-12-05 15:14:39] INFO: Successfully updated Hand Simulator: Survival: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:14:39] INFO: Updating game: Hearts of Iron IV (App ID: 394360)
+[2025-12-05 15:14:40] INFO: Successfully updated Hearts of Iron IV: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:14:41] INFO: Updating game: HELLDIVERS™ 2 (App ID: 553850)
+[2025-12-05 15:14:42] INFO: Successfully updated HELLDIVERS™ 2: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:14:42] INFO: Updating game: Heroes & Generals (App ID: 227940)
+[2025-12-05 15:14:43] INFO: Successfully updated Heroes & Generals: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'cover_path', 'cover_etag']
+[2025-12-05 15:14:43] INFO: Updating game: Heroes of Hammerwatch (App ID: 677120)
+[2025-12-05 15:14:44] INFO: Successfully updated Heroes of Hammerwatch: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:14:45] INFO: Updating game: Heroes of Hammerwatch II (App ID: 619820)
+[2025-12-05 15:14:46] INFO: Successfully updated Heroes of Hammerwatch II: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'sale_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:14:46] INFO: Updating game: House Flipper (App ID: 613100)
+[2025-12-05 15:14:47] INFO: Successfully updated House Flipper: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:14:48] INFO: Updating game: Human Fall Flat (App ID: 477160)
+[2025-12-05 15:14:48] INFO: Successfully updated Human Fall Flat: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:14:49] INFO: Updating game: Hunt: Showdown 1896 (App ID: 594650)
+[2025-12-05 15:14:50] INFO: Successfully updated Hunt: Showdown 1896: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:14:50] INFO: Updating game: Hunt: Showdown 1896 (Test Server) (App ID: 770720)
+[2025-12-05 15:14:51] INFO: Successfully updated Hunt: Showdown 1896 (Test Server): ['name', 'release_date', 'cover_path', 'cover_etag']
+[2025-12-05 15:14:52] INFO: Updating game: I Can't Believe It's Not Gambling GOTY Edition (App ID: 733990)
+[2025-12-05 15:14:53] INFO: Successfully updated I Can't Believe It's Not Gambling GOTY Edition: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:14:53] INFO: Updating game: In Silence (App ID: 1361000)
+[2025-12-05 15:14:54] INFO: Successfully updated In Silence: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'sale_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:14:55] INFO: Updating game: Injustice: Gods Among Us Ultimate Edition (App ID: 242700)
+[2025-12-05 15:14:55] INFO: Successfully updated Injustice: Gods Among Us Ultimate Edition: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'sale_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:14:56] INFO: Updating game: Inscryption (App ID: 1092790)
+[2025-12-05 15:14:57] INFO: Successfully updated Inscryption: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:14:57] INFO: Updating game: Inside the Backrooms (App ID: 1987080)
+[2025-12-05 15:14:59] INFO: Successfully updated Inside the Backrooms: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:14:59] INFO: Updating game: Insurgency: Sandstorm (App ID: 581320)
+[2025-12-05 15:15:00] INFO: Successfully updated Insurgency: Sandstorm: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:15:00] INFO: Updating game: Into the Radius 2 (App ID: 2307350)
+[2025-12-05 15:15:01] INFO: Successfully updated Into the Radius 2: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:15:02] INFO: Updating game: Keep Driving (App ID: 2756920)
+[2025-12-05 15:15:03] INFO: Successfully updated Keep Driving: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:15:03] INFO: Updating game: Kenshi (App ID: 233860)
+[2025-12-05 15:15:04] INFO: Successfully updated Kenshi: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:15:05] INFO: Updating game: Kerbal Space Program (App ID: 220200)
+[2025-12-05 15:15:06] INFO: Successfully updated Kerbal Space Program: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'sale_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:15:06] INFO: Updating game: Kerbal Space Program 2 (App ID: 954850)
+[2025-12-05 15:15:07] INFO: Successfully updated Kerbal Space Program 2: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:15:07] INFO: Updating game: Kingdoms and Castles (App ID: 569480)
+[2025-12-05 15:15:08] INFO: Successfully updated Kingdoms and Castles: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'sale_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:15:09] INFO: Updating game: KovaaK's (App ID: 824270)
+[2025-12-05 15:15:10] INFO: Successfully updated KovaaK's: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:15:10] INFO: Updating game: Lethal Company (App ID: 1966720)
+[2025-12-05 15:15:11] INFO: Successfully updated Lethal Company: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:15:12] INFO: Updating game: Little Nightmares II (App ID: 860510)
+[2025-12-05 15:15:13] INFO: Successfully updated Little Nightmares II: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:15:13] INFO: Updating game: Loop Hero (App ID: 1282730)
+[2025-12-05 15:15:14] INFO: Successfully updated Loop Hero: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:15:15] INFO: Updating game: Mad Max (App ID: 234140)
+[2025-12-05 15:15:16] INFO: Successfully updated Mad Max: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'sale_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:15:16] INFO: Updating game: Marauders (App ID: 1789480)
+[2025-12-05 15:15:18] INFO: Successfully updated Marauders: ['name', 'description', 'developer', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:15:18] INFO: Updating game: Middle-earth™: Shadow of Mordor™ (App ID: 241930)
+[2025-12-05 15:15:19] INFO: Successfully updated Middle-earth™: Shadow of Mordor™: ['name', 'description', 'developer', 'publisher', 'release_date', 'price', 'original_price', 'sale_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:15:19] INFO: Updating game: Minecraft Dungeons (App ID: 1672970)
+[2025-12-05 15:15:20] INFO: Successfully updated Minecraft Dungeons: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:15:21] INFO: Updating game: MISERY Playtest (App ID: 3847130)
+[2025-12-05 15:15:21] WARNING: Steam API returned no data for MISERY Playtest (App ID: 3847130)
+[2025-12-05 15:15:22] INFO: Updating game: MONSTER HUNTER RISE (App ID: 1446780)
+[2025-12-05 15:15:23] INFO: Successfully updated MONSTER HUNTER RISE: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:15:23] INFO: Updating game: MORDHAU (App ID: 629760)
+[2025-12-05 15:15:24] INFO: Successfully updated MORDHAU: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:15:25] INFO: Updating game: Mount & Blade II: Bannerlord (App ID: 261550)
+[2025-12-05 15:15:25] INFO: Successfully updated Mount & Blade II: Bannerlord: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'sale_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:15:26] INFO: Updating game: Muck (App ID: 1625450)
+[2025-12-05 15:15:27] INFO: Successfully updated Muck: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'cover_path', 'cover_etag']
+[2025-12-05 15:15:27] INFO: Updating game: Mycopunk (App ID: 3247750)
+[2025-12-05 15:15:28] INFO: Successfully updated Mycopunk: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:15:29] INFO: Updating game: NBA 2K16 (App ID: 370240)
+[2025-12-05 15:15:29] INFO: Successfully updated NBA 2K16: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'cover_path', 'cover_etag']
+[2025-12-05 15:15:30] INFO: Updating game: NBA 2K19 (App ID: 841370)
+[2025-12-05 15:15:31] INFO: Successfully updated NBA 2K19: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'cover_path', 'cover_etag']
+[2025-12-05 15:15:31] INFO: Updating game: Necesse (App ID: 1169040)
+[2025-12-05 15:15:32] INFO: Successfully updated Necesse: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'sale_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:15:33] INFO: Updating game: New World: Aeternum (App ID: 1063730)
+[2025-12-05 15:15:34] INFO: Successfully updated New World: Aeternum: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:15:34] INFO: Updating game: No Man's Sky (App ID: 275850)
+[2025-12-05 15:15:35] INFO: Successfully updated No Man's Sky: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'sale_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:15:35] INFO: Updating game: Nobody Saves the World (App ID: 1432050)
+[2025-12-05 15:15:37] INFO: Successfully updated Nobody Saves the World: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:15:37] INFO: Updating game: Northgard (App ID: 466560)
+[2025-12-05 15:15:38] INFO: Successfully updated Northgard: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'sale_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:15:39] INFO: Updating game: Nubby's Number Factory (App ID: 3191030)
+[2025-12-05 15:15:39] INFO: Successfully updated Nubby's Number Factory: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:15:40] INFO: Updating game: Nuclear Nightmare (App ID: 2909110)
+[2025-12-05 15:15:41] INFO: Successfully updated Nuclear Nightmare: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:15:41] INFO: Updating game: Osiris: New Dawn (App ID: 402710)
+[2025-12-05 15:15:42] INFO: Successfully updated Osiris: New Dawn: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'cover_path', 'cover_etag']
+[2025-12-05 15:15:43] INFO: Updating game: Outer Wilds (App ID: 753640)
+[2025-12-05 15:15:44] INFO: Successfully updated Outer Wilds: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:15:44] INFO: Updating game: Outward (App ID: 794260)
+[2025-12-05 15:15:45] INFO: Successfully updated Outward: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:15:45] INFO: Updating game: Overcooked (App ID: 448510)
+[2025-12-05 15:15:46] INFO: Successfully updated Overcooked: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:15:47] INFO: Updating game: Oxygen Not Included (App ID: 457140)
+[2025-12-05 15:15:48] INFO: Successfully updated Oxygen Not Included: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:15:48] INFO: Updating game: Pacific Drive (App ID: 1458140)
+[2025-12-05 15:15:49] INFO: Successfully updated Pacific Drive: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'sale_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:15:50] INFO: Updating game: Palworld (App ID: 1623730)
+[2025-12-05 15:15:51] INFO: Successfully updated Palworld: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'sale_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:15:51] INFO: Updating game: Paranormal Activity: The Lost Soul (App ID: 467660)
+[2025-12-05 15:15:52] INFO: Successfully updated Paranormal Activity: The Lost Soul: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:15:53] INFO: Updating game: Pavlov VR (App ID: 555160)
+[2025-12-05 15:15:54] INFO: Successfully updated Pavlov VR: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:15:54] INFO: Updating game: PAYDAY 2 (App ID: 218620)
+[2025-12-05 15:15:55] INFO: Successfully updated PAYDAY 2: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:15:56] INFO: Updating game: PEAK (App ID: 3527290)
+[2025-12-05 15:15:57] INFO: Successfully updated PEAK: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price']
+[2025-12-05 15:15:57] INFO: Updating game: Planet Coaster (App ID: 493340)
+[2025-12-05 15:15:58] INFO: Successfully updated Planet Coaster: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:15:58] INFO: Updating game: PlateUp! (App ID: 1599600)
+[2025-12-05 15:15:59] INFO: Successfully updated PlateUp!: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:16:00] INFO: Updating game: Police Stories (App ID: 539470)
+[2025-12-05 15:16:01] INFO: Successfully updated Police Stories: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:16:01] INFO: Updating game: Poly Bridge (App ID: 367450)
+[2025-12-05 15:16:03] INFO: Successfully updated Poly Bridge: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'sale_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:16:03] INFO: Updating game: Portal (App ID: 400)
+[2025-12-05 15:16:04] INFO: Successfully updated Portal: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:16:04] INFO: Updating game: Portal 2 (App ID: 620)
+[2025-12-05 15:16:05] INFO: Successfully updated Portal 2: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:16:06] INFO: Updating game: Potion Craft: Alchemist Simulator (App ID: 1210320)
+[2025-12-05 15:16:07] INFO: Successfully updated Potion Craft: Alchemist Simulator: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:16:07] INFO: Updating game: Prison Architect (App ID: 233450)
+[2025-12-05 15:16:08] INFO: Successfully updated Prison Architect: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:16:09] INFO: Updating game: Project Zomboid (App ID: 108600)
+[2025-12-05 15:16:10] INFO: Successfully updated Project Zomboid: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:16:10] INFO: Updating game: PUBG: BATTLEGROUNDS (App ID: 578080)
+[2025-12-05 15:16:11] INFO: Successfully updated PUBG: BATTLEGROUNDS: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'cover_path', 'cover_etag']
+[2025-12-05 15:16:11] INFO: Updating game: Punch Club (App ID: 394310)
+[2025-12-05 15:16:13] INFO: Successfully updated Punch Club: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:16:13] INFO: Updating game: R.E.P.O. (App ID: 3241660)
+[2025-12-05 15:16:14] INFO: Successfully updated R.E.P.O.: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:16:14] INFO: Updating game: Raft (App ID: 648800)
+[2025-12-05 15:16:15] INFO: Successfully updated Raft: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:16:16] INFO: Updating game: Ranch Simulator (App ID: 1119730)
+[2025-12-05 15:16:17] INFO: Successfully updated Ranch Simulator: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:16:17] INFO: Updating game: Ravenfield (App ID: 636480)
+[2025-12-05 15:16:19] INFO: Successfully updated Ravenfield: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:16:19] INFO: Updating game: Ready or Not (App ID: 1144200)
+[2025-12-05 15:16:20] INFO: Successfully updated Ready or Not: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:16:20] INFO: Updating game: Red Dead Redemption 2 (App ID: 1174180)
+[2025-12-05 15:16:21] INFO: Successfully updated Red Dead Redemption 2: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:16:22] INFO: Updating game: Remnant II (App ID: 1282100)
+[2025-12-05 15:16:23] INFO: Successfully updated Remnant II: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:16:23] INFO: Updating game: Remnant: From the Ashes (App ID: 617290)
+[2025-12-05 15:16:24] INFO: Successfully updated Remnant: From the Ashes: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:16:25] INFO: Updating game: RimWorld (App ID: 294100)
+[2025-12-05 15:16:26] INFO: Successfully updated RimWorld: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:16:26] INFO: Updating game: Ring of Elysium (App ID: 755790)
+[2025-12-05 15:16:28] INFO: Successfully updated Ring of Elysium: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'cover_path', 'cover_etag']
+[2025-12-05 15:16:28] INFO: Updating game: Rise of the Tomb Raider (App ID: 391220)
+[2025-12-05 15:16:29] INFO: Successfully updated Rise of the Tomb Raider: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:16:30] INFO: Updating game: Risen (App ID: 40300)
+[2025-12-05 15:16:31] INFO: Successfully updated Risen: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:16:31] INFO: Updating game: Risen 2 - Dark Waters (App ID: 40390)
+[2025-12-05 15:16:32] INFO: Successfully updated Risen 2 - Dark Waters: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:16:33] INFO: Updating game: Risk of Rain 2 (App ID: 632360)
+[2025-12-05 15:16:33] INFO: Successfully updated Risk of Rain 2: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:16:34] INFO: Updating game: Robocraft (App ID: 301520)
+[2025-12-05 15:16:35] INFO: Successfully updated Robocraft: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'cover_path', 'cover_etag']
+[2025-12-05 15:16:35] INFO: Updating game: Roboquest (App ID: 692890)
+[2025-12-05 15:16:36] INFO: Successfully updated Roboquest: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:16:37] INFO: Updating game: Rocket League (App ID: 252950)
+[2025-12-05 15:16:38] INFO: Successfully updated Rocket League: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'cover_path', 'cover_etag']
+[2025-12-05 15:16:38] INFO: Updating game: RollerCoaster Tycoon 2: Triple Thrill Pack (App ID: 285330)
+[2025-12-05 15:16:40] INFO: Successfully updated RollerCoaster Tycoon 2: Triple Thrill Pack: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:16:40] INFO: Updating game: RUNNING WITH RIFLES (App ID: 270150)
+[2025-12-05 15:16:41] INFO: Successfully updated RUNNING WITH RIFLES: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:16:42] INFO: Updating game: Ryse: Son of Rome (App ID: 302510)
+[2025-12-05 15:16:43] INFO: Successfully updated Ryse: Son of Rome: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:16:43] INFO: Updating game: Saints Row 2 (App ID: 9480)
+[2025-12-05 15:16:44] INFO: Successfully updated Saints Row 2: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:16:45] INFO: Updating game: Schedule I (App ID: 3164500)
+[2025-12-05 15:16:46] INFO: Successfully updated Schedule I: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:16:46] INFO: Updating game: SCUM (App ID: 513710)
+[2025-12-05 15:16:47] INFO: Successfully updated SCUM: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:16:48] INFO: Updating game: Shatterline (App ID: 2087030)
+[2025-12-05 15:16:49] INFO: Successfully updated Shatterline: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:16:50] INFO: Updating game: Sid Meier's Civilization III: Complete (App ID: 3910)
+[2025-12-05 15:16:51] INFO: Successfully updated Sid Meier's Civilization III: Complete: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:16:51] INFO: Updating game: Sins of a Solar Empire II (App ID: 1575940)
+[2025-12-05 15:16:53] INFO: Successfully updated Sins of a Solar Empire II: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:16:53] INFO: Updating game: Sins of a Solar Empire: Rebellion (App ID: 204880)
+[2025-12-05 15:16:54] INFO: Successfully updated Sins of a Solar Empire: Rebellion: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:16:55] INFO: Updating game: Skul: The Hero Slayer (App ID: 1147560)
+[2025-12-05 15:16:55] INFO: Successfully updated Skul: The Hero Slayer: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:16:56] INFO: Updating game: Slapshot: Rebound (App ID: 1173370)
+[2025-12-05 15:16:57] INFO: Successfully updated Slapshot: Rebound: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'cover_path', 'cover_etag']
+[2025-12-05 15:16:58] INFO: Updating game: Slay the Spire (App ID: 646570)
+[2025-12-05 15:16:59] INFO: Successfully updated Slay the Spire: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'sale_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:16:59] INFO: Updating game: Slime Rancher (App ID: 433340)
+[2025-12-05 15:17:00] INFO: Successfully updated Slime Rancher: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:17:01] INFO: Updating game: Sniper Elite 4 (App ID: 312660)
+[2025-12-05 15:17:02] INFO: Successfully updated Sniper Elite 4: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:17:02] INFO: Updating game: Sonic Adventure 2 (App ID: 213610)
+[2025-12-05 15:17:03] INFO: Successfully updated Sonic Adventure 2: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:17:04] INFO: Updating game: Sons Of The Forest (App ID: 1326470)
+[2025-12-05 15:17:05] INFO: Successfully updated Sons Of The Forest: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:17:05] INFO: Updating game: Space Engineers (App ID: 244850)
+[2025-12-05 15:17:06] INFO: Successfully updated Space Engineers: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'sale_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:17:07] INFO: Updating game: Spelunky (App ID: 239350)
+[2025-12-05 15:17:08] INFO: Successfully updated Spelunky: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:17:08] INFO: Updating game: Spelunky 2 (App ID: 418530)
+[2025-12-05 15:17:09] INFO: Successfully updated Spelunky 2: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:17:10] INFO: Updating game: Split Fiction (App ID: 2001120)
+[2025-12-05 15:17:11] INFO: Successfully updated Split Fiction: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:17:11] INFO: Updating game: Starbound (App ID: 211820)
+[2025-12-05 15:17:12] INFO: Successfully updated Starbound: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:17:13] INFO: Updating game: Starbound - Unstable (App ID: 367540)
+[2025-12-05 15:17:13] ERROR: Steam API request failed for Starbound - Unstable: status 429
+[2025-12-05 15:17:13] INFO: Updating game: Stardew Valley (App ID: 413150)
+[2025-12-05 15:17:14] INFO: Successfully updated Stardew Valley: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:17:15] INFO: Updating game: Starfield (App ID: 1716740)
+[2025-12-05 15:17:16] INFO: Successfully updated Starfield: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:17:16] INFO: Updating game: Stellaris (App ID: 281990)
+[2025-12-05 15:17:17] INFO: Successfully updated Stellaris: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'sale_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:17:18] INFO: Updating game: Stick Fight: The Game (App ID: 674940)
+[2025-12-05 15:17:19] INFO: Successfully updated Stick Fight: The Game: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'sale_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:17:19] INFO: Updating game: Stonehearth (App ID: 253250)
+[2025-12-05 15:17:20] INFO: Successfully updated Stonehearth: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:17:21] INFO: Updating game: Stray (App ID: 1332010)
+[2025-12-05 15:17:22] INFO: Successfully updated Stray: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:17:22] INFO: Updating game: Stronghold Crusader 2 (App ID: 232890)
+[2025-12-05 15:17:23] INFO: Successfully updated Stronghold Crusader 2: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:17:24] INFO: Updating game: Stumble Guys (App ID: 1677740)
+[2025-12-05 15:17:25] INFO: Successfully updated Stumble Guys: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'cover_path', 'cover_etag']
+[2025-12-05 15:17:25] INFO: Updating game: Subnautica (App ID: 264710)
+[2025-12-05 15:17:26] INFO: Successfully updated Subnautica: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:17:27] INFO: Updating game: Subnautica: Below Zero (App ID: 848450)
+[2025-12-05 15:17:27] INFO: Successfully updated Subnautica: Below Zero: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:17:28] INFO: Updating game: Sun Haven (App ID: 1432860)
+[2025-12-05 15:17:29] INFO: Successfully updated Sun Haven: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'sale_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:17:30] INFO: Updating game: Super Animal Royale (App ID: 843380)
+[2025-12-05 15:17:31] INFO: Successfully updated Super Animal Royale: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'cover_path', 'cover_etag']
+[2025-12-05 15:17:31] INFO: Updating game: Super Hexagon (App ID: 221640)
+[2025-12-05 15:17:32] INFO: Successfully updated Super Hexagon: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:17:33] INFO: Updating game: Terraria (App ID: 105600)
+[2025-12-05 15:17:34] INFO: Successfully updated Terraria: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:17:34] INFO: Updating game: TerraTech (App ID: 285920)
+[2025-12-05 15:17:35] INFO: Successfully updated TerraTech: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:17:36] INFO: Updating game: The Binding of Isaac: Rebirth (App ID: 250900)
+[2025-12-05 15:17:37] INFO: Successfully updated The Binding of Isaac: Rebirth: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:17:37] INFO: Updating game: The Elder Scrolls V: Skyrim (App ID: 72850)
+[2025-12-05 15:17:38] INFO: Successfully updated The Elder Scrolls V: Skyrim: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:17:39] INFO: Updating game: The Elder Scrolls V: Skyrim VR (App ID: 611670)
+[2025-12-05 15:17:40] INFO: Successfully updated The Elder Scrolls V: Skyrim VR: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:17:40] INFO: Updating game: The Forest (App ID: 242760)
+[2025-12-05 15:17:41] INFO: Successfully updated The Forest: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:17:41] INFO: Updating game: The Golf Club VR (App ID: 489600)
+[2025-12-05 15:17:43] INFO: Successfully updated The Golf Club VR: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:17:43] INFO: Updating game: The Lab (App ID: 450390)
+[2025-12-05 15:17:44] INFO: Successfully updated The Lab: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'cover_path', 'cover_etag']
+[2025-12-05 15:17:45] INFO: Updating game: The Planet Crafter (App ID: 1284190)
+[2025-12-05 15:17:46] INFO: Successfully updated The Planet Crafter: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:17:46] INFO: Updating game: The Sims™ 3 (App ID: 47890)
+[2025-12-05 15:17:47] INFO: Successfully updated The Sims™ 3: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:17:48] INFO: Updating game: The Witcher 3: Wild Hunt (App ID: 292030)
+[2025-12-05 15:17:49] INFO: Successfully updated The Witcher 3: Wild Hunt: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'sale_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:17:51] INFO: Updating game: They Are Billions (App ID: 644930)
+[2025-12-05 15:17:52] INFO: Successfully updated They Are Billions: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:17:52] INFO: Updating game: Tiny Tina's Wonderlands (App ID: 1286680)
+[2025-12-05 15:17:53] INFO: Successfully updated Tiny Tina's Wonderlands: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'sale_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:17:54] INFO: Updating game: Tom Clancy's Ghost Recon® Wildlands (App ID: 460930)
+[2025-12-05 15:17:55] INFO: Successfully updated Tom Clancy's Ghost Recon® Wildlands: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:17:55] INFO: Updating game: Tom Clancy's Rainbow Six Siege - Test Server (App ID: 623990)
+[2025-12-05 15:17:55] WARNING: Steam API returned no data for Tom Clancy's Rainbow Six Siege - Test Server (App ID: 623990)
+[2025-12-05 15:17:56] INFO: Updating game: Tom Clancy's Rainbow Six: Vegas 2 (App ID: 15120)
+[2025-12-05 15:17:57] INFO: Successfully updated Tom Clancy's Rainbow Six: Vegas 2: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'sale_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:17:57] INFO: Updating game: Tom Clancy's Rainbow Six® Siege X (App ID: 359550)
+[2025-12-05 15:17:58] INFO: Successfully updated Tom Clancy's Rainbow Six® Siege X: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'cover_path', 'cover_etag']
+[2025-12-05 15:17:59] INFO: Updating game: Total War: SHOGUN 2 (App ID: 34330)
+[2025-12-05 15:18:00] INFO: Successfully updated Total War: SHOGUN 2: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'sale_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:18:00] INFO: Updating game: Totally Accurate Battle Simulator (App ID: 508440)
+[2025-12-05 15:18:01] INFO: Successfully updated Totally Accurate Battle Simulator: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'sale_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:18:01] INFO: Updating game: Totally Accurate Battlegrounds (App ID: 823130)
+[2025-12-05 15:18:02] INFO: Successfully updated Totally Accurate Battlegrounds: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'cover_path', 'cover_etag']
+[2025-12-05 15:18:03] INFO: Updating game: Trickster VR (App ID: 512220)
+[2025-12-05 15:18:04] INFO: Successfully updated Trickster VR: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:18:04] INFO: Updating game: Tropico 5 (App ID: 245620)
+[2025-12-05 15:18:05] INFO: Successfully updated Tropico 5: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:18:06] INFO: Updating game: Turmoil (App ID: 361280)
+[2025-12-05 15:18:07] INFO: Successfully updated Turmoil: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'sale_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:18:08] INFO: Updating game: Unturned (App ID: 304930)
+[2025-12-05 15:18:08] INFO: Successfully updated Unturned: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'cover_path', 'cover_etag']
+[2025-12-05 15:18:09] INFO: Updating game: Vagante (App ID: 323220)
+[2025-12-05 15:18:10] INFO: Successfully updated Vagante: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:18:10] INFO: Updating game: Valheim (App ID: 892970)
+[2025-12-05 15:18:11] INFO: Successfully updated Valheim: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:18:12] INFO: Updating game: Vampire Survivors (App ID: 1794680)
+[2025-12-05 15:18:12] INFO: Successfully updated Vampire Survivors: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:18:13] INFO: Updating game: Velvet Sundown (App ID: 307290)
+[2025-12-05 15:18:14] INFO: Successfully updated Velvet Sundown: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'cover_path', 'cover_etag']
+[2025-12-05 15:18:14] INFO: Updating game: Walkabout Mini Golf (App ID: 1408230)
+[2025-12-05 15:18:15] INFO: Successfully updated Walkabout Mini Golf: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:18:16] INFO: Updating game: War Selection (App ID: 1022450)
+[2025-12-05 15:18:17] INFO: Successfully updated War Selection: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'cover_path', 'cover_etag']
+[2025-12-05 15:18:18] INFO: Updating game: War Thunder (App ID: 236390)
+[2025-12-05 15:18:19] INFO: Successfully updated War Thunder: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'cover_path', 'cover_etag']
+[2025-12-05 15:18:19] INFO: Updating game: Warhammer: Vermintide 2 (App ID: 552500)
+[2025-12-05 15:18:20] INFO: Successfully updated Warhammer: Vermintide 2: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'sale_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:18:21] INFO: Updating game: Wasteland 3 (App ID: 719040)
+[2025-12-05 15:18:22] INFO: Successfully updated Wasteland 3: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:18:22] INFO: Updating game: Watch_Dogs 2 (App ID: 447040)
+[2025-12-05 15:18:23] INFO: Successfully updated Watch_Dogs 2: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'sale_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:18:23] INFO: Updating game: We Were Here Together (App ID: 865360)
+[2025-12-05 15:18:24] INFO: Successfully updated We Were Here Together: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:18:25] INFO: Updating game: Windblown (App ID: 1911610)
+[2025-12-05 15:18:26] INFO: Successfully updated Windblown: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:18:27] INFO: Updating game: Windlands 2 (App ID: 458580)
+[2025-12-05 15:18:27] INFO: Successfully updated Windlands 2: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:18:28] INFO: Updating game: Wobbly Life (App ID: 1211020)
+[2025-12-05 15:18:29] INFO: Successfully updated Wobbly Life: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:18:29] INFO: Updating game: Word Play (App ID: 3586660)
+[2025-12-05 15:18:30] INFO: Successfully updated Word Play: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price']
+[2025-12-05 15:18:31] INFO: Updating game: Zero Caliber VR (App ID: 877200)
+[2025-12-05 15:18:32] INFO: Successfully updated Zero Caliber VR: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'sale_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:18:32] INFO: Updating game: Grand Theft Auto V Enhanced (App ID: 3240220)
+[2025-12-05 15:18:33] INFO: Successfully updated Grand Theft Auto V Enhanced: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'sale_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:18:34] INFO: Updating game: Satisfactory (App ID: 526870)
+[2025-12-05 15:18:34] INFO: Successfully updated Satisfactory: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'sale_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:18:35] INFO: Updating game: Little Nightmares (App ID: 424840)
+[2025-12-05 15:18:36] INFO: Successfully updated Little Nightmares: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:18:36] INFO: Updating game: Celeste (App ID: 504230)
+[2025-12-05 15:18:37] INFO: Successfully updated Celeste: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:18:38] INFO: Updating game: DEATH STRANDING DIRECTOR'S CUT (App ID: 1850570)
+[2025-12-05 15:18:38] INFO: Successfully updated DEATH STRANDING DIRECTOR'S CUT: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:18:39] INFO: Updating game: Balatro (App ID: 2379780)
+[2025-12-05 15:18:40] INFO: Successfully updated Balatro: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:18:40] INFO: Updating game: Far Cry® 4 (App ID: 298110)
+[2025-12-05 15:18:41] INFO: Successfully updated Far Cry® 4: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'sale_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:18:42] INFO: Updating game: DREDGE (App ID: 1562430)
+[2025-12-05 15:18:42] INFO: Successfully updated DREDGE: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'sale_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:18:43] INFO: Updating game: Barony (App ID: 371970)
+[2025-12-05 15:18:44] INFO: Successfully updated Barony: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:18:44] INFO: Updating game: God of War (App ID: 1593500)
+[2025-12-05 15:18:45] INFO: Successfully updated God of War: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:18:45] INFO: Updating game: RollerCoaster Tycoon® 3: Complete Edition (App ID: 1368820)
+[2025-12-05 15:18:46] INFO: Successfully updated RollerCoaster Tycoon® 3: Complete Edition: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:18:47] INFO: Updating game: Control Ultimate Edition (App ID: 870780)
+[2025-12-05 15:18:48] INFO: Successfully updated Control Ultimate Edition: ['name', 'description', 'developer', 'publisher', 'genres', 'release_date', 'price', 'original_price', 'cover_path', 'cover_etag']
+[2025-12-05 15:18:48] INFO: [BULK UPDATE] Completed: 270 updated, 4 failed
+[2025-12-05 15:19:19] INFO: Steam updater service started
+[2025-12-05 15:21:09] INFO: Steam updater service started
+[2025-12-05 15:21:44] INFO: Steam updater service started
+[2025-12-05 15:23:33] INFO: Steam updater service started
+[2025-12-05 15:27:16] INFO: Steam updater service started
+[2025-12-05 15:27:23] INFO: Steam updater service started
+[2025-12-05 15:30:51] INFO: Steam updater service started
+[2025-12-05 15:32:51] INFO: Steam updater service started
+[2025-12-05 15:33:17] INFO: Steam updater service started
+[2025-12-05 15:33:29] INFO: Steam updater service started
+[2025-12-05 15:34:15] INFO: Steam updater service started
+[2025-12-05 15:35:40] INFO: Steam updater service started
+[2025-12-05 18:28:26] INFO: Steam updater service started
+[2025-12-05 18:29:17] INFO: Steam updater service started
+[2025-12-05 18:30:20] INFO: Steam updater service started
+[2025-12-05 18:33:59] INFO: Steam updater service started
+[2025-12-05 19:09:31] INFO: Steam updater service started
+[2025-12-05 19:09:32] INFO: Steam updater service started
+[2025-12-05 19:19:23] INFO: Steam updater service started
+[2025-12-05 19:22:14] INFO: Steam updater service started
+[2025-12-05 19:22:26] INFO: Steam updater service started
+[2025-12-05 19:24:42] INFO: Steam updater service started
+[2025-12-05 19:25:27] INFO: Steam updater service started
+[2025-12-05 19:25:45] INFO: Steam updater service started
+[2025-12-05 19:26:10] INFO: Steam updater service started
+[2025-12-05 20:00:14] INFO: Steam updater service started
+[2025-12-05 20:07:02] INFO: Steam updater service started
+[2025-12-05 23:20:55] INFO: Steam updater service started
+[2025-12-05 23:20:55] INFO: Steam updater service started
+[2025-12-05 23:40:12] INFO: Steam updater service started
+[2025-12-05 23:42:17] INFO: Steam updater service started
+[2025-12-06 12:51:50] INFO: Steam updater service started
+[2025-12-06 12:51:50] INFO: Steam updater service started
+[2025-12-06 13:01:59] INFO: Steam updater service started
+[2025-12-06 13:06:02] INFO: Steam updater service started
+[2025-12-06 13:11:39] INFO: Steam updater service started
+[2025-12-06 13:21:56] INFO: Steam updater service started
+[2025-12-06 13:22:08] INFO: Steam updater service started
+[2025-12-06 13:23:50] INFO: Steam updater service started
+[2025-12-06 13:26:57] INFO: Steam updater service started
+[2025-12-06 13:38:47] INFO: Steam updater service started
+[2025-12-06 13:40:35] INFO: Steam updater service started
+[2025-12-06 13:41:14] INFO: Steam updater service started
+[2025-12-06 18:43:39] INFO: Steam updater service started
+[2025-12-06 18:45:03] INFO: Steam updater service started
+[2025-12-06 18:45:31] INFO: Steam updater service started
+[2025-12-06 18:47:03] INFO: Steam updater service started
+[2025-12-06 18:49:12] INFO: Steam updater service started
+[2025-12-06 18:54:28] INFO: Steam updater service started
+[2025-12-06 18:54:43] INFO: Steam updater service started
+[2025-12-06 18:55:00] INFO: Steam updater service started
+[2025-12-06 18:55:46] INFO: Steam updater service started
+[2025-12-06 18:55:58] INFO: Steam updater service started
+[2025-12-06 18:56:56] INFO: Steam updater service started
+[2025-12-06 19:02:37] INFO: Steam updater service started
+[2025-12-06 19:03:04] INFO: Steam updater service started
+[2025-12-06 19:03:45] INFO: Steam updater service started
+[2025-12-06 19:09:54] INFO: Steam updater service started
+[2025-12-06 19:11:03] INFO: Steam updater service started
+[2025-12-06 19:13:11] INFO: Steam updater service started
+[2025-12-06 19:14:44] INFO: Steam updater service started
+[2025-12-06 19:15:35] INFO: Steam updater service started
+[2025-12-06 19:16:02] INFO: Steam updater service started
+[2025-12-06 21:41:36] INFO: Steam updater service started
+[2025-12-06 21:41:36] INFO: Steam updater service started
+[2025-12-06 23:28:55] INFO: Steam updater service started
+[2025-12-06 23:34:55] INFO: Steam updater service started
+[2025-12-07 00:21:18] INFO: Steam updater service started
+[2025-12-07 00:22:42] INFO: Steam updater service started
+[2025-12-07 00:22:42] INFO: Steam updater service started
+[2025-12-07 08:51:02] INFO: Steam updater service started
+[2025-12-07 08:51:02] INFO: Steam updater service started
+[2025-12-07 08:55:49] INFO: Steam updater service started
+[2025-12-07 08:57:04] INFO: Steam updater service started
+[2025-12-07 08:57:58] INFO: Steam updater service started
+[2025-12-07 08:58:47] INFO: Steam updater service started
+[2025-12-07 09:03:50] INFO: Steam updater service started
+[2025-12-07 09:03:51] INFO: Steam updater service started
+[2025-12-07 09:10:17] INFO: Steam updater service started
+[2025-12-07 09:11:03] INFO: Steam updater service started
+[2025-12-07 09:13:31] INFO: Steam updater service started
+[2025-12-07 09:13:55] INFO: Steam updater service started
+[2025-12-07 09:17:00] INFO: Steam updater service started
+[2025-12-07 09:17:53] INFO: Steam updater service started
+[2025-12-07 09:20:35] INFO: Steam updater service started
+[2025-12-07 09:21:22] INFO: Steam updater service started
+[2025-12-07 09:26:33] INFO: Steam updater service started

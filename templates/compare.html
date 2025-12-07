@@ -1,0 +1,424 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Compare with {{ friend_username }} - PeerPulse</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <style>
+      .compare-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+        background: #1a1a1a;
+        border-radius: 10px;
+        overflow: hidden;
+      }
+      .compare-table th {
+        background: #0f0f0f;
+        padding: 12px;
+        text-align: left;
+        font-weight: 600;
+        border-bottom: 2px solid #333;
+      }
+      .compare-table th.sortable {
+        cursor: pointer;
+        user-select: none;
+      }
+      .compare-table th.sortable:hover {
+        background: #1a1a1a;
+      }
+      .compare-table td {
+        padding: 16px 12px;
+        border-bottom: 1px solid #222;
+      }
+      .compare-table tr:last-child td {
+        border-bottom: none;
+      }
+      .compare-table tr:hover {
+        background: #222;
+      }
+      .game-name {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+      .game-cover {
+        width: 80px;
+        height: 40px;
+        object-fit: cover;
+        border-radius: 4px;
+        background: #0a0a0a;
+      }
+      .score-cell {
+        text-align: center;
+        font-weight: 600;
+        font-size: 18px;
+      }
+      .score-badge {
+        display: inline-block;
+        padding: 6px 12px;
+        border-radius: 6px;
+        min-width: 45px;
+      }
+      .sort-arrow {
+        margin-left: 4px;
+        font-size: 12px;
+      }
+      .stats-summary {
+        display: flex;
+        gap: 24px;
+        margin-bottom: 24px;
+        flex-wrap: wrap;
+      }
+      .stat-card {
+        flex: 1;
+        min-width: 200px;
+        background: #1a1a1a;
+        padding: 20px;
+        border-radius: 10px;
+        border: 1px solid #333;
+      }
+      .stat-label {
+        color: var(--muted);
+        font-size: 13px;
+        margin-bottom: 8px;
+      }
+      .stat-value {
+        font-size: 28px;
+        font-weight: bold;
+        color: #667eea;
+      }
+    </style>
+  </head>
+  <body class="has-fixed-header" style="padding-top: 72px;">
+    {% include 'header.html' %}
+
+    <main style="padding: 24px; max-width: 1400px; margin: 0 auto;">
+      <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 24px;">
+        <a href="/friends" class="btn" style="text-decoration: none;">← Back to Friends</a>
+        <h1 style="margin: 0;">Comparing with {{ friend_username }}</h1>
+      </div>
+
+      <!-- Summary Stats -->
+      <div class="stats-summary">
+        <div class="stat-card">
+          <div class="stat-label">Shared Games</div>
+          <div class="stat-value">{{ comparison|length }}</div>
+        </div>
+        {% if comparison %}
+        <div class="stat-card">
+          <div class="stat-label">Taste Alignment</div>
+          <div class="stat-value">
+            {% set ns = namespace(total_diff=0) %}
+            {% for game in comparison %}
+              {% set diff = ((game.user_enjoyment or 0) - (game.friend_enjoyment or 0))|abs %}
+              {% set ns.total_diff = ns.total_diff + diff %}
+            {% endfor %}
+            {% set avg_diff = ns.total_diff / comparison|length if comparison|length > 0 else 0 %}
+            {% set alignment = ((10 - avg_diff) / 10) * 100 %}
+            {{ "%.0f" % alignment }}%
+          </div>
+        </div>
+        {% endif %}
+      </div>
+
+      <!-- Search and Sort Options -->
+      <div style="display: flex; gap: 16px; margin-bottom: 24px; flex-wrap: wrap; align-items: center;">
+        <form method="get" action="{{ url_for('compare_games', username=friend_username) }}" style="margin: 0;">
+          <div style="display: flex; gap: 8px;">
+            <input type="hidden" name="sort" value="{{ sort }}">
+            <input type="hidden" name="order" value="{{ order }}">
+            <input id="search" name="q" type="search" placeholder="Search games..." value="{{ request.args.get('q','') }}" autocomplete="off" style="width: 300px; background: #2a2a2a; color: var(--text); border: 1px solid #444; padding: 8px 12px; border-radius: 6px; font-size: 14px;">
+            <button type="submit" class="btn" style="background: #667eea; color: white; border: none;">Search</button>
+          </div>
+        </form>
+
+        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+          <a href="{{ url_for('compare_games', username=friend_username, sort='avg_enjoyment', order='desc', q=request.args.get('q','')) }}"
+             class="btn" style="{% if sort == 'avg_enjoyment' %}background: #667eea; color: white;{% endif %}">
+            Top Rated
+          </a>
+          <a href="{{ url_for('compare_games', username=friend_username, sort='user_enjoyment', order='desc', q=request.args.get('q','')) }}"
+             class="btn" style="{% if sort == 'user_enjoyment' %}background: #667eea; color: white;{% endif %}">
+            Your Favorites
+          </a>
+          <a href="{{ url_for('compare_games', username=friend_username, sort='friend_enjoyment', order='desc', q=request.args.get('q','')) }}"
+             class="btn" style="{% if sort == 'friend_enjoyment' %}background: #667eea; color: white;{% endif %}">
+            {{ friend_username }}'s Favorites
+          </a>
+          <a href="{{ url_for('compare_games', username=friend_username, sort='difference', order='desc', q=request.args.get('q','')) }}"
+             class="btn" style="{% if sort == 'difference' %}background: #667eea; color: white;{% endif %}">
+            Biggest Disagreements
+          </a>
+          <a href="{{ url_for('compare_games', username=friend_username, sort='name', order='asc', q=request.args.get('q','')) }}"
+             class="btn" style="{% if sort == 'name' %}background: #667eea; color: white;{% endif %}">
+            Alphabetical
+          </a>
+        </div>
+      </div>
+
+      <!-- Comparison Cards -->
+      {% if comparison %}
+      <div style="display: flex; flex-direction: column; gap: 24px; max-width: 1100px; margin: 0 auto; width: 100%;">
+        {% for game in comparison %}
+        <div style="background: #1a1a1a; border-radius: 12px; overflow: hidden; border: 1px solid #333;">
+          <!-- Game Header -->
+          <div style="padding: 20px; background: #0f0f0f; border-bottom: 1px solid #333;">
+            <div style="display: flex; align-items: center; gap: 16px;">
+              {% if game.cover_path %}
+                <img src="{{ game.cover_path }}" style="width: 160px; height: 80px; object-fit: cover; border-radius: 8px; background: #0a0a0a;" alt="{{ game.name }}">
+              {% else %}
+                <div style="width: 160px; height: 80px; display: flex; align-items: center; justify-content: center; background: #0a0a0a; border-radius: 8px; color: #666; font-size: 12px;">No Image</div>
+              {% endif %}
+              <div style="flex: 1;">
+                <strong style="font-size: 18px;">{{ game.name }}</strong>
+                {% if game.user_rank or game.friend_rank %}
+                <div style="margin-top: 8px; display: flex; gap: 16px;">
+                  {% if game.user_rank %}
+                    <span style="color: #667eea; font-size: 13px; font-weight: 600;">#{{ game.user_rank }} for {{ username }}</span>
+                  {% endif %}
+                  {% if game.friend_rank %}
+                    <span style="color: #f59e0b; font-size: 13px; font-weight: 600;">#{{ game.friend_rank }} for {{ friend_username }}</span>
+                  {% endif %}
+                </div>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+
+          <!-- Scores Comparison -->
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: #333;">
+            <!-- User Column -->
+            <div style="background: #1a1a1a; padding: 16px;">
+              <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid #333;">
+                {% if profile and profile.profile_picture %}
+                  <img src="{{ profile.profile_picture }}" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;" alt="{{ username }}">
+                {% else %}
+                  <div style="width: 40px; height: 40px; border-radius: 50%; background: #333; display: flex; align-items: center; justify-content: center; color: #aaa; font-weight: 700; font-size: 16px;">
+                    {{ username[0].upper() if username else '?' }}
+                  </div>
+                {% endif %}
+                <span style="font-weight: 600; font-size: 16px;">{{ username }}</span>
+              </div>
+
+              {% macro render_score(score) %}
+                {% if score is not none %}
+                  {% if score == 10 %}
+                    {% set hue = 120 %}
+                    {% set sat = 95 %}
+                    {% set light = 35 %}
+                  {% elif score >= 7 %}
+                    {% set hue = 60 + ((score - 7) / 3) * 60 %}
+                    {% set sat = 78 %}
+                    {% set light = 42 %}
+                  {% elif score >= 5 %}
+                    {% set hue = ((score - 5) / 2) * 60 %}
+                    {% set sat = 78 %}
+                    {% set light = 42 %}
+                  {% else %}
+                    {% set hue = 0 %}
+                    {% set sat = 78 %}
+                    {% set light = 42 %}
+                  {% endif %}
+                  <div style="display: inline-block; background: hsl({{ hue }}, {{ sat }}%, {{ light }}%); padding: 6px 12px; border-radius: 6px; font-weight: 700; min-width: 45px; text-align: center;">
+                    {{ score|int if score == score|int else score }}
+                  </div>
+                {% else %}
+                  <div style="display: inline-block; background: #2a2a2a; padding: 6px 12px; border-radius: 6px; font-weight: 700; min-width: 45px; text-align: center; color: #666;">—</div>
+                {% endif %}
+              {% endmacro %}
+
+              <div style="display: flex; flex-direction: column; gap: 10px;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                  <span style="color: #888; font-size: 13px;">Overall:</span>
+                  {{ render_score(game.user_enjoyment) }}
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                  <span style="color: #888; font-size: 13px;">Gameplay:</span>
+                  {{ render_score(game.user_gameplay) }}
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                  <span style="color: #888; font-size: 13px;">Music:</span>
+                  {{ render_score(game.user_music) }}
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                  <span style="color: #888; font-size: 13px;">Narrative:</span>
+                  {{ render_score(game.user_narrative) }}
+                </div>
+
+                <!-- Hours Played -->
+                <div style="margin-top: 8px; padding-top: 12px; border-top: 1px solid #333;">
+                  <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span style="color: #888; font-size: 13px;">Hours Played:</span>
+                    <span style="color: #fff; font-weight: 600;">
+                      {% if game.user_hours %}
+                        {{ '%.1f' % game.user_hours if game.user_hours != game.user_hours|int else game.user_hours|int }}
+                      {% else %}
+                        <span style="color: #666;">—</span>
+                      {% endif %}
+                    </span>
+                  </div>
+                </div>
+
+                <!-- Attributes -->
+                <div style="margin-top: 8px; padding-top: 12px; border-top: 1px solid #333;">
+                  <div style="color: #888; font-size: 12px; margin-bottom: 8px; font-weight: 600;">Attributes</div>
+                  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                    <span style="color: #888; font-size: 12px;">Difficulty:</span>
+                    <span style="{% if game.user_difficulty %}color: #fff;{% else %}color: #666;{% endif %} font-size: 12px;">{{ game.user_difficulty if game.user_difficulty else '—' }}</span>
+                  </div>
+                  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                    <span style="color: #888; font-size: 12px;">Graphics:</span>
+                    <span style="{% if game.user_graphics %}color: #fff;{% else %}color: #666;{% endif %} font-size: 12px;">{{ game.user_graphics if game.user_graphics else '—' }}</span>
+                  </div>
+                  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                    <span style="color: #888; font-size: 12px;">Style:</span>
+                    <span style="{% if game.user_style %}color: #fff;{% else %}color: #666;{% endif %} font-size: 12px;">{{ game.user_style if game.user_style else '—' }}</span>
+                  </div>
+                  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                    <span style="color: #888; font-size: 12px;">Replay:</span>
+                    <span style="{% if game.user_replayability %}color: #fff;{% else %}color: #666;{% endif %} font-size: 12px;">{{ game.user_replayability if game.user_replayability else '—' }}</span>
+                  </div>
+                  <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span style="color: #888; font-size: 12px;">Complete:</span>
+                    <span style="{% if game.user_completion %}color: #fff;{% else %}color: #666;{% endif %} font-size: 12px;">{{ ('%.1f' % game.user_completion) + 'h' if game.user_completion else '—' }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Friend Column -->
+            <div style="background: #1a1a1a; padding: 16px;">
+              <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid #333;">
+                {% if friend_profile and friend_profile.profile_picture %}
+                  <img src="{{ friend_profile.profile_picture }}" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;" alt="{{ friend_username }}">
+                {% else %}
+                  <div style="width: 40px; height: 40px; border-radius: 50%; background: #333; display: flex; align-items: center; justify-content: center; color: #aaa; font-weight: 700; font-size: 16px;">
+                    {{ friend_username[0].upper() if friend_username else '?' }}
+                  </div>
+                {% endif %}
+                <span style="font-weight: 600; font-size: 16px;">{{ friend_username }}</span>
+              </div>
+
+              <div style="display: flex; flex-direction: column; gap: 10px;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                  <span style="color: #888; font-size: 13px;">Overall:</span>
+                  {{ render_score(game.friend_enjoyment) }}
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                  <span style="color: #888; font-size: 13px;">Gameplay:</span>
+                  {{ render_score(game.friend_gameplay) }}
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                  <span style="color: #888; font-size: 13px;">Music:</span>
+                  {{ render_score(game.friend_music) }}
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                  <span style="color: #888; font-size: 13px;">Narrative:</span>
+                  {{ render_score(game.friend_narrative) }}
+                </div>
+
+                <!-- Hours Played -->
+                <div style="margin-top: 8px; padding-top: 12px; border-top: 1px solid #333;">
+                  <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span style="color: #888; font-size: 13px;">Hours Played:</span>
+                    <span style="color: #fff; font-weight: 600;">
+                      {% if game.friend_hours %}
+                        {{ '%.1f' % game.friend_hours if game.friend_hours != game.friend_hours|int else game.friend_hours|int }}
+                      {% else %}
+                        <span style="color: #666;">—</span>
+                      {% endif %}
+                    </span>
+                  </div>
+                </div>
+
+                <!-- Attributes -->
+                <div style="margin-top: 8px; padding-top: 12px; border-top: 1px solid #333;">
+                  <div style="color: #888; font-size: 12px; margin-bottom: 8px; font-weight: 600;">Attributes</div>
+                  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                    <span style="color: #888; font-size: 12px;">Difficulty:</span>
+                    <span style="{% if game.friend_difficulty %}color: #fff;{% else %}color: #666;{% endif %} font-size: 12px;">{{ game.friend_difficulty if game.friend_difficulty else '—' }}</span>
+                  </div>
+                  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                    <span style="color: #888; font-size: 12px;">Graphics:</span>
+                    <span style="{% if game.friend_graphics %}color: #fff;{% else %}color: #666;{% endif %} font-size: 12px;">{{ game.friend_graphics if game.friend_graphics else '—' }}</span>
+                  </div>
+                  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                    <span style="color: #888; font-size: 12px;">Style:</span>
+                    <span style="{% if game.friend_style %}color: #fff;{% else %}color: #666;{% endif %} font-size: 12px;">{{ game.friend_style if game.friend_style else '—' }}</span>
+                  </div>
+                  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                    <span style="color: #888; font-size: 12px;">Replay:</span>
+                    <span style="{% if game.friend_replayability %}color: #fff;{% else %}color: #666;{% endif %} font-size: 12px;">{{ game.friend_replayability if game.friend_replayability else '—' }}</span>
+                  </div>
+                  <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span style="color: #888; font-size: 12px;">Complete:</span>
+                    <span style="{% if game.friend_completion %}color: #fff;{% else %}color: #666;{% endif %} font-size: 12px;">{{ ('%.1f' % game.friend_completion) + 'h' if game.friend_completion else '—' }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Differences Summary -->
+          <div style="padding: 16px; background: #0f0f0f; border-top: 1px solid #333;">
+            <div style="color: #888; font-size: 12px; margin-bottom: 12px; font-weight: 600; text-transform: uppercase;">Score Differences</div>
+            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px;">
+              {% for user_score, friend_score, label in [
+                (game.user_enjoyment, game.friend_enjoyment, 'Overall'),
+                (game.user_gameplay, game.friend_gameplay, 'Gameplay'),
+                (game.user_music, game.friend_music, 'Music'),
+                (game.user_narrative, game.friend_narrative, 'Narrative')
+              ] %}
+              <div style="background: #1a1a1a; padding: 10px; border-radius: 6px; text-align: center;">
+                <div style="color: #888; font-size: 11px; margin-bottom: 4px;">{{ label }}</div>
+                {% if user_score is not none and friend_score is not none %}
+                  {% set diff = user_score - friend_score %}
+                  {% if diff > 0 %}
+                    <div style="color: #667eea; font-weight: 700; font-size: 16px;">+{{ '%.1f' % diff if diff != diff|int else diff|int }}</div>
+                    <div style="color: #667eea; font-size: 10px; margin-top: 2px;">You rated higher</div>
+                  {% elif diff < 0 %}
+                    <div style="color: #f59e0b; font-weight: 700; font-size: 16px;">{{ '%.1f' % diff if diff != diff|int else diff|int }}</div>
+                    <div style="color: #f59e0b; font-size: 10px; margin-top: 2px;">{{ friend_username }} rated higher</div>
+                  {% else %}
+                    <div style="color: #4ade80; font-weight: 700; font-size: 16px;">0</div>
+                    <div style="color: #4ade80; font-size: 10px; margin-top: 2px;">Perfect match</div>
+                  {% endif %}
+                {% else %}
+                  <div style="color: #666; font-weight: 700; font-size: 16px;">—</div>
+                  <div style="color: #666; font-size: 10px; margin-top: 2px;">No comparison</div>
+                {% endif %}
+              </div>
+              {% endfor %}
+            </div>
+
+            {% if game.user_hours and game.friend_hours %}
+            <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid #333;">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span style="color: #888; font-size: 12px;">Playtime Difference:</span>
+                {% set hours_diff = game.user_hours - game.friend_hours %}
+                <span style="font-weight: 600; font-size: 13px; {% if hours_diff > 0 %}color: #667eea;{% elif hours_diff < 0 %}color: #f59e0b;{% else %}color: #4ade80;{% endif %}">
+                  {% if hours_diff > 0 %}
+                    +{{ '%.1f' % hours_diff if hours_diff != hours_diff|int else hours_diff|int }}h more
+                  {% elif hours_diff < 0 %}
+                    {{ '%.1f' % hours_diff if hours_diff != hours_diff|int else hours_diff|int }}h less
+                  {% else %}
+                    Same playtime
+                  {% endif %}
+                </span>
+              </div>
+            </div>
+            {% endif %}
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div class="card">
+        <p class="empty">No shared reviewed games to compare</p>
+      </div>
+      {% endif %}
+    </main>
+  </body>
+</html>

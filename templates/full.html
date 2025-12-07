@@ -1,0 +1,949 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Reviews - PeerPulse</title>
+    <link rel="stylesheet" href="/static/style.css">
+  </head>
+  <body class="has-fixed-header">
+    {% include 'header.html' %}
+    
+    <!-- Page-specific controls -->
+    <div style="position: sticky; top: var(--header-h, 72px); z-index: 100; display: flex; justify-content: space-between; align-items: center; padding: 16px 24px; background: #1a1a1a; border-bottom: 1px solid #333;">
+      <div style="display: flex; gap: 12px; align-items: center;">
+        <form method="get" action="/full" style="margin: 0;">
+          <div style="display: flex; gap: 8px;">
+            <input type="hidden" name="sort" value="{{ request.args.get('sort','enjoyment_score') }}">
+            <input type="hidden" name="order" value="{{ request.args.get('order','asc') }}">
+            <input id="search" name="q" type="search" placeholder="Search games..." value="{{ request.args.get('q','') }}" autocomplete="off" style="width: 300px; background: #2a2a2a; color: var(--text); border: 1px solid #444; padding: 8px 12px; border-radius: 6px; font-size: 14px;">
+            <button type="submit" class="btn" style="background: #667eea; color: white; border: none;">Search</button>
+          </div>
+        </form>
+        <button class="btn" id="addGameBtn" onclick="openAddGameModal()">+ Add Game</button>
+      </div>
+      <a class="btn" href="/download" style="text-decoration: none;">Download CSV</a>
+    </div>
+
+    <main class="fulltable">
+      <div class="table-wrap">
+      <table class="full-list">
+        <thead>
+          <tr>
+            <th></th>
+            <th class="cover-header"></th>
+            <th style="min-width:320px;"></th>
+            <th></th>
+            <th></th>
+            <th class="scores-header" colspan="4" style="text-align:center;">Scores</th>
+            <th></th>
+            <th></th>
+            <th></th>
+          </tr>
+          <tr class="subheaders">
+            <th>Rank</th>
+            <th>Cover</th>
+            {% set eff_sort = request.args.get('sort','enjoyment_score') %}
+            {% set eff_order = request.args.get('order','desc') %}
+            <th class="sub sort-header">
+              {# Sort by game name #}
+              {% if eff_sort == 'name' and eff_order == 'desc' %}
+                {% set next_order = 'asc' %}
+              {% else %}
+                {% set next_order = 'desc' %}
+              {% endif %}
+              <a href="{{ url_for('full', sort='name', order=next_order, q=request.args.get('q','')) }}" style="color:inherit;text-decoration:none;display:inline-flex;align-items:center;gap:4px;">
+                <span>Game</span>
+                {% if eff_sort == 'name' %}
+                  <span class="sort-arrow" style="margin-left:4px;">{{ '▲' if eff_order == 'asc' else '▼' }}</span>
+                {% endif %}
+              </a>
+            </th>
+            <th class="sub sort-header playtime-header">
+              {# Sort by playtime #}
+              {% if eff_sort == 'hours_played' and eff_order == 'desc' %}
+                {% set next_order = 'asc' %}
+              {% else %}
+                {% set next_order = 'desc' %}
+              {% endif %}
+              <a href="{{ url_for('full', sort='hours_played', order=next_order, q=request.args.get('q','')) }}" style="color:inherit;text-decoration:none;display:inline-flex;align-items:center;gap:4px;">
+                <span>Playtime</span>
+                {% if eff_sort == 'hours_played' %}
+                  <span class="sort-arrow" style="margin-left:4px;">{{ '▲' if eff_order == 'asc' else '▼' }}</span>
+                {% endif %}
+              </a>
+            </th>
+            <th class="sub sort-header" style="text-align:center;padding-right:30px;">
+              {# Sort by PV ratio #}
+              {% if eff_sort == 'pv_ratio' and eff_order == 'desc' %}
+                {% set next_order = 'asc' %}
+              {% else %}
+                {% set next_order = 'desc' %}
+              {% endif %}
+              <a href="{{ url_for('full', sort='pv_ratio', order=next_order, q=request.args.get('q','')) }}" style="color:inherit;text-decoration:none;display:inline-flex;align-items:center;gap:4px;cursor:pointer;">
+                <span>PV Ratio</span>
+                {% if eff_sort == 'pv_ratio' %}
+                  <span class="sort-arrow" style="margin-left:4px;">{{ '▲' if eff_order == 'asc' else '▼' }}</span>
+                {% endif %}
+              </a>
+            </th>
+            {% for key, label in [('enjoyment_score','Overall'),('gameplay_score','Gameplay'),('music_score','Music'),('narrative_score','Narrative')] %}
+              <th class="sub sort-header">
+                {% set cur_sort = eff_sort %}
+                {% set cur_order = eff_order %}
+                {% if cur_sort == key and cur_order == 'desc' %}
+                  {% set next_order = 'asc' %}
+                {% else %}
+                  {% set next_order = 'desc' %}
+                {% endif %}
+                <a href="{{ url_for('full', sort=key, order=next_order, q=request.args.get('q','')) }}" style="color:inherit;text-decoration:none;display:inline-flex;align-items:center;gap:4px;">
+                  <span>{{ label }}</span>
+                  {% if eff_sort == key %}
+                    <span class="sort-arrow" style="margin-left:4px;">{{ '▲' if eff_order == 'asc' else '▼' }}</span>
+                  {% endif %}
+                </a>
+              </th>
+            {% endfor %}
+            <th class="sub">Attributes</th>
+            <th>Genres</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for game in games %}
+          <tr data-game-id="{{ game['game_id'] }}">
+            <td class="rank">{{ loop.index }}</td>
+            <td class="covercol">
+              {% if game.get('cover_path') %}
+                <img src="{{ game['cover_path'] }}" alt="cover" class="rowcover" loading="lazy" onerror="this.style.display='none'; this.parentElement.querySelector('.nocover').style.display='flex';">
+                <div class="nocover small" style="display:none;">No Image</div>
+              {% else %}
+                <div class="nocover small">No Image</div>
+              {% endif %}
+            </td>
+            <td class="gamename">
+              <a href="/game/{{ game['game_id'] }}" style="text-decoration: none; color: inherit;">{{ game['name'] }}</a>
+            </td>
+            <td class="playtimecol">
+              {% set pt = game.get('hours_played') %}
+              {% if pt is not none %}
+                {% set s = pt|float %}
+                {% if s == (s|int) %}
+                  {{ '%d' % s }}
+                {% else %}
+                  {{ '%.1f' % s }}
+                {% endif %}
+              {% else %}
+                -
+              {% endif %}
+            </td>
+            <td style="text-align:center;padding:8px;padding-right:30px;">
+              {% if game.get('is_new_game') %}
+                <span style="color:#06b6d4;font-weight:600;" title="Released within the last 2 months">New Game</span>
+              {% else %}
+                {% set hours = game.get('hours_played') %}
+                {% set price = game.get('original_price') or game.get('price') %}
+                {% if hours and price and hours > 0 %}
+                  {% set pv = price / hours %}
+                  {% if pv < 1 %}
+                    <span style="color:#4ade80;font-weight:600;">${{ '%.2f' % pv }}/hr</span>
+                  {% else %}
+                    <span style="color:var(--text);">${{ '%.2f' % pv }}/hr</span>
+                  {% endif %}
+                {% else %}
+                  <span style="color:var(--muted);">—</span>
+                {% endif %}
+              {% endif %}
+            </td>
+            {% for key in ['enjoyment_score','gameplay_score','music_score','narrative_score'] %}
+              <td class="scorecell" data-score-key="{{ key }}" data-game-id="{{ game['game_id'] }}">
+                {% set v = game.get(key) %}
+                {% if v != None %}
+                  {% set s = game.get(key)|float %}
+                  {% if s == 10 %}
+                    {% set hue = 120 %}
+                    {% set sat = 95 %}
+                    {% set light = 35 %}
+                    {% set border = 'box-shadow: inset 0 0 0 2px #ffd700;' %}
+                  {% elif s >= 7 %}
+                    {% set hue = 60 + ((s - 7) / 3) * 60 %}
+                    {% set sat = 78 %}
+                    {% set light = 42 %}
+                    {% set border = '' %}
+                  {% elif s >= 5 %}
+                    {% set hue = ((s - 5) / 2) * 60 %}
+                    {% set sat = 78 %}
+                    {% set light = 42 %}
+                    {% set border = '' %}
+                  {% else %}
+                    {% set hue = 0 %}
+                    {% set sat = 78 %}
+                    {% set light = 42 %}
+                    {% set border = '' %}
+                  {% endif %}
+                  <div class="badge" style="background: hsl({{ '%.1f' % hue }}, {{ sat }}%, {{ light }}%); {{ border }}">
+                    {% if s == (s|int) %}
+                      {{ '%d' % s }}
+                    {% else %}
+                      {{ '%.1f' % s }}
+                    {% endif %}
+                  </div>
+                {% else %}
+                  <div class="badge empty">—</div>
+                {% endif %}
+              </td>
+            {% endfor %}
+            <td class="attributes-col" style="min-width: 200px; padding: 8px;">
+              <div style="display: flex; flex-direction: column; gap: 4px; font-size: 12px;">
+                {% if game.get('difficulty') %}
+                  <div style="display: flex; gap: 6px; align-items: center;">
+                    <span style="color: #888; min-width: 70px;">Difficulty:</span>
+                    <span style="color: #fff; font-weight: 500;">{{ game.get('difficulty') }}</span>
+                  </div>
+                {% endif %}
+                {% if game.get('graphics_quality') %}
+                  <div style="display: flex; gap: 6px; align-items: center;">
+                    <span style="color: #888; min-width: 70px;">Graphics:</span>
+                    <span style="color: #fff; font-weight: 500;">{{ game.get('graphics_quality') }}</span>
+                  </div>
+                {% endif %}
+                {% if game.get('style') %}
+                  <div style="display: flex; gap: 6px; align-items: center;">
+                    <span style="color: #888; min-width: 70px;">Style:</span>
+                    <span style="color: #fff; font-weight: 500;">{{ game.get('style') }}</span>
+                  </div>
+                {% endif %}
+                {% if game.get('replayability') %}
+                  <div style="display: flex; gap: 6px; align-items: center;">
+                    <span style="color: #888; min-width: 70px;">Replay:</span>
+                    <span style="color: #fff; font-weight: 500;">{{ game.get('replayability') }}</span>
+                  </div>
+                {% endif %}
+                {% if game.get('completion_time') %}
+                  <div style="display: flex; gap: 6px; align-items: center;">
+                    <span style="color: #888; min-width: 70px;">Complete:</span>
+                    <span style="color: #fff; font-weight: 500;">{{ '%.1f' % game.get('completion_time') }}h</span>
+                  </div>
+                {% endif %}
+                {% if not game.get('difficulty') and not game.get('graphics_quality') and not game.get('style') and not game.get('replayability') and not game.get('completion_time') %}
+                  <span style="color: #666;">—</span>
+                {% endif %}
+              </div>
+            </td>
+            <td class="genrescol">
+              {% if game.get('genres') %}
+                <div class="genre-tags">
+                  {% for genre in game.get('genres', '').split(', ') %}
+                    {% if genre.strip() %}
+                      <span class="genre-tag">{{ genre.strip() }}</span>
+                    {% endif %}
+                  {% endfor %}
+                </div>
+              {% else %}
+                —
+              {% endif %}
+            </td>
+            <td>
+              <div class="action-buttons">
+                <a class="btn icon small" href="https://www.youtube.com/results?search_query={{ game['name'] }}+OST" target="_blank" aria-label="Music">♫</a>
+                <a class="btn icon small" href="/edit/{{ game['game_id'] }}" aria-label="Edit">
+                  <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+                    <path fill="currentColor" d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1.003 1.003 0 0 0 0-1.42l-2.34-2.34a1.003 1.003 0 0 0-1.42 0l-1.83 1.83 3.75 3.75 1.84-1.82z"/>
+                  </svg>
+                </a>
+                <form method="post" action="/delete/{{ game['game_id'] }}" onsubmit="return confirm('Delete this game?');">
+                  <button class="btn icon small danger" type="submit" aria-label="Delete">
+                    <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+                      <path fill="currentColor" d="M6 19a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
+                    </svg>
+                  </button>
+                </form>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      </div>
+    </main>
+    
+    <!-- Add Game Modal -->
+    <div id="addGameModal" class="modal" style="display:none;">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>Add Game</h2>
+          <button class="modal-close" onclick="closeAddGameModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div class="search-section">
+            <label for="gameSearchInput">Search Game Database:</label>
+            <input type="text" id="gameSearchInput" placeholder="Search for a game..." autocomplete="off">
+            <div id="gameSearchResults" class="search-results"></div>
+          </div>
+          <div class="divider">OR</div>
+          <div class="add-new-section">
+            <button class="btn" onclick="showNewGameForm()">Add New Game Manually</button>
+          </div>
+          <div id="newGameForm" class="new-game-form" style="display:none;">
+            <h3>New Game Details</h3>
+            <label>Game Name: <input type="text" id="newGameName" required></label>
+            <label>Year: <input type="number" id="newGameYear" min="1950" max="2100"></label>
+            <label>Developer: <input type="text" id="newGameDeveloper"></label>
+            <label>Genres: <input type="text" id="newGameGenres" placeholder="Action, RPG, etc."></label>
+            <button class="btn" onclick="submitNewGame()">Create & Add to My List</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <script>
+      // Modal functions
+      function openAddGameModal(){
+        document.getElementById('addGameModal').style.display = 'flex';
+        document.getElementById('gameSearchInput').focus();
+      }
+      
+      function closeAddGameModal(){
+        document.getElementById('addGameModal').style.display = 'none';
+        document.getElementById('gameSearchInput').value = '';
+        document.getElementById('gameSearchResults').innerHTML = '';
+        document.getElementById('newGameForm').style.display = 'none';
+      }
+      
+      function showNewGameForm(){
+        document.getElementById('newGameForm').style.display = 'block';
+      }
+      
+      // Search game database
+      let searchTimeout;
+      document.addEventListener('DOMContentLoaded', function(){
+        const searchInput = document.getElementById('gameSearchInput');
+        if(searchInput){
+          searchInput.addEventListener('input', function(){
+            clearTimeout(searchTimeout);
+            const query = this.value.trim();
+            if(query.length < 2){
+              document.getElementById('gameSearchResults').innerHTML = '';
+              return;
+            }
+            searchTimeout = setTimeout(() => searchGames(query), 300);
+          });
+        }
+      });
+      
+      function searchGames(query){
+        fetch(`/api/search_games?q=${encodeURIComponent(query)}`)
+          .then(r => r.json())
+          .then(data => {
+            const resultsDiv = document.getElementById('gameSearchResults');
+            if(!data.games || data.games.length === 0){
+              resultsDiv.innerHTML = '<div class="no-results">No games found. Try adding manually.</div>';
+              return;
+            }
+            resultsDiv.innerHTML = data.games.map(game => {
+              const coverHtml = game.cover_path 
+                ? `<img src="${game.cover_path}" class="result-cover" alt="cover" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                   <div class="result-cover-placeholder" style="display:none;">No Image</div>`
+                : `<div class="result-cover-placeholder">No Image</div>`;
+              return `
+                <div class="search-result-item" onclick="addGameToList(${game.game_id}, '${game.name.replace(/'/g, "\\'")}')">
+                  <div class="result-cover-container">${coverHtml}</div>
+                  <div class="result-info">
+                    <div class="result-name">${game.name}</div>
+                    <div class="result-meta">${game.formatted_date || 'Unknown'}</div>
+                  </div>
+                </div>
+              `;
+            }).join('');
+          })
+          .catch(err => {
+            console.error('Search failed:', err);
+          });
+      }
+      
+      function addGameToList(gameId, gameName){
+        fetch('/api/add_game_to_user', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({ game_id: gameId })
+        })
+        .then(r => r.json())
+        .then(data => {
+          if(data.success){
+            closeAddGameModal();
+            window.location.reload();
+          } else {
+            alert(data.message || 'Failed to add game');
+          }
+        })
+        .catch(err => {
+          console.error('Failed to add game:', err);
+          alert('Failed to add game');
+        });
+      }
+      
+      function submitNewGame(){
+        const name = document.getElementById('newGameName').value.trim();
+        const year = document.getElementById('newGameYear').value;
+        const developer = document.getElementById('newGameDeveloper').value.trim();
+        const genres = document.getElementById('newGameGenres').value.trim();
+        
+        if(!name){
+          alert('Game name is required');
+          return;
+        }
+        
+        fetch('/api/create_and_add_game', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({ name, year: year || null, developer, genres })
+        })
+        .then(r => r.json())
+        .then(data => {
+          if(data.success){
+            closeAddGameModal();
+            window.location.reload();
+          } else {
+            alert(data.message || 'Failed to create game');
+          }
+        })
+        .catch(err => {
+          console.error('Failed to create game:', err);
+          alert('Failed to create game');
+        });
+      }
+      
+      // Close modal on ESC key
+      document.addEventListener('keydown', function(e){
+        if(e.key === 'Escape'){
+          const modal = document.getElementById('addGameModal');
+          if(modal && modal.style.display === 'flex'){
+            closeAddGameModal();
+          }
+        }
+      });
+      
+      // Close modal when clicking outside
+      document.addEventListener('click', function(e){
+        const modal = document.getElementById('addGameModal');
+        if(e.target === modal){
+          closeAddGameModal();
+        }
+      });
+    </script>
+    <script>
+      (function(){
+        const input = document.getElementById('search');
+        const tbody = document.querySelector('.full-list tbody');
+        const rows = tbody ? Array.from(tbody.querySelectorAll('tr')) : [];
+
+        function filterRows(){
+          const q = input ? input.value.trim().toLowerCase() : '';
+          rows.forEach(row=>{
+            const nameEl = row.querySelector('.gamename');
+            const name = nameEl ? nameEl.textContent.toLowerCase() : '';
+            row.style.display = (q === '' || name.includes(q)) ? '' : 'none';
+          });
+        }
+
+        if(input){
+          input.addEventListener('input', filterRows);
+          input.addEventListener('keydown', function(e){ if(e.key === 'Escape'){ input.value = ''; filterRows(); } });
+        }
+
+        // Inline editing for score cells (single click)
+        tbody && tbody.addEventListener('click', function(e) {
+          const cell = e.target.closest('.scorecell');
+          if (!cell || cell.querySelector('input')) return;
+          const key = cell.getAttribute('data-score-key');
+          const gameId = cell.getAttribute('data-game-id');
+          const badge = cell.querySelector('.badge');
+          const oldValue = badge ? badge.textContent.trim() : '';
+          const input = document.createElement('input');
+          input.type = 'number';
+          input.step = '0.1';
+          input.min = '1';
+          input.max = '10';
+          input.value = oldValue === 'N/A' ? '' : oldValue;
+          input.style.width = '64px';
+          input.style.height = '56px';
+          input.style.borderRadius = '10px';
+          input.style.border = '0';
+          input.style.background = '#222';
+          input.style.color = '#fff';
+          input.style.fontWeight = '800';
+          input.style.textAlign = 'center';
+          input.className = 'inline-score-input';
+          cell.innerHTML = '';
+          cell.appendChild(input);
+          input.focus();
+          input.select();
+
+          function finishEdit(save) {
+            if (save) {
+              // Sanitize: allow empty -> clear; else clamp 1..10 and round to 1 decimal
+              let newValue = input.value;
+              if (newValue !== '') {
+                let v = parseFloat(newValue);
+                if (isNaN(v)) { newValue = oldValue; finishEdit(false); return; }
+                v = Math.min(10, Math.max(1, v));
+                v = Math.round(v * 10) / 10;
+                newValue = v.toFixed(1);
+              }
+              // Fire AJAX to backend to save
+              saveScore(gameId, key, newValue, cell, badge);
+            } else {
+              // Restore old value
+              cell.innerHTML = '';
+              cell.appendChild(badge);
+            }
+          }
+
+          input.addEventListener('keydown', function(ev) {
+            if (ev.key === 'Enter') finishEdit(true);
+            if (ev.key === 'Escape') finishEdit(false);
+          });
+          input.addEventListener('blur', function() { finishEdit(true); });
+        });
+
+        // Save score via AJAX
+        function saveScore(gameId, key, value, cell, oldBadge) {
+          fetch('/api/update_score', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ game_id: gameId, score_type: key, value: value })
+          })
+          .then(async r => {
+            let data;
+            try { data = await r.json(); } catch { data = { success:false }; }
+            if (!r.ok || !data.success) throw new Error('save-failed');
+            return data;
+          })
+          .then(data => {
+            // Update cell visually
+            // Use server-provided display string when available
+            const v = (data && typeof data.value_display !== 'undefined') ? data.value_display : value;
+            let s = parseFloat(v);
+            let badge;
+            if (!isNaN(s)) {
+              let hue, sat, light, border;
+              if (s === 10) {
+                hue = 120;
+                sat = 95;
+                light = 35;
+                border = 'inset 0 0 0 2px #ffd700';
+              } else if (s >= 7) {
+                hue = 60 + ((s - 7) / 3) * 60;
+                sat = 78;
+                light = 42;
+                border = '';
+              } else if (s >= 5) {
+                hue = ((s - 5) / 2) * 60;
+                sat = 78;
+                light = 42;
+                border = '';
+              } else {
+                hue = 0;
+                sat = 78;
+                light = 42;
+                border = '';
+              }
+              badge = document.createElement('div');
+              badge.className = 'badge';
+              badge.style.background = `hsl(${hue.toFixed(1)}, ${sat}%, ${light}%)`;
+              if (border) badge.style.boxShadow = border;
+              // Format: no decimal when whole number
+              badge.textContent = Number.isInteger(s) ? String(s) : s.toFixed(1);
+            } else {
+              badge = document.createElement('div');
+              badge.className = 'badge empty';
+              badge.textContent = '—';
+            }
+            // Preserve active-sort emphasis if this column is sorted
+            const params = new URLSearchParams(window.location.search);
+            const sortKey = params.get('sort');
+            if (sortKey && sortKey === key) {
+              badge.classList.add('active-sort');
+            }
+            cell.innerHTML = '';
+            cell.appendChild(badge);
+          })
+          .catch(() => {
+            if (oldBadge) {
+              cell.innerHTML = '';
+              cell.appendChild(oldBadge);
+            }
+            alert('Failed to save');
+          });
+        }
+
+        // Adjust sticky subheader top dynamically so it always sits below the first header row
+        function adjustSubheaderTop(){
+          const pageHeader = document.querySelector('body > header');
+          const headerOffset = pageHeader ? pageHeader.getBoundingClientRect().height : 0;
+
+          const firstRow = document.querySelector('.full-list thead tr:first-child');
+          const subRow = document.querySelector('.full-list thead tr.subheaders');
+          if(!firstRow) return;
+
+          // Pin the first header row just below the site header
+          firstRow.querySelectorAll('th').forEach(th => th.style.top = headerOffset + 'px');
+
+          if(subRow){
+            const firstHeight = firstRow.getBoundingClientRect().height;
+            // Place subheader directly under the first row (visual gap handled by CSS translate)
+            const subTop = headerOffset + firstHeight;
+            subRow.querySelectorAll('th').forEach(th => th.style.top = subTop + 'px');
+          }
+        }
+
+        // Highlight active sorted column
+        function highlightSortedColumn(){
+          const params = new URLSearchParams(window.location.search);
+          let sortKey = params.get('sort');
+          if(!sortKey){ sortKey = 'enjoyment_score'; }
+          if(!sortKey || !tbody) return;
+
+          // Remove previous highlighting
+          tbody.querySelectorAll('.badge.active-sort').forEach(b=>b.classList.remove('active-sort'));
+          // Add emphasis to the active sort column badges
+          tbody.querySelectorAll(`td[data-score-key="${sortKey}"] .badge`).forEach(badge => {
+            badge.classList.add('active-sort');
+          });
+        }
+
+        // Enable drag-and-drop reordering within tied score groups when sorting by a score
+        function enableDragForTies(){
+          const params = new URLSearchParams(window.location.search);
+          const sortKey = params.get('sort') || 'enjoyment_score';
+          const scoreKeys = ['enjoyment_score','gameplay_score','music_score','narrative_score'];
+          if(!scoreKeys.includes(sortKey) || !tbody) return;
+          const rows = Array.from(tbody.querySelectorAll('tr'));
+          // Build groups by identical score value
+          const groups = new Map();
+          rows.forEach(row=>{
+            const cell = row.querySelector(`td[data-score-key="${sortKey}"] .badge`);
+            const val = cell ? cell.textContent.trim() : '';
+            const key = val || '__empty__';
+            row.dataset.groupKey = key;
+            if(!groups.has(key)) groups.set(key, []);
+            groups.get(key).push(row);
+          });
+          // Only enable drag for groups with size > 1
+          let currentDrag = null;
+          let lastSwapTarget = null;
+          
+          groups.forEach((groupRows, groupVal)=>{
+            if(groupRows.length < 2) {
+              // For non-draggable rows (not tied), add feedback when user tries to drag
+              groupRows.forEach(r => {
+                r.setAttribute('draggable', 'true');
+                r.addEventListener('dragstart', (e) => {
+                  // Stop the drag immediately
+                  e.dataTransfer.effectAllowed = 'none';
+                  e.dataTransfer.setData('text/plain', '');
+                  
+                  // Flash the score badge
+                  const badge = r.querySelector(`td[data-score-key="${sortKey}"] .badge`);
+                  if(badge) {
+                    badge.classList.add('flash-score');
+                    setTimeout(() => badge.classList.remove('flash-score'), 600);
+                  }
+                  // Bump animation on the row
+                  r.classList.add('bump-row');
+                  setTimeout(() => r.classList.remove('bump-row'), 300);
+                  
+                  // Cancel the drag after animations start
+                  setTimeout(() => {
+                    r.setAttribute('draggable', 'false');
+                    setTimeout(() => r.setAttribute('draggable', 'true'), 100);
+                  }, 50);
+                });
+              });
+              return;
+            }
+            groupRows.forEach(r=>{
+              r.setAttribute('draggable','true');
+              r.classList.add('draggable');
+              
+              r.addEventListener('dragstart', (e)=>{
+                currentDrag = { row: r, groupVal, sortKey };
+                e.dataTransfer.effectAllowed = 'move';
+                try { 
+                  e.dataTransfer.setData('text/plain', '');
+                  // Remove ghost image
+                  const img = new Image();
+                  img.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
+                  e.dataTransfer.setDragImage(img, 0, 0);
+                } catch {}
+                setTimeout(() => r.classList.add('dragging'), 0);
+              });
+              
+              r.addEventListener('dragend', ()=>{
+                if(r) r.classList.remove('dragging');
+                setTimeout(() => {
+                  tbody.querySelectorAll('.drag-over-before, .drag-over-after').forEach(tr=>{
+                    tr.classList.remove('drag-over-before', 'drag-over-after');
+                  });
+                  tbody.querySelectorAll('tr').forEach(tr => {
+                    tr.style.transform = '';
+                    tr.style.transition = '';
+                    tr.classList.remove('bump-row');
+                  });
+                  currentDrag = null;
+                  lastSwapTarget = null;
+                }, 100);
+              });
+              
+              r.addEventListener('dragenter', (e)=>{
+                if(!currentDrag) return;
+                e.preventDefault();
+                e.stopPropagation();
+              });
+              
+              r.addEventListener('dragover', (e)=>{
+                if(!currentDrag) return;
+                e.preventDefault();
+                e.stopPropagation();
+                
+                const target = e.target.closest('tr');
+                if(!target || target === currentDrag.row) {
+                  return;
+                }
+                
+                // Check if target is outside the group - show feedback
+                if(target.dataset.groupKey !== currentDrag.groupVal) {
+                  e.dataTransfer.dropEffect = 'no-drop';
+                  // Flash the score badge of the dragged row
+                  const draggedBadge = currentDrag.row.querySelector(`td[data-score-key="${currentDrag.sortKey}"] .badge`);
+                  if(draggedBadge && !draggedBadge.classList.contains('flash-score')) {
+                    draggedBadge.classList.add('flash-score');
+                    setTimeout(() => draggedBadge.classList.remove('flash-score'), 600);
+                  }
+                  // Clear any existing transform and bump animation on the dragged row
+                  if(!currentDrag.row.classList.contains('bump-row')) {
+                    currentDrag.row.style.transform = '';
+                    currentDrag.row.style.transition = '';
+                    currentDrag.row.classList.add('bump-row');
+                    setTimeout(() => currentDrag.row.classList.remove('bump-row'), 300);
+                  }
+                  return;
+                }
+                
+                e.dataTransfer.dropEffect = 'move';
+                
+                // Prevent rapid fire swaps
+                if(lastSwapTarget === target) return;
+                
+                const rect = target.getBoundingClientRect();
+                const midpoint = rect.top + rect.height / 2;
+                const isCursorAbove = e.clientY < midpoint;
+                
+                const groupRows = Array.from(tbody.querySelectorAll(`tr[data-group-key="${currentDrag.groupVal}"]`));
+                const dragIndex = groupRows.indexOf(currentDrag.row);
+                const targetIndex = groupRows.indexOf(target);
+                
+                // Only swap if dragging upward and cursor is above midpoint
+                if(dragIndex > targetIndex && isCursorAbove) {
+                  // Store position for animation
+                  const targetRect = target.getBoundingClientRect();
+                  
+                  tbody.insertBefore(currentDrag.row, target);
+                  lastSwapTarget = target;
+                  
+                  // Animate the target row sliding down
+                  const newTargetRect = target.getBoundingClientRect();
+                  const deltaY = targetRect.top - newTargetRect.top;
+                  
+                  target.style.transform = `translateY(${deltaY}px)`;
+                  target.style.transition = 'none';
+                  
+                  requestAnimationFrame(() => {
+                    target.style.transition = 'transform 200ms cubic-bezier(0.2, 0, 0.2, 1)';
+                    target.style.transform = '';
+                  });
+                  
+                  updateRankNumbers(groupRows);
+                }
+                // Or if dragging downward and cursor is below midpoint
+                else if(dragIndex < targetIndex && !isCursorAbove) {
+                  // Store position for animation
+                  const targetRect = target.getBoundingClientRect();
+                  
+                  const nextSibling = target.nextSibling;
+                  if(nextSibling) {
+                    tbody.insertBefore(currentDrag.row, nextSibling);
+                  } else {
+                    tbody.appendChild(currentDrag.row);
+                  }
+                  lastSwapTarget = target;
+                  
+                  // Animate the target row sliding up
+                  const newTargetRect = target.getBoundingClientRect();
+                  const deltaY = targetRect.top - newTargetRect.top;
+                  
+                  target.style.transform = `translateY(${deltaY}px)`;
+                  target.style.transition = 'none';
+                  
+                  requestAnimationFrame(() => {
+                    target.style.transition = 'transform 200ms cubic-bezier(0.2, 0, 0.2, 1)';
+                    target.style.transform = '';
+                  });
+                  
+                  updateRankNumbers(groupRows);
+                }
+              });
+              
+              r.addEventListener('drop', (e)=>{
+                e.preventDefault();
+                e.stopPropagation();
+                
+                if(!currentDrag) return;
+                
+                const groupVal = currentDrag.groupVal;
+                const sortKey = currentDrag.sortKey;
+                
+                // Collect ordered IDs for the group
+                const groupRows = Array.from(tbody.querySelectorAll(`tr[data-group-key="${groupVal}"]`));
+                const ordered = [];
+                groupRows.forEach(tr=>{
+                  const gid = tr.getAttribute('data-game-id');
+                  if(gid) ordered.push(parseInt(gid, 10));
+                });
+                
+                // Persist to backend
+                if(ordered.length > 1){
+                  fetch('/api/reorder_ties',{
+                    method:'POST', 
+                    headers:{'Content-Type':'application/json'},
+                    body: JSON.stringify({ score_key: sortKey, ordered_game_ids: ordered })
+                  }).catch(err => console.error('Reorder failed:', err));
+                }
+              });
+            });
+          });
+          
+          function updateRankNumbers(groupRows){
+            const allRows = Array.from(tbody.querySelectorAll('tr'));
+            groupRows.forEach((tr)=>{
+              const idx = allRows.indexOf(tr);
+              const rankCell = tr.querySelector('td.rank');
+              if(rankCell) rankCell.textContent = idx + 1;
+            });
+          }
+        }
+
+        // Run on load
+        window.addEventListener('load', function(){ 
+          adjustSubheaderTop();
+          highlightSortedColumn();
+          enableDragForTies();
+        });
+        window.addEventListener('resize', adjustSubheaderTop);
+        if (document.fonts && document.fonts.ready) {
+          document.fonts.ready.then(adjustSubheaderTop).catch(()=>{});
+        }
+
+        // initial run
+        adjustSubheaderTop();
+        enableDragForTies();
+      })();
+    </script>
+    <script>
+      // Measure the header and search bar, set padding and sticky positions
+      (function(){
+        const h = document.querySelector('body > header');
+        const searchBar = document.querySelector('body > div'); // The search bar div
+        const mainContent = document.querySelector('main');
+        const firstRow = document.querySelector('.full-list thead tr:first-child');
+        const subRow = document.querySelector('.full-list thead tr.subheaders');
+
+        let hh = 0;
+        let searchBarHeight = 0;
+        let isSearchBarVisible = true;
+        let isInitialized = false;
+
+        function updateTableHeaderPositions() {
+          if(!h || !firstRow) return;
+
+          // Determine offset based on search bar visibility
+          const offset = isSearchBarVisible ? (hh + searchBarHeight) : hh;
+
+          // Update sticky table headers
+          firstRow.querySelectorAll('th').forEach(th => {
+            th.style.top = offset + 'px';
+            // Only apply transition after initial setup
+            if(isInitialized) {
+              th.style.transition = 'top 0.2s ease';
+            }
+          });
+
+          if(subRow) {
+            const firstHeight = firstRow.getBoundingClientRect().height;
+            subRow.querySelectorAll('th').forEach(th => {
+              th.style.top = (offset + firstHeight) + 'px';
+              // Only apply transition after initial setup
+              if(isInitialized) {
+                th.style.transition = 'top 0.2s ease';
+              }
+            });
+          }
+        }
+
+        function updateHeaderHeight(){
+          if(!h) return;
+          hh = h.getBoundingClientRect().height;
+          document.body.style.setProperty('--header-h', hh + 'px');
+
+          if(searchBar) {
+            searchBarHeight = searchBar.getBoundingClientRect().height;
+            const totalOffset = hh + searchBarHeight;
+
+            // Update main content padding to account for both header and search bar
+            // Reduce by 48px for tighter spacing
+            if(mainContent) {
+              mainContent.style.paddingTop = (totalOffset - 48) + 'px';
+            }
+          }
+
+          updateTableHeaderPositions();
+        }
+
+        // Check search bar visibility on scroll
+        function checkSearchBarVisibility() {
+          if(!searchBar) return;
+
+          const rect = searchBar.getBoundingClientRect();
+          const wasVisible = isSearchBarVisible;
+
+          // Search bar is visible if its bottom is below the header
+          isSearchBarVisible = rect.bottom > hh;
+
+          // Only update if visibility changed
+          if(wasVisible !== isSearchBarVisible) {
+            updateTableHeaderPositions();
+          }
+        }
+
+        window.addEventListener('scroll', checkSearchBarVisibility, { passive: true });
+        checkSearchBarVisibility();
+
+        window.addEventListener('load', updateHeaderHeight);
+        window.addEventListener('resize', updateHeaderHeight);
+        updateHeaderHeight();
+
+        // Run again after fonts load
+        if (document.fonts && document.fonts.ready) {
+          document.fonts.ready.then(updateHeaderHeight).catch(()=>{});
+        }
+
+        // Enable transitions after initial positioning
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            isInitialized = true;
+          });
+        });
+      })();
+    </script>
+  </body>
+  </html>

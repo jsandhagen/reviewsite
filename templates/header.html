@@ -1,0 +1,33 @@
+    <header style="display: flex; align-items: center; justify-content: space-between; padding: 12px 24px; background: #1a1a1a; border-bottom: 1px solid #333;">
+      <!-- Logo -->
+      <div style="display: flex; align-items: center; gap: 32px;">
+        <a href="/" style="text-decoration: none; color: inherit;">
+          <h1 style="margin: 0; font-size: 24px; font-weight: bold; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">
+            PeerPulse
+          </h1>
+        </a>
+        
+        <!-- Main Navigation -->
+        <nav style="display: flex; gap: 8px;">
+          <a class="btn" href="/" style="{% if active_page == 'games' %}background: #667eea; color: white;{% endif %}">Games</a>
+          <a class="btn" href="/toplists" style="{% if active_page == 'lists' %}background: #667eea; color: white;{% endif %}">Lists</a>
+          <a class="btn" href="/full" style="{% if active_page == 'reviews' %}background: #667eea; color: white;{% endif %}">Reviews</a>
+          <a class="btn" href="/backlog" style="{% if active_page == 'backlog' %}background: #667eea; color: white;{% endif %}">Backlog</a>
+          <a class="btn" href="/friends" style="{% if active_page == 'friends' %}background: #667eea; color: white;{% endif %}">Friends</a>
+          <a class="btn" href="/superlatives" style="{% if active_page == 'superlatives' %}background: linear-gradient(135deg, #667eea, #764ba2); color: white; border: none;{% endif %}">
+            <span style="margin-right: 4px;">⚡</span>Pulse Points
+          </a>
+        </nav>
+      </div>
+      
+      <!-- Right Side: User Menu -->
+      <div class="user-menu" style="display: flex; align-items: center; gap: 12px;">
+        {% if profile and profile.profile_picture %}
+          <a href="/profile" aria-label="Profile"><img class="avatar-small" src="{{ profile.profile_picture }}" alt="avatar"></a>
+        {% else %}
+          <a href="/profile" aria-label="Profile"><div class="avatar-small placeholder">{{ (username or 'U')[:1] }}</div></a>
+        {% endif %}
+        <a class="username" href="/profile">{{ username }}</a>
+        <a class="btn logout-btn" href="/logout">Logout</a>
+      </div>
+    </header>

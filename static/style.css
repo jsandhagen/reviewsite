@@ -1,0 +1,260 @@
+:root{
+  --bg:#161616; /* slightly lighter for more contrast */
+  --card:#242424; /* lift card tone a touch */
+  --muted:#bbb;   /* nudge muted text brighter */
+}
+html{height:100%}
+body{font-family:Segoe UI,Roboto,Arial; background:var(--bg); color:#fff; margin:0;height:100%;display:flex;flex-direction:column}
+header{display:flex;gap:12px;align-items:center;padding:16px;border-bottom:1px solid #222;justify-content:space-between;flex-shrink:0;position:sticky;top:0;z-index:1000;background:var(--bg)}
+/* Fixed site header for the Full Reviews page */
+.has-fixed-header > header{position:fixed;top:0;left:0;right:0}
+.has-fixed-header main{padding-top:var(--header-h, 72px)}
+.avatar-small{width:32px;height:32px;border-radius:50%;object-fit:cover;background:#333;display:inline-block}
+.avatar-small.placeholder{display:flex;align-items:center;justify-content:center;color:#aaa;font-weight:700;font-size:14px}
+header h1{margin:0;font-size:20px}
+header nav,
+header form#upload,
+header form#search,
+header .user-menu{display:flex;gap:8px;align-items:center}
+.user-menu{margin-left:auto}
+.user-menu .username{color:var(--muted);font-size:14px;margin-right:12px}
+.logout-btn{background:#6e1f1f}
+.logout-btn:hover{background:#5e1a1a}
+input[type=file]{color:#fff}
+main{padding:18px;flex:1;display:flex;flex-direction:column;max-width:1600px;margin:0 auto;width:100%}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(460px,1fr));gap:18px;max-width:1450px;margin:0 auto;width:100%}
+.card{background:var(--card);padding:12px;border-radius:10px;display:flex;gap:12px;flex-wrap:wrap;align-items:flex-start;border:1px solid #333}
+.cover{flex-shrink:0;width:100%;height:auto}
+.cover{position:relative}
+.cover img{width:100%;height:auto;object-fit:contain;border-radius:6px;display:block}
+.review-badge{position:absolute;top:6px;right:6px;width:24px;height:24px;background:#28a745;color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;box-shadow:0 2px 4px rgba(0,0,0,0.3);z-index:10}
+.nocover{width:100%;height:215px;min-height:215px;display:flex;align-items:center;justify-content:center;background:#333;border-radius:6px;color:var(--muted);box-sizing:border-box}
+.meta{flex:1 1 100%;min-width:200px}
+.meta h2{margin:0;font-size:18px;word-break:break-word}
+.meta h2 a{transition:color 0.2s ease}
+.meta h2 a:hover{color:#2b6fb2;cursor:pointer}
+.meta .year{font-weight:400;color:var(--muted);font-size:13px}
+.game-price{display:inline-block;background:#2b6fb2;color:#fff;padding:4px 10px;border-radius:6px;font-weight:700;font-size:14px}
+.game-tags{display:inline-block;background:#333;color:var(--muted);padding:4px 10px;border-radius:6px;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:300px}
+.full-list .covercol{width:220px}
+.rowcover{width:220px;height:110px;object-fit:cover;border-radius:8px;display:block;visibility:visible;opacity:1}
+.nocover.small{width:260px;height:130px;min-height:130px;display:flex;align-items:center;justify-content:center;background:#333;border-radius:10px;color:var(--muted);font-size:13px}
+  .full-list .covercol{width:160px}
+  .rowcover{width:160px;height:80px;object-fit:cover;border-radius:6px;display:block;visibility:visible;opacity:1}
+.scores{display:flex;gap:4px;margin-top:4px;flex-wrap:wrap}
+.score{width:72px;height:72px;border-radius:8px;color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.score .label{font-size:11px}
+.score .value{font-weight:700;font-size:18px}
+.score-featured{width:96px;height:96px;border-radius:10px;box-shadow:0 4px 12px rgba(0,0,0,0.4);transform:scale(1.05)}
+.score-featured .label{font-size:13px;font-weight:600}
+.score-featured .value{font-size:28px;font-weight:800}
+.actions{margin-top:10px;display:flex;gap:8px;align-items:center}
+.btn{background:#444;padding:6px 10px;border-radius:6px;color:#fff;text-decoration:none}
+.btn:hover{background:#555}
+.steam-btn{display:inline-flex;align-items:center;justify-content:center;padding:6px 10px;min-width:38px}
+.steam-btn svg{display:block}
+form.inline{display:inline;margin:0}
+.empty{color:var(--muted);padding:40px;text-align:center}
+
+/* Edit page */
+.editpage{max-width:600px;margin:40px auto;padding:20px;background:var(--card);border-radius:8px}
+.editpage label{display:block;margin:10px 0}
+.editpage input{width:100%;padding:8px;border-radius:6px;border:0;background:#222;color:#fff}
+.row{display:flex;gap:8px;margin-top:12px}
+
+@media (max-width:600px){.card{flex-direction:column}.cover img{width:100%;height:auto}}
+
+/* Full list table styles */
+.full-list{width:100%;border-collapse:separate;border-spacing:0 10px;table-layout:auto}
+.table-wrap{flex:1;padding:0 16px;box-sizing:border-box;display:flex;flex-direction:column}
+/* Override overflow for pages with sticky table headers - let body scroll instead */
+.has-fixed-header{overflow-y:auto}
+.has-fixed-header .table-wrap{overflow:visible}
+.full-list thead th{background:#0f0f0f;padding:12px 10px;text-align:center;vertical-align:middle;font-size:13px;color:var(--muted);box-sizing:border-box}
+/* sticky first header row */
+.full-list thead tr:first-child th{position:sticky;top:0;z-index:30;background:#0f0f0f;border-bottom:0}
+/* Adjust sticky header position for pages with fixed header */
+.has-fixed-header .full-list thead tr:first-child th{top:var(--header-h, 72px)}
+/* sticky subheader row (second row) - sits below the first header row */
+.full-list thead tr.subheaders th{position:sticky;top:auto;z-index:29;background:#0f0f0f;border-top:0;transform:translateY(-10px)}
+.full-list thead tr:first-child th:first-child{border-top-left-radius:10px}
+.full-list thead tr:first-child th:last-child{border-top-right-radius:10px}
+.full-list thead tr:first-child th{box-shadow: inset 0 -1px 0 rgba(255,255,255,0.02)}
+/* Constrain first column so cover can move left */
+.full-list thead th:first-child{width:44px;padding-left:6px;padding-right:6px;text-align:center}
+/* Use td backgrounds so we can round row edges */
+.full-list td{padding:8px 8px;vertical-align:middle}
+.full-list tbody td{background:#0b0b0b;border-top:1px solid rgba(255,255,255,0.02)}
+.full-list tbody tr{display:table-row}
+.full-list tbody tr{min-height:96px}
+/* Ghost placeholder row and drag proxy styles */
+.ghost-row td{background:rgba(43,111,178,0.18) !important; border:1px dashed #2b6fb2;}
+.drag-proxy{position:fixed; z-index:9999; pointer-events:none; opacity:0.95; transform:translateZ(0);}
+.drag-proxy .rowcover{visibility:hidden}
+.full-list thead th.actions-header{width:44px}
+.full-list tbody tr + tr td{margin-top:8px}
+/* Round first/last cell corners to create rounded row outline */
+.full-list tbody td:first-child{border-top-left-radius:10px;border-bottom-left-radius:10px}
+.full-list tbody td:last-child{border-top-right-radius:10px;border-bottom-right-radius:10px}
+.full-list .rank{width:44px;color:var(--muted);white-space:nowrap;text-align:center}
+.full-list .covercol{width:130px}
+.full-list .gamename{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;width:400px;text-align:left;}
+.full-list .gamename a{transition:color 0.2s ease}
+.full-list .gamename a:hover{color:#2b6fb2;cursor:pointer}
+.full-list .yearcol{width:40px;color:var(--muted);white-space:nowrap;text-align:left;}
+/* Playtime column replacing year */
+.full-list .playtimecol{width:50px;color:var(--muted);white-space:nowrap;text-align:center;padding-right:50px}
+  .rowcover{width:180px;height:90px;object-fit:cover;border-radius:8px;display:block;visibility:visible;opacity:1;margin:8px auto;}
+  .rowcover{width:260px;height:130px;object-fit:cover;border-radius:10px;display:block;visibility:visible;opacity:1}
+.scorescol{width:220px;text-align:center;display:flex;gap:-8px;align-items:center}
+.scores-inline{display:flex;gap:3px;align-items:center;justify-content:flex-start}
+.scores-inline .badge{flex:0 0 56px}
+.scores-header{padding:6px 0;text-align:center;width:248px}
+.scores-header{padding:6px 0;text-align:center;width:336px}
+.full-list thead tr.subheaders th.sub{padding-top:6px;font-size:12px;color:var(--muted);text-align:center;width:84px;padding-bottom:6px}
+.full-list thead tr.subheaders th.playtime-header{padding-right:50px}
+/* Make clickable header cells visibly interactive */
+.full-list thead tr.subheaders th.sort-header a{cursor:pointer}
+
+/* individual score cells align with subheaders */
+.scorecell{width:84px;text-align:center;vertical-align:middle;padding:4px 8px}
+.scores-inline{justify-content:center}
+/* Ensure badges never expand: stronger rule */
+.badge{width:56px;height:56px;min-width:56px;max-width:56px;min-height:56px;max-height:56px;flex:0 0 56px;border-radius:12px;color:#fff;font-weight:800;display:flex;align-items:center;justify-content:center;font-size:15px;box-sizing:border-box;white-space:nowrap;line-height:1;padding:0;margin:0 auto;}
+.badge.empty{background:#666;color:#eee;width:56px;height:56px;min-width:56px;max-width:56px;min-height:56px;max-height:56px}
+.full-list .metacol{width:84px;text-align:center}
+.full-list .devcol{width:84px;text-align:center}
+.full-list .genrescol{width:180px;text-align:right;padding-left:0;padding-right:10px;vertical-align:middle;overflow:hidden}
+.full-list thead th:last-child{ text-align:right; padding-right:10px; }
+.genre-tags{justify-content:flex-end}
+.full-list td{box-sizing:border-box}
+.full-list th{box-sizing:border-box}
+.genre-tags{display:flex;flex-wrap:wrap;gap:4px;align-items:flex-start}
+.genre-tag{display:inline-block;background:#3a3a3a;color:#ddd;padding:3px 8px;border-radius:4px;font-size:12px;border:1px solid #555;white-space:nowrap}
+.full-list .musiccol{width:36px;text-align:center;padding:8px 2px}
+.full-list .musiccol a {width:36px;height:28px;display:inline-flex;align-items:center;justify-content:center;padding:0;border-radius:6px;box-sizing:border-box;line-height:0;}
+.full-list .editcol, .full-list .deletecol {width:36px;text-align:center;padding:8px 2px;}
+/* Stack action buttons vertically */
+.action-buttons {display: flex; flex-direction: column; gap: 8px; align-items: flex-end; margin-right:0;}
+.full-list tbody tr:nth-child(odd) td{background:#0c0c0c}
+.full-list tbody tr:hover td{background:#1e1e1e}
+.full-list{flex:1}
+.full-list tbody{display:table-row-group}
+.fulltable{display:flex;flex-direction:column;flex:1}
+.fulltable .table-wrap{flex:1;display:flex;flex-direction:column;margin:0;padding-left:0;padding-right:0;overflow:visible}
+
+/* Tighter alignment: push cover left, buttons right */
+.full-list .covercol .rowcover{margin:8px 0;}
+.full-list .covercol{padding-left:12px;padding-right:8px}
+.full-list .gamename{padding-left:80px}
+.full-list thead th.cover-header{padding-left:12px}
+.full-list .covercol .rowcover{margin-left:0 !important;margin-right:0 !important}
+.full-list tbody td:last-child{padding-right:12px;text-align:right;vertical-align:middle}
+.full-list .btn{padding:4px 8px;font-size:13px;white-space:nowrap}
+
+/* Backlog-specific adjustments */
+.full-list .gamename{max-width:400px}
+.full-list .genrescol{max-width:140px;width:140px;text-align:left;overflow:hidden}
+.full-list .genre-tags{justify-content:flex-start;flex-wrap:wrap}
+.full-list .genre-tag{font-size:12px;padding:2px 6px}
+
+/* Rank input for manual reordering */
+.rank-input{width:40px;padding:4px;background:#222;color:#fff;border:1px solid #444;border-radius:4px;text-align:center;font-size:13px}
+.rank-input:focus{outline:none;border-color:#2b6fb2}
+
+/* Music link button */
+.full-list .musiccol a{display:inline-block;background:#2b6fb2;color:#fff;padding:3px 6px;border-radius:6px;text-decoration:none;font-weight:700}
+.full-list .musiccol a:hover{background:#245f9a}
+
+/* Icon button styles */
+.btn.icon{display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;padding:0;border-radius:6px;box-sizing:border-box;line-height:0;background:#444;color:#fff;}
+.btn.icon svg{width:16px;height:16px;}
+.btn.icon.danger{background:#6e1f1f;border:0;}
+.btn.icon.danger:hover{background:#5e1a1a;}
+button.btn.icon{border:0;background:inherit;}
+button.btn.icon:focus{outline:0;}
+.btn.icon svg{width:16px;height:16px}
+.btn.icon.danger{background:#6e1f1f;border:0}
+.btn.icon.danger:hover{background:#5e1a1a}
+button.btn.icon{border:0;background:inherit}
+button.btn.icon:focus{outline:0}
+
+/* Highlight active sorted column */
+.sort-header a{position:relative}
+.sort-arrow{font-weight:bold}
+td[data-score-key]:has(~ td[data-score-key] .sort-header .sort-arrow) .badge,
+.scorecell .badge{transition:transform 0.18s ease, box-shadow 0.18s ease}
+/* Indicate score cells are clickable */
+.scorecell .badge{cursor:pointer}
+/* Stronger emphasis on active sort */
+.badge.active-sort{transform:scale(1.14); box-shadow:0 0 0 2px rgba(255,255,255,0.10), 0 0 12px rgba(0,0,0,0.45); font-weight:900}
+/* When a score column is being sorted, make badges slightly larger */
+.full-list tbody td[data-score-key]:has(.badge) .badge{font-size:18px}
+/* Enlarge badges in active sort column - we'll use JS for this */
+
+/* Drag-and-drop visuals */
+tr.draggable{cursor:grab}
+tr.dragging{opacity:0.5; cursor:grabbing}
+/* Smooth transform animations for swap preview, fast background transitions */
+tbody tr{transition: transform 200ms cubic-bezier(0.2, 0, 0.2, 1), background-color 120ms ease}
+/* Drop zone indicators */
+tr.drag-over-before{box-shadow: 0 -3px 0 #2b6fb2 inset}
+tr.drag-over-after{box-shadow: 0 3px 0 #2b6fb2 inset}
+
+/* Modal styles */
+.modal{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);z-index:10000;display:flex;align-items:center;justify-content:center}
+.modal-content{background:var(--card);border-radius:12px;max-width:600px;width:90%;max-height:80vh;overflow:auto;box-shadow:0 8px 32px rgba(0,0,0,0.5)}
+.modal-header{display:flex;justify-content:space-between;align-items:center;padding:20px;border-bottom:1px solid #333}
+.modal-header h2{margin:0;font-size:22px}
+.modal-close{background:transparent;border:0;color:#fff;font-size:32px;cursor:pointer;padding:0;width:32px;height:32px;line-height:32px;text-align:center}
+.modal-close:hover{color:#f66}
+.modal-body{padding:20px}
+.search-section label{display:block;margin-bottom:8px;font-weight:600}
+.search-section input{width:100%;padding:10px;border-radius:6px;border:1px solid #444;background:#222;color:#fff;font-size:14px}
+.search-results{margin-top:12px;max-height:300px;overflow-y:auto;background:#1a1a1a;border-radius:6px;border:1px solid #333}
+.search-result-item{padding:12px;border-bottom:1px solid #333;cursor:pointer;transition:background 150ms;display:flex;gap:12px;align-items:center}
+.search-result-item:hover{background:#2a2a2a}
+.search-result-item:last-child{border-bottom:0}
+.result-cover-container{flex-shrink:0;width:80px;height:40px}
+.result-cover{width:80px;height:40px;object-fit:cover;border-radius:4px;display:block}
+.result-cover-placeholder{width:80px;height:40px;display:flex;align-items:center;justify-content:center;background:#333;border-radius:4px;color:var(--muted);font-size:11px}
+.result-info{flex:1;min-width:0}
+.result-name{font-weight:600;margin-bottom:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.result-meta{font-size:13px;color:var(--muted)}
+.no-results{padding:20px;text-align:center;color:var(--muted)}
+.divider{text-align:center;margin:20px 0;color:var(--muted);position:relative}
+.divider:before,.divider:after{content:'';position:absolute;top:50%;width:40%;height:1px;background:#333}
+.divider:before{left:0}
+.divider:after{right:0}
+.add-new-section{text-align:center;margin:20px 0}
+.new-game-form{margin-top:20px;padding:20px;background:#1a1a1a;border-radius:8px;border:1px solid #333}
+.new-game-form h3{margin:0 0 16px 0;font-size:18px}
+.new-game-form label{display:block;margin-bottom:12px}
+.new-game-form input{width:100%;padding:8px;border-radius:6px;border:1px solid #444;background:#222;color:#fff;margin-top:4px}
+.new-game-form .btn{margin-top:16px}
+
+/* Feedback animations for non-draggable rows */
+@keyframes flash-score {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  25% { transform: scale(1.15); opacity: 0.8; }
+  50% { transform: scale(1.3); opacity: 0.6; box-shadow: 0 0 20px currentColor; }
+  75% { transform: scale(1.15); opacity: 0.8; }
+}
+
+@keyframes bump {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-8px); }
+  50% { transform: translateX(8px); }
+  75% { transform: translateX(-4px); }
+}
+
+.flash-score {
+  animation: flash-score 600ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.bump-row {
+  animation: bump 300ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+
+

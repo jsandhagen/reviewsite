@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>{{ game['name'] }} - Game Details</title>
+    <link rel="stylesheet" href="/static/style.css">
+  </head>
+  <body>
+    <header>
+      <h1>Game Details</h1>
+      <nav>
+        <a class="btn" href="/">← Back to Games</a>
+        <a class="btn" href="/full">Full Reviews</a>
+      </nav>
+      <div class="user-menu">
+        {% if profile and profile.profile_picture %}
+          <a href="/profile" aria-label="Profile"><img class="avatar-small" src="{{ profile.profile_picture }}" alt="avatar"></a>
+        {% else %}
+          <a href="/profile" aria-label="Profile"><div class="avatar-small placeholder">{{ (username or 'U')[:1] }}</div></a>
+        {% endif %}
+        <a class="username" href="/profile">{{ username }}</a>
+        <a class="btn logout-btn" href="/logout">Logout</a>
+      </div>
+    </header>
+
+    <main>
+      <div class="card" style="max-width: 900px; margin: 0 auto;">
+        <div class="cover" style="width: 420px; height: 210px;">
+          {% if game['cover_path'] %}
+            <img src="{{ game['cover_path'] }}" alt="cover" style="width: 420px; height: 210px;" onerror="this.style.display='none'; this.parentElement.querySelector('.nocover').style.display='flex';">
+            <div class="nocover" style="display:none; width: 420px; height: 210px;">No Image</div>
+          {% else %}
+            <div class="nocover" style="width: 420px; height: 210px;">No Image</div>
+          {% endif %}
+          {% if game.get('user_reviewed') %}
+            <div class="review-badge" style="top: 8px; right: 8px; width: 32px; height: 32px; font-size: 18px;" title="You have reviewed this game">✓</div>
+          {% endif %}
+        </div>
+        <div class="meta" style="flex: 1; min-width: 400px;">
+          <h2>{{ game['name'] }} <span class="year">({{ game['release_date'] }})</span></h2>
+          {% if game.get('developer') %}
+            <div style="color: var(--muted); font-size: 14px; margin-top: 4px; margin-bottom: 8px;">
+              {{ game['developer'] }}
+            </div>
+          {% endif %}
+          {% if game.get('price') is not none %}
+            <div class="game-price">
+              <span class="price-label">Price:</span>
+              {% if game.get('original_price') is not none and game['original_price'] > game['price'] %}
+                <span style="text-decoration: line-through;">${{ "%.2f" % game['original_price'] }}</span>
+                <span style="color: #4ade80; font-weight: bold; margin-left: 8px;">${{ "%.2f" % game['price'] }}</span>
+              {% else %}
+                ${{ "%.2f" % game['price'] }}
+              {% endif %}
+            </div>
+          {% endif %}
+          {% if game.get('num_ratings') %}
+            <div class="avg-score">
+              <small>Community Average:</small>
+              <strong>{{ "%.1f" % game['enjoyment_score'] if game.get('enjoyment_score') is not none else '—' }}/10</strong>
+              <span class="rating-count">({{ game['num_ratings'] }} rating{{ 's' if game['num_ratings'] != 1 else '' }})</span>
+            </div>
+          {% else %}
+            <div class="avg-score">
+              <small>No ratings yet</small>
+            </div>
+          {% endif %}
+          <div style="margin-top: 12px; margin-bottom: 8px;">
+            <small style="color: var(--muted); font-size: 11px; text-transform: uppercase;">Community Scores</small>
+          </div>
+          <div class="scores">
+            {% for k, label in [('enjoyment_score', 'Overall'), ('gameplay_score', 'Gameplay'), ('music_score', 'Music'), ('narrative_score', 'Narrative')] %}
+              {% set v = game.get(k) %}
+              {% set score = (v|float(0)) if v else 0 %}
+              {% set is_enjoyment = (k == 'enjoyment_score') %}
+              {% if score == 10 %}
+                {% set hue = 120 %}
+                {% set sat = 95 %}
+                {% set light = 35 %}
+                {% set border = 'box-shadow: inset 0 0 0 2px #ffd700;' %}
+              {% elif score >= 7 %}
+                {% set hue = 60 + ((score - 7) / 3) * 60 %}
+                {% set sat = 78 %}
+                {% set light = 42 %}
+                {% set border = '' %}
+              {% elif score >= 5 %}
+                {% set hue = ((score - 5) / 2) * 60 %}
+                {% set sat = 78 %}
+                {% set light = 42 %}
+                {% set border = '' %}
+              {% else %}
+                {% set hue = 0 %}
+                {% set sat = 78 %}
+                {% set light = 42 %}
+                {% set border = '' %}
+              {% endif %}
+              <div class="score{% if is_enjoyment %} score-featured{% endif %}" style="background-color: {{ 'hsl(%.1f, %d%%, %d%%)' % (hue, sat, light) if v else '#444' }}; {{ border }}">
+                <div class="label">{{ label }}</div>
+                <div class="value">{{ "%.1f" % v if v else 'N/A' }}</div>
+              </div>
+            {% endfor %}
+          </div>
+          {% if game.get('genres') %}
+            <div style="margin-top: 12px; padding: 8px 0; border-top: 1px solid rgba(255,255,255,0.1);">
+              <small style="color: var(--muted); text-transform: uppercase; font-size: 11px;">Genres</small>
+              <div style="color: #fff; margin-top: 4px;">{{ game['genres'] }}</div>
+            </div>
+          {% endif %}
+          {% if game.get('description') %}
+            <div style="margin-top: 12px; padding: 8px 0; border-top: 1px solid rgba(255,255,255,0.1);">
+              <small style="color: var(--muted); text-transform: uppercase; font-size: 11px;">About This Game</small>
+              <p style="line-height: 1.6; color: #ddd; font-size: 14px; margin: 8px 0 0 0;">{{ game['description'] }}</p>
+            </div>
+          {% endif %}
+          <div class="actions">
+            {% if game.get('in_backlog') %}
+              <span class="btn" style="background: #666; cursor: default;">In Backlog</span>
+            {% elif game.get('user_reviewed') %}
+              <span class="btn" style="background: #666; cursor: default;">Reviewed</span>
+            {% else %}
+              <button class="btn" onclick="addToBacklog({{ game['game_id'] }})">Add to Backlog</button>
+            {% endif %}
+            {% if game.get('app_id') %}
+              <a class="btn steam-btn" href="https://store.steampowered.com/app/{{ game['app_id'] }}/" target="_blank" title="View on Steam">
+                <img src="/static/steam.svg" alt="" style="width:16px;height:16px;vertical-align:middle;filter:invert(1);margin-right:4px;">Steam
+              </a>
+            {% endif %}
+            <a class="btn" href="https://www.youtube.com/results?search_query={{ game['name']|urlencode }}+official+trailer" target="_blank">Trailer</a>
+            <a class="btn" href="https://www.youtube.com/results?search_query={{ game['name'] }}+OST" target="_blank">Music</a>
+          </div>
+        </div>
+      </div>
+
+      {% if is_admin %}
+      <div class="card" style="max-width: 900px; margin: 20px auto;">
+        <h3>Admin: Edit Game Information</h3>
+        <form method="POST" action="/admin/update_game/{{ game['game_id'] }}" style="display: grid; gap: 12px; margin-top: 16px;">
+          <div>
+            <label for="name" style="display: block; margin-bottom: 4px; font-weight: bold;">Name:</label>
+            <input type="text" id="name" name="name" value="{{ game['name'] }}" style="width: 100%; padding: 8px; border: 1px solid #555; background: #2a2a2a; color: #fff; border-radius: 4px;">
+          </div>
+          <div>
+            <label for="release_date" style="display: block; margin-bottom: 4px; font-weight: bold;">Release Date:</label>
+            <input type="text" id="release_date" name="release_date" value="{{ game['release_date'] or '' }}" placeholder="YYYY-MM-DD" style="width: 100%; padding: 8px; border: 1px solid #555; background: #2a2a2a; color: #fff; border-radius: 4px;">
+          </div>
+          <div>
+            <label for="app_id" style="display: block; margin-bottom: 4px; font-weight: bold;">Steam App ID:</label>
+            <input type="text" id="app_id" name="app_id" value="{{ game.get('app_id', '') }}" style="width: 100%; padding: 8px; border: 1px solid #555; background: #2a2a2a; color: #fff; border-radius: 4px;">
+          </div>
+          <div>
+            <label for="developer" style="display: block; margin-bottom: 4px; font-weight: bold;">Developer:</label>
+            <input type="text" id="developer" name="developer" value="{{ game.get('developer', '') }}" style="width: 100%; padding: 8px; border: 1px solid #555; background: #2a2a2a; color: #fff; border-radius: 4px;">
+          </div>
+          <div>
+            <label for="publisher" style="display: block; margin-bottom: 4px; font-weight: bold;">Publisher:</label>
+            <input type="text" id="publisher" name="publisher" value="{{ game.get('publisher', '') }}" style="width: 100%; padding: 8px; border: 1px solid #555; background: #2a2a2a; color: #fff; border-radius: 4px;">
+          </div>
+          <div>
+            <label for="genres" style="display: block; margin-bottom: 4px; font-weight: bold;">Genres:</label>
+            <input type="text" id="genres" name="genres" value="{{ game.get('genres', '') }}" style="width: 100%; padding: 8px; border: 1px solid #555; background: #2a2a2a; color: #fff; border-radius: 4px;">
+          </div>
+          <div>
+            <label for="price" style="display: block; margin-bottom: 4px; font-weight: bold;">Current Price (USD):</label>
+            <input type="number" step="0.01" id="price" name="price" value="{{ game.get('price', '') }}" style="width: 100%; padding: 8px; border: 1px solid #555; background: #2a2a2a; color: #fff; border-radius: 4px;">
+          </div>
+          <div>
+            <label for="original_price" style="display: block; margin-bottom: 4px; font-weight: bold;">Original Price (USD):</label>
+            <input type="number" step="0.01" id="original_price" name="original_price" value="{{ game.get('original_price', '') }}" style="width: 100%; padding: 8px; border: 1px solid #555; background: #2a2a2a; color: #fff; border-radius: 4px;">
+          </div>
+          <div>
+            <label for="sale_price" style="display: block; margin-bottom: 4px; font-weight: bold;">Sale Price (USD):</label>
+            <input type="number" step="0.01" id="sale_price" name="sale_price" value="{{ game.get('sale_price', '') }}" style="width: 100%; padding: 8px; border: 1px solid #555; background: #2a2a2a; color: #fff; border-radius: 4px;">
+          </div>
+          <div>
+            <label for="description" style="display: block; margin-bottom: 4px; font-weight: bold;">Description:</label>
+            <textarea id="description" name="description" rows="4" style="width: 100%; padding: 8px; border: 1px solid #555; background: #2a2a2a; color: #fff; border-radius: 4px;">{{ game.get('description', '') }}</textarea>
+          </div>
+          <div>
+            <button type="submit" class="btn" style="width: fit-content; background: #0066cc;">Save Changes</button>
+          </div>
+        </form>
+        
+        {% if game.get('app_id') %}
+        <div style="margin-top: 16px; padding-top: 16px; border-top: 1px solid #444;">
+          <form method="POST" action="/admin/refresh_game/{{ game['game_id'] }}" style="display: flex; gap: 12px; align-items: center;">
+            <button type="submit" class="btn" style="width: fit-content; background: #28a745;">🔄 Refresh from Steam</button>
+            <span style="font-size: 12px; color: #888;">Fetches latest data from Steam API using App ID: {{ game['app_id'] }}</span>
+          </form>
+        </div>
+        {% else %}
+        <div style="margin-top: 16px; padding-top: 16px; border-top: 1px solid #444;">
+          <span style="font-size: 12px; color: #888;">⚠️ No Steam App ID - cannot auto-refresh</span>
+        </div>
+        {% endif %}
+      </div>
+      {% endif %}
+    </main>
+    <script>
+      function addToBacklog(gameId) {
+        fetch(`/api/add_to_backlog/${gameId}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' }
+        })
+        .then(res => res.json())
+        .then(data => {
+          if (data.success) {
+            location.reload();
+          } else {
+            alert('Failed to add to backlog');
+          }
+        })
+        .catch(err => {
+          console.error(err);
+          alert('Error adding to backlog');
+        });
+      }
+    </script>
+  </body>
+</html>

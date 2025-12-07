@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Edit Game</title>
+    <link rel="stylesheet" href="/static/style.css">
+  </head>
+  <body>
+    <header>
+      <a class="btn" href="/">Back</a>
+      <div class="user-menu">
+        <span class="username">{{ username }}</span>
+        <a class="btn logout-btn" href="/logout">Logout</a>
+      </div>
+    </header>
+    <main class="editpage">
+      <h1>{{ 'Add Review for' if not user_scores.get('enjoyment_score') and not user_scores.get('gameplay_score') and not user_scores.get('music_score') and not user_scores.get('narrative_score') else 'Edit Review for' }} {{ game.get('name', '') }}</h1>
+      <form method="post" action="/edit/{{ game_id }}">
+        <div style="display: flex; gap: 20px; align-items: flex-start; margin-bottom: 20px;">
+          <div style="flex-shrink: 0;">
+            {% if game.get('cover_path') %}
+              <img src="{{ game.get('cover_path') }}" alt="{{ game.get('name') }} cover" style="width: 300px; height: auto; border-radius: 8px; border: 1px solid #333;">
+            {% else %}
+              <div style="width: 300px; height: 140px; background: #333; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #888;">No Cover Image</div>
+            {% endif %}
+          </div>
+          <div style="flex: 1;">
+            <p style="margin: 8px 0; font-size: 16px;"><strong>Title:</strong> {{ game.get('name', 'N/A') }}</p>
+            <p style="margin: 8px 0;"><strong>Release Date:</strong> {{ game.get('release_date', 'N/A') }}</p>
+            <p style="margin: 8px 0;"><strong>Genres:</strong> {{ game.get('genres', 'N/A') }}</p>
+            {% if game.get('price') %}<p style="margin: 8px 0;"><strong>Price:</strong> ${{ "%.2f"|format(game.get('price')) }}</p>{% endif %}
+            {% if user_scores.get('hours_played') %}<p style="margin: 8px 0;"><strong>Hours Played:</strong> {{ "%.1f"|format(user_scores.get('hours_played')) }}</p>{% endif %}
+          </div>
+        </div>
+
+        <fieldset>
+          <legend>Your Ratings</legend>
+          <div style="background: #1a1a1a; padding: 12px; border-radius: 6px; margin-bottom: 16px; border: 1px solid #333;">
+            <p style="margin: 0 0 8px 0; font-weight: 600; color: #0a7ea4;">Rating Scale:</p>
+            <ul style="margin: 0; padding-left: 20px; font-size: 13px; line-height: 1.6; color: #bbb;">
+              <li><strong>10</strong> - Masterpiece (Perfect or near-perfect)</li>
+              <li><strong>9</strong> - Excellent (Outstanding, highly memorable)</li>
+              <li><strong>8</strong> - Great (Very good, highly enjoyable)</li>
+              <li><strong>7</strong> - Good (Solid, worth playing)</li>
+              <li><strong>6</strong> - Decent (Has merit but flawed)</li>
+              <li><strong>5</strong> - Mediocre (Average, forgettable)</li>
+              <li><strong>4</strong> - Below Average (More bad than good)</li>
+              <li><strong>3</strong> - Poor (Significantly flawed)</li>
+              <li><strong>2</strong> - Bad (Very disappointing)</li>
+              <li><strong>1</strong> - Terrible (Almost unplayable)</li>
+            </ul>
+          </div>
+          <label>Overall Score (0-10) <span style="color: #f66;">*</span><input name="enjoyment_score" type="number" step="0.1" min="0" max="10" value="{{ user_scores.get('enjoyment_score', '') }}" placeholder="How much did you enjoy this game overall?" required {% if request.args.get('focus') == 'enjoyment_score' %}autofocus{% endif %}></label>
+          <label>Gameplay Score (0-10) <span style="color: #888; font-size: 12px;">(Optional)</span><input name="gameplay_score" type="number" step="0.1" min="0" max="10" value="{{ user_scores.get('gameplay_score', '') }}" placeholder="How good are the mechanics and gameplay?" {% if request.args.get('focus') == 'gameplay_score' %}autofocus{% endif %}></label>
+          <label>Music Score (0-10) <span style="color: #888; font-size: 12px;">(Optional)</span><input name="music_score" type="number" step="0.1" min="0" max="10" value="{{ user_scores.get('music_score', '') }}" placeholder="How good is the soundtrack?" {% if request.args.get('focus') == 'music_score' %}autofocus{% endif %}></label>
+          <label>Narrative Score (0-10) <span style="color: #888; font-size: 12px;">(Optional)</span><input name="narrative_score" type="number" step="0.1" min="0" max="10" value="{{ user_scores.get('narrative_score', '') }}" placeholder="How good is the story?" {% if request.args.get('focus') == 'narrative_score' %}autofocus{% endif %}></label>
+        </fieldset>
+
+        <fieldset>
+          <legend>Game Attributes</legend>
+          <div style="margin-bottom: 20px;">
+            <label style="display: block; margin-bottom: 8px; font-weight: 600;">Difficulty</label>
+            <div class="button-group">
+              <input type="radio" name="difficulty" value="Very Easy" id="diff-veryeasy" {% if user_scores.get('difficulty') == 'Very Easy' %}checked{% endif %}>
+              <label for="diff-veryeasy">Very Easy</label>
+              <input type="radio" name="difficulty" value="Easy" id="diff-easy" {% if user_scores.get('difficulty') == 'Easy' %}checked{% endif %}>
+              <label for="diff-easy">Easy</label>
+              <input type="radio" name="difficulty" value="Medium" id="diff-medium" {% if user_scores.get('difficulty') == 'Medium' %}checked{% endif %}>
+              <label for="diff-medium">Medium</label>
+              <input type="radio" name="difficulty" value="Hard" id="diff-hard" {% if user_scores.get('difficulty') == 'Hard' %}checked{% endif %}>
+              <label for="diff-hard">Hard</label>
+              <input type="radio" name="difficulty" value="Very Hard" id="diff-veryhard" {% if user_scores.get('difficulty') == 'Very Hard' %}checked{% endif %}>
+              <label for="diff-veryhard">Very Hard</label>
+            </div>
+          </div>
+
+          <div style="margin-bottom: 20px;">
+            <label style="display: block; margin-bottom: 8px; font-weight: 600;">Graphics Quality</label>
+            <div class="button-group" style="flex-wrap: nowrap;">
+              <input type="radio" name="graphics_quality" value="Outdated" id="gfx-outdated" {% if user_scores.get('graphics_quality') == 'Outdated' %}checked{% endif %}>
+              <label for="gfx-outdated">Outdated</label>
+              <input type="radio" name="graphics_quality" value="Dated" id="gfx-dated" {% if user_scores.get('graphics_quality') == 'Dated' %}checked{% endif %}>
+              <label for="gfx-dated">Dated</label>
+              <input type="radio" name="graphics_quality" value="Adequate" id="gfx-adequate" {% if user_scores.get('graphics_quality') == 'Adequate' %}checked{% endif %}>
+              <label for="gfx-adequate">Adequate</label>
+              <input type="radio" name="graphics_quality" value="Good" id="gfx-good" {% if user_scores.get('graphics_quality') == 'Good' %}checked{% endif %}>
+              <label for="gfx-good">Good</label>
+              <input type="radio" name="graphics_quality" value="Excellent" id="gfx-excellent" {% if user_scores.get('graphics_quality') == 'Excellent' %}checked{% endif %}>
+              <label for="gfx-excellent">Excellent</label>
+              <input type="radio" name="graphics_quality" value="Photorealistic" id="gfx-photorealistic" {% if user_scores.get('graphics_quality') == 'Photorealistic' %}checked{% endif %}>
+              <label for="gfx-photorealistic">Photorealistic</label>
+            </div>
+          </div>
+
+          <div style="margin-bottom: 20px;">
+            <label style="display: block; margin-bottom: 8px; font-weight: 600;">Style</label>
+            <div class="button-group" style="flex-wrap: nowrap;">
+              <input type="radio" name="style" value="Generic" id="style-generic" {% if user_scores.get('style') == 'Generic' %}checked{% endif %}>
+              <label for="style-generic">Generic</label>
+              <input type="radio" name="style" value="Derivative" id="style-derivative" {% if user_scores.get('style') == 'Derivative' %}checked{% endif %}>
+              <label for="style-derivative">Derivative</label>
+              <input type="radio" name="style" value="Familiar" id="style-familiar" {% if user_scores.get('style') == 'Familiar' %}checked{% endif %}>
+              <label for="style-familiar">Familiar</label>
+              <input type="radio" name="style" value="Unique" id="style-unique" {% if user_scores.get('style') == 'Unique' %}checked{% endif %}>
+              <label for="style-unique">Unique</label>
+              <input type="radio" name="style" value="Innovative" id="style-innovative" {% if user_scores.get('style') == 'Innovative' %}checked{% endif %}>
+              <label for="style-innovative">Innovative</label>
+              <input type="radio" name="style" value="One of a Kind" id="style-oneofakind" {% if user_scores.get('style') == 'One of a Kind' %}checked{% endif %}>
+              <label for="style-oneofakind">One of a Kind</label>
+            </div>
+          </div>
+
+          <div style="margin-bottom: 20px;">
+            <label style="display: block; margin-bottom: 8px; font-weight: 600;">Replayability</label>
+            <div class="button-group">
+              <input type="radio" name="replayability" value="None" id="replay-no" {% if user_scores.get('replayability') == 'None' %}checked{% endif %}>
+              <label for="replay-no">None</label>
+              <input type="radio" name="replayability" value="Low" id="replay-low" {% if user_scores.get('replayability') == 'Low' %}checked{% endif %}>
+              <label for="replay-low">Low</label>
+              <input type="radio" name="replayability" value="Medium" id="replay-medium" {% if user_scores.get('replayability') == 'Medium' %}checked{% endif %}>
+              <label for="replay-medium">Medium</label>
+              <input type="radio" name="replayability" value="High" id="replay-high" {% if user_scores.get('replayability') == 'High' %}checked{% endif %}>
+              <label for="replay-high">High</label>
+              <input type="radio" name="replayability" value="Infinite" id="replay-infinite" {% if user_scores.get('replayability') == 'Infinite' %}checked{% endif %}>
+              <label for="replay-infinite">Infinite</label>
+            </div>
+          </div>
+
+          <div style="margin-bottom: 20px;">
+            <label style="display: block; margin-bottom: 8px; font-weight: 600;">Time to Complete (hours)</label>
+            <input name="completion_time" type="number" step="0.5" min="0" value="{{ user_scores.get('completion_time', '') }}" placeholder="e.g., 12.5" style="width: 200px; padding: 8px; border-radius: 6px; border: 1px solid #333; background: #151515; color: #fff;">
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>Written Review (Optional)</legend>
+          <label style="display: block;">
+            <textarea name="review_text" rows="8" placeholder="Share your thoughts about this game... What did you like? What didn't work? Would you recommend it?" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #333; background: #151515; color: #fff; font-family: inherit; resize: vertical; margin-top: 8px;">{{ user_scores.get('review_text', '') }}</textarea>
+          </label>
+        </fieldset>
+
+        <div class="row">
+          <button type="submit" class="btn">Save Review</button>
+          <a class="btn" href="javascript:history.back()">Cancel</a>
+        </div>
+      </form>
+    </main>
+    <style>
+      fieldset {
+        border: 1px solid #333;
+        border-radius: 6px;
+        padding: 15px;
+        margin-bottom: 15px;
+        background: #1a1a1a;
+      }
+      legend {
+        padding: 0 8px;
+        font-weight: 600;
+        color: #0a7ea4;
+      }
+      textarea {
+        width: 100%;
+        padding: 8px;
+        border-radius: 6px;
+        border: 1px solid #333;
+        background: #151515;
+        color: #fff;
+        font-family: inherit;
+        resize: vertical;
+      }
+      .button-group {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+      .button-group input[type="radio"] {
+        display: none;
+      }
+      .button-group label {
+        padding: 8px 16px;
+        background: #2a2a2a;
+        border: 1px solid #444;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        font-size: 14px;
+        color: #ccc;
+      }
+      .button-group label:hover {
+        background: #333;
+        border-color: #555;
+      }
+      .button-group input[type="radio"]:checked + label {
+        background: #0a7ea4;
+        border-color: #0a7ea4;
+        color: #fff;
+        font-weight: 600;
+      }
+    </style>
+  </body>
+</html>

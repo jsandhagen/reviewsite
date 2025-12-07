@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Friends - PeerPulse</title>
+    <link rel="stylesheet" href="/static/style.css">
+  </head>
+  <body class="has-fixed-header" style="padding-top: 72px;">
+    {% include 'header.html' %}
+
+    <main style="padding: 24px; max-width: 1200px; margin: 0 auto;">
+      <h1 style="margin-bottom: 24px;">Friends</h1>
+
+      <!-- Add Friend Section -->
+      <div class="card" style="margin-bottom: 24px;">
+        <h2 style="margin: 0 0 16px 0;">Add Friend</h2>
+        <div style="display: flex; gap: 8px; align-items: flex-start;">
+          <input type="text" id="userSearch" placeholder="Search username..." style="flex: 1; padding: 8px 12px; background: #222; border: 1px solid #444; border-radius: 6px; color: #fff;">
+          <button class="btn" onclick="searchUsers()" style="background: #667eea;">Search</button>
+        </div>
+        <div id="searchResults" style="margin-top: 12px;"></div>
+      </div>
+
+      <!-- Friend Requests -->
+      {% if incoming_requests %}
+      <div class="card" style="margin-bottom: 24px;">
+        <h2 style="margin: 0 0 16px 0;">Friend Requests ({{ incoming_requests|length }})</h2>
+        <div style="display: flex; flex-direction: column; gap: 12px;">
+          {% for request in incoming_requests %}
+          <div style="display: flex; align-items: center; gap: 12px; padding: 12px; background: #1a1a1a; border-radius: 8px;">
+            {% if request.profile_picture %}
+              <img src="{{ request.profile_picture }}" class="avatar-small" alt="{{ request.username }}">
+            {% else %}
+              <div class="avatar-small placeholder">{{ request.username[0].upper() }}</div>
+            {% endif %}
+            <div style="flex: 1;">
+              <a href="/profile/{{ request.username }}" style="color: #667eea; text-decoration: none; font-weight: 600;">{{ request.username }}</a>
+              <div style="font-size: 13px; color: var(--muted);">Sent {{ request.created_at }}</div>
+            </div>
+            <button class="btn" onclick="acceptRequest({{ request.id }})" style="background: #28a745;">Accept</button>
+            <button class="btn" onclick="rejectRequest({{ request.id }})" style="background: #6e1f1f;">Reject</button>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+
+      <!-- Sent Requests -->
+      {% if sent_requests %}
+      <div class="card" style="margin-bottom: 24px;">
+        <h2 style="margin: 0 0 16px 0;">Pending Requests ({{ sent_requests|length }})</h2>
+        <div style="display: flex; flex-direction: column; gap: 12px;">
+          {% for request in sent_requests %}
+          <div style="display: flex; align-items: center; gap: 12px; padding: 12px; background: #1a1a1a; border-radius: 8px;">
+            {% if request.profile_picture %}
+              <img src="{{ request.profile_picture }}" class="avatar-small" alt="{{ request.username }}">
+            {% else %}
+              <div class="avatar-small placeholder">{{ request.username[0].upper() }}</div>
+            {% endif %}
+            <div style="flex: 1;">
+              <a href="/profile/{{ request.username }}" style="color: #667eea; text-decoration: none; font-weight: 600;">{{ request.username }}</a>
+              <div style="font-size: 13px; color: var(--muted);">Pending</div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+
+      <!-- Friends List -->
+      <div class="card">
+        <h2 style="margin: 0 0 16px 0;">My Friends ({{ friends|length }})</h2>
+        {% if friends %}
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px;">
+          {% for friend in friends %}
+          <div style="display: flex; align-items: center; gap: 12px; padding: 12px; background: #1a1a1a; border-radius: 8px;">
+            {% if friend.profile_picture %}
+              <img src="{{ friend.profile_picture }}" class="avatar-small" alt="{{ friend.username }}">
+            {% else %}
+              <div class="avatar-small placeholder">{{ friend.username[0].upper() }}</div>
+            {% endif %}
+            <div style="flex: 1;">
+              <a href="/profile/{{ friend.username }}" style="color: #667eea; text-decoration: none; font-weight: 600;">{{ friend.username }}</a>
+            </div>
+            <a href="/compare/{{ friend.username }}" class="btn" style="background: #667eea; text-decoration: none;">Compare</a>
+            <button class="btn" onclick="removeFriend({{ friend.friend_user_id }}, '{{ friend.username }}')" style="background: #6e1f1f;">Remove</button>
+          </div>
+          {% endfor %}
+        </div>
+        {% else %}
+        <p style="color: var(--muted); text-align: center; padding: 20px;">No friends yet. Search for users above to add friends!</p>
+        {% endif %}
+      </div>
+    </main>
+
+    <script>
+      let searchTimeout;
+
+      function searchUsers() {
+        const query = document.getElementById('userSearch').value.trim();
+        const resultsDiv = document.getElementById('searchResults');
+
+        if (query.length < 2) {
+          resultsDiv.innerHTML = '';
+          return;
+        }
+
+        fetch(`/api/search_users?q=${encodeURIComponent(query)}`)
+          .then(r => r.json())
+          .then(data => {
+            if (!data.users || data.users.length === 0) {
+              resultsDiv.innerHTML = '<p style="color: var(--muted); padding: 12px;">No users found</p>';
+              return;
+            }
+
+            resultsDiv.innerHTML = data.users.map(user => {
+              const avatar = user.profile_picture
+                ? `<img src="${user.profile_picture}" class="avatar-small" alt="${user.username}">`
+                : `<div class="avatar-small placeholder">${user.username[0].toUpperCase()}</div>`;
+
+              return `
+                <div style="display: flex; align-items: center; gap: 12px; padding: 12px; background: #1a1a1a; border-radius: 8px; margin-top: 8px;">
+                  ${avatar}
+                  <div style="flex: 1;"><a href="/profile/${user.username}" style="color: #667eea; text-decoration: none; font-weight: 600;">${user.username}</a></div>
+                  <button class="btn" onclick="sendRequest('${user.username}')" style="background: #667eea;">Add Friend</button>
+                </div>
+              `;
+            }).join('');
+          })
+          .catch(err => {
+            console.error('Search failed:', err);
+            resultsDiv.innerHTML = '<p style="color: #f66; padding: 12px;">Search failed</p>';
+          });
+      }
+
+      // Search as user types
+      document.getElementById('userSearch').addEventListener('input', function() {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(searchUsers, 300);
+      });
+
+      // Search on Enter key
+      document.getElementById('userSearch').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+          searchUsers();
+        }
+      });
+
+      function sendRequest(username) {
+        fetch('/api/send_friend_request', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({username: username})
+        })
+        .then(r => r.json())
+        .then(data => {
+          if (data.success) {
+            alert('Friend request sent!');
+            document.getElementById('userSearch').value = '';
+            document.getElementById('searchResults').innerHTML = '';
+            location.reload();
+          } else {
+            alert(data.message || 'Failed to send request');
+          }
+        })
+        .catch(err => {
+          console.error('Failed:', err);
+          alert('Failed to send friend request');
+        });
+      }
+
+      function acceptRequest(requestId) {
+        fetch(`/api/accept_friend_request/${requestId}`, {
+          method: 'POST'
+        })
+        .then(r => r.json())
+        .then(data => {
+          if (data.success) {
+            location.reload();
+          } else {
+            alert(data.message || 'Failed to accept request');
+          }
+        })
+        .catch(err => {
+          console.error('Failed:', err);
+          alert('Failed to accept friend request');
+        });
+      }
+
+      function rejectRequest(requestId) {
+        if (!confirm('Reject this friend request?')) return;
+
+        fetch(`/api/reject_friend_request/${requestId}`, {
+          method: 'POST'
+        })
+        .then(r => r.json())
+        .then(data => {
+          if (data.success) {
+            location.reload();
+          } else {
+            alert(data.message || 'Failed to reject request');
+          }
+        })
+        .catch(err => {
+          console.error('Failed:', err);
+          alert('Failed to reject friend request');
+        });
+      }
+
+      function removeFriend(friendId, username) {
+        if (!confirm(`Remove ${username} from friends?`)) return;
+
+        fetch(`/api/remove_friend/${friendId}`, {
+          method: 'POST'
+        })
+        .then(r => r.json())
+        .then(data => {
+          if (data.success) {
+            location.reload();
+          } else {
+            alert(data.message || 'Failed to remove friend');
+          }
+        })
+        .catch(err => {
+          console.error('Failed:', err);
+          alert('Failed to remove friend');
+        });
+      }
+    </script>
+  </body>
+</html>

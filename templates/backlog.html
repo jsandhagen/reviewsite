@@ -1,0 +1,473 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Backlog - PeerPulse</title>
+    <link rel="stylesheet" href="/static/style.css">
+  </head>
+  <body class="has-fixed-header">
+    {% include 'header.html' %}
+    
+    <!-- Page-specific controls -->
+    <div style="position: sticky; top: var(--header-h, 72px); z-index: 100; display: flex; justify-content: flex-start; align-items: center; padding: 16px 24px; background: #1a1a1a; border-bottom: 1px solid #333;">
+      <div style="display: flex; gap: 12px; align-items: center;">
+        <form method="get" action="/backlog" style="margin: 0;">
+          <div style="display: flex; gap: 8px;">
+            <input id="search" name="q" type="search" placeholder="Search games..." value="{{ q or '' }}" autocomplete="off" style="width: 300px; background: #2a2a2a; color: var(--text); border: 1px solid #444; padding: 8px 12px; border-radius: 6px; font-size: 14px;">
+            <button type="submit" class="btn" style="background: #667eea; color: white; border: none;">Search</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <main class="fulltable">
+      <div class="table-wrap">
+      <table class="full-list">
+        <thead>
+          <tr>
+            {% set eff_sort = sort or 'backlog_order' %}
+            {% set eff_order = order or 'asc' %}
+            <th style="text-align:center;">
+              {# Sort by backlog order (rank) #}
+              {% if eff_sort == 'backlog_order' and eff_order == 'desc' %}
+                {% set next_order = 'asc' %}
+              {% else %}
+                {% set next_order = 'desc' %}
+              {% endif %}
+              <a href="{{ url_for('backlog', sort='backlog_order', order=next_order, q=q or '') }}" style="color:inherit;text-decoration:none;display:inline-flex;align-items:center;gap:4px;cursor:pointer;">
+                <span>Rank</span>
+                {% if eff_sort == 'backlog_order' %}
+                  <span class="sort-arrow">{{ '▲' if eff_order == 'asc' else '▼' }}</span>
+                {% endif %}
+              </a>
+            </th>
+            <th class="cover-header"></th>
+            <th style="text-align:left;">
+              {# Sort by game name #}
+              {% if eff_sort == 'name' and eff_order == 'desc' %}
+                {% set next_order = 'asc' %}
+              {% else %}
+                {% set next_order = 'desc' %}
+              {% endif %}
+              <a href="{{ url_for('backlog', sort='name', order=next_order, q=q or '') }}" style="color:inherit;text-decoration:none;display:inline-flex;align-items:center;gap:4px;cursor:pointer;">
+                <span>Game</span>
+                {% if eff_sort == 'name' %}
+                  <span class="sort-arrow">{{ '▲' if eff_order == 'asc' else '▼' }}</span>
+                {% endif %}
+              </a>
+            </th>
+            <th style="text-align:left;width:140px;">Genres</th>
+            <th style="text-align:center;width:80px;">
+              {# Sort by hours #}
+              {% if eff_sort == 'hours_played' and eff_order == 'desc' %}
+                {% set next_order = 'asc' %}
+              {% else %}
+                {% set next_order = 'desc' %}
+              {% endif %}
+              <a href="{{ url_for('backlog', sort='hours_played', order=next_order, q=q or '') }}" style="color:inherit;text-decoration:none;display:inline-flex;align-items:center;gap:4px;cursor:pointer;">
+                <span>Hours</span>
+                {% if eff_sort == 'hours_played' %}
+                  <span class="sort-arrow">{{ '▲' if eff_order == 'asc' else '▼' }}</span>
+                {% endif %}
+              </a>
+            </th>
+            <th style="text-align:center;width:80px;">
+              {# Sort by price #}
+              {% if eff_sort == 'price' and eff_order == 'desc' %}
+                {% set next_order = 'asc' %}
+              {% else %}
+                {% set next_order = 'desc' %}
+              {% endif %}
+              <a href="{{ url_for('backlog', sort='price', order=next_order, q=q or '') }}" style="color:inherit;text-decoration:none;display:inline-flex;align-items:center;gap:4px;cursor:pointer;">
+                <span>Price</span>
+                {% if eff_sort == 'price' %}
+                  <span class="sort-arrow">{{ '▲' if eff_order == 'asc' else '▼' }}</span>
+                {% endif %}
+              </a>
+            </th>
+            <th style="text-align:center;width:70px;">
+              {# Sort by community score #}
+              {% if eff_sort == 'community' and eff_order == 'desc' %}
+                {% set next_order = 'asc' %}
+              {% else %}
+                {% set next_order = 'desc' %}
+              {% endif %}
+              <a href="{{ url_for('backlog', sort='community', order=next_order, q=q or '') }}" style="color:inherit;text-decoration:none;display:inline-flex;align-items:center;gap:4px;cursor:pointer;">
+                <span>Community</span>
+                {% if eff_sort == 'community' %}
+                  <span class="sort-arrow">{{ '▲' if eff_order == 'asc' else '▼' }}</span>
+                {% endif %}
+              </a>
+            </th>
+            <th class="actions-header" style="width:180px;"></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for game in games %}
+          <tr data-game-id="{{ game['game_id'] }}" draggable="true" class="draggable">
+            <td class="rank">
+              <input type="number" class="rank-input" value="{{ loop.index }}" min="1" data-game-id="{{ game['game_id'] }}" data-original="{{ loop.index }}" onclick="this.select()" onblur="if(!this.value) this.value = this.dataset.original" onchange="reorderByNumber(this)">
+            </td>
+            <td class="covercol">
+              {% if game.get('cover_path') %}
+                <img src="{{ game['cover_path'] }}" alt="cover" class="rowcover" loading="lazy" onerror="this.style.display='none'; this.parentElement.querySelector('.nocover').style.display='flex';">
+                <div class="nocover small" style="display:none;">No Image</div>
+              {% else %}
+                <div class="nocover small">No Image</div>
+              {% endif %}
+            </td>
+            <td class="gamename">
+              <a href="/game/{{ game['game_id'] }}" style="text-decoration: none; color: inherit;">{{ game['name'] }}</a>
+            </td>
+            <td class="genrescol">
+              {% if game.get('genres') %}
+                <div class="genre-tags">
+                  {% for genre in game.get('genres', '').split(', ') %}
+                    {% if genre.strip() %}
+                      <span class="genre-tag">{{ genre.strip() }}</span>
+                    {% endif %}
+                  {% endfor %}
+                </div>
+              {% else %}
+                —
+              {% endif %}
+            </td>
+            <td style="text-align:center;">
+              {% if game.get('hours_played') %}
+                <span style="color:var(--text-color);">{{ "%.1f"|format(game['hours_played']) }}h</span>
+              {% else %}
+                <span style="color:var(--muted);">—</span>
+              {% endif %}
+            </td>
+            <td style="text-align:center;">
+              {% if game.get('price') %}
+                <span class="game-price">
+                  {% if game.get('original_price') is not none and game['original_price'] > game['price'] %}
+                    <span style="text-decoration: line-through;">${{ "%.2f"|format(game['original_price']) }}</span>
+                    <span style="color: #4ade80; font-weight: bold; margin-left: 4px;">${{ "%.2f"|format(game['price']) }}</span>
+                  {% else %}
+                    ${{ "%.2f"|format(game['price']) }}
+                  {% endif %}
+                </span>
+              {% else %}
+                <span style="color:var(--muted);">—</span>
+              {% endif %}
+            </td>
+            <td style="text-align:center;">
+              {% if game.get('community_enjoyment') %}
+                {% set score = game.get('community_enjoyment') %}
+                {% if score == 10 %}
+                  {% set hue = 120 %}
+                  {% set sat = 95 %}
+                  {% set light = 35 %}
+                  {% set border = 'inset 0 0 0 2px #ffd700' %}
+                {% elif score >= 7 %}
+                  {% set hue = 60 + ((score - 7) / 3) * 60 %}
+                  {% set sat = 78 %}
+                  {% set light = 42 %}
+                  {% set border = '' %}
+                {% elif score >= 5 %}
+                  {% set hue = ((score - 5) / 2) * 60 %}
+                  {% set sat = 78 %}
+                  {% set light = 42 %}
+                  {% set border = '' %}
+                {% else %}
+                  {% set hue = 0 %}
+                  {% set sat = 78 %}
+                  {% set light = 42 %}
+                  {% set border = '' %}
+                {% endif %}
+                <div class="badge" style="background:hsl({{ hue }}, {{ sat }}%, {{ light }}%);{% if border %}box-shadow:{{ border }};{% endif %}">
+                  {{ score|int if score == score|int else score }}
+                </div>
+              {% else %}
+                <div class="badge empty">—</div>
+              {% endif %}
+            </td>
+            <td style="text-align:right;padding-right:16px;">
+              <a href="/edit/{{ game['game_id'] }}" class="btn" style="display:inline-block;margin-right:6px;">Add Review</a>
+              <form method="post" action="/delete/{{ game['game_id'] }}" style="display:inline">
+                <button class="btn" type="submit" onclick="return confirm('Remove from backlog?')">Remove</button>
+              </form>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% if not games %}
+        <p class="empty" style="padding:40px;text-align:center;color:var(--muted);">No games in backlog. Add games from the Games page!</p>
+      {% endif %}
+      </div>
+    </main>
+
+    <script>
+      // Drag and drop functionality for backlog ordering
+      let currentDrag = null;
+      let lastSwapTarget = null;
+
+      const tbody = document.querySelector('.full-list tbody');
+      const rows = tbody.querySelectorAll('tr.draggable');
+
+      rows.forEach(row => {
+        row.addEventListener('dragstart', handleDragStart);
+        row.addEventListener('dragend', handleDragEnd);
+        row.addEventListener('dragover', handleDragOver);
+        row.addEventListener('drop', handleDrop);
+      });
+
+      function handleDragStart(e) {
+        currentDrag = this;
+        this.classList.add('dragging');
+        e.dataTransfer.effectAllowed = 'move';
+        // Remove ghost image
+        const img = new Image();
+        img.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
+        e.dataTransfer.setDragImage(img, 0, 0);
+      }
+
+      function handleDragEnd(e) {
+        this.classList.remove('dragging');
+        currentDrag = null;
+        lastSwapTarget = null;
+      }
+
+      function handleDragOver(e) {
+        if (e.preventDefault) e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+        
+        if (!currentDrag || this === currentDrag) return false;
+        
+        // Prevent rapid fire swaps
+        if (lastSwapTarget === this) return false;
+        
+        const rect = this.getBoundingClientRect();
+        const midpoint = rect.top + rect.height / 2;
+        const isCursorAbove = e.clientY < midpoint;
+
+        const allRows = Array.from(tbody.querySelectorAll('tr'));
+        const dragIndex = allRows.indexOf(currentDrag);
+        const targetIndex = allRows.indexOf(this);
+        
+        // Only swap if dragging upward and cursor is above midpoint
+        if (dragIndex > targetIndex && isCursorAbove) {
+          // Store position for animation
+          const targetRect = this.getBoundingClientRect();
+          
+          tbody.insertBefore(currentDrag, this);
+          lastSwapTarget = this;
+          
+          // Animate the target row sliding down
+          const newTargetRect = this.getBoundingClientRect();
+          const deltaY = targetRect.top - newTargetRect.top;
+          
+          this.style.transform = `translateY(${deltaY}px)`;
+          this.style.transition = 'none';
+          
+          requestAnimationFrame(() => {
+            this.style.transition = 'transform 200ms cubic-bezier(0.2, 0, 0.2, 1)';
+            this.style.transform = '';
+          });
+          
+          updateRankNumbers();
+        }
+        // Or if dragging downward and cursor is below midpoint
+        else if (dragIndex < targetIndex && !isCursorAbove) {
+          // Store position for animation
+          const targetRect = this.getBoundingClientRect();
+          
+          const nextSibling = this.nextSibling;
+          if (nextSibling) {
+            tbody.insertBefore(currentDrag, nextSibling);
+          } else {
+            tbody.appendChild(currentDrag);
+          }
+          lastSwapTarget = this;
+          
+          // Animate the target row sliding up
+          const newTargetRect = this.getBoundingClientRect();
+          const deltaY = targetRect.top - newTargetRect.top;
+          
+          this.style.transform = `translateY(${deltaY}px)`;
+          this.style.transition = 'none';
+          
+          requestAnimationFrame(() => {
+            this.style.transition = 'transform 200ms cubic-bezier(0.2, 0, 0.2, 1)';
+            this.style.transform = '';
+          });
+          
+          updateRankNumbers();
+        }
+        
+        return false;
+      }
+
+      function updateRankNumbers() {
+        const allRows = Array.from(tbody.querySelectorAll('tr'));
+        allRows.forEach((row, idx) => {
+          row.querySelector('.rank').textContent = idx + 1;
+        });
+      }
+      
+      // Reorder by typing a number
+      function reorderByNumber(input) {
+        const gameId = parseInt(input.dataset.gameId);
+        let newPosition = parseInt(input.value);
+        const tbody = document.querySelector('.full-list tbody');
+        const rows = Array.from(tbody.querySelectorAll('tr'));
+        const currentRow = rows.find(r => parseInt(r.dataset.gameId) === gameId);
+        
+        if (!currentRow || !newPosition || newPosition < 1 || newPosition > rows.length) {
+          // Invalid position, reset to current
+          input.value = input.dataset.original;
+          return;
+        }
+        
+        // Remove the current row from the array to calculate correct insertion
+        const currentIndex = rows.indexOf(currentRow);
+        rows.splice(currentIndex, 1);
+        
+        // Insert at the new position (adjust for 1-based to 0-based index)
+        const targetIndex = newPosition - 1;
+        
+        // Reorder in DOM
+        if (targetIndex === 0) {
+          tbody.insertBefore(currentRow, tbody.firstChild);
+        } else if (targetIndex >= rows.length) {
+          tbody.appendChild(currentRow);
+        } else {
+          tbody.insertBefore(currentRow, rows[targetIndex]);
+        }
+        
+        // Update all rank inputs
+        const allRows = Array.from(tbody.querySelectorAll('tr'));
+        allRows.forEach((row, idx) => {
+          const rankInput = row.querySelector('.rank-input');
+          if (rankInput) {
+            rankInput.value = idx + 1;
+            rankInput.dataset.original = idx + 1;
+          }
+        });
+        
+        // Save new order to backend
+        const newOrder = allRows.map(r => parseInt(r.dataset.gameId));
+        fetch('/api/reorder_backlog', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({game_ids: newOrder})
+        });
+      }
+
+      function updateRankNumbers() {
+        const allRows = Array.from(tbody.querySelectorAll('tr'));
+        allRows.forEach((row, idx) => {
+          const rankInput = row.querySelector('.rank-input');
+          if (rankInput) {
+            rankInput.value = idx + 1;
+            rankInput.dataset.original = idx + 1;
+          }
+        });
+      }
+
+      function handleDrop(e) {
+        if (e.stopPropagation) e.stopPropagation();
+        if (!currentDrag) return;
+
+        // Save new order to backend
+        const allRows = Array.from(tbody.querySelectorAll('tr'));
+        const newOrder = allRows.map(r => parseInt(r.dataset.gameId));
+        fetch('/api/reorder_backlog', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({game_ids: newOrder})
+        });
+
+        return false;
+      }
+    </script>
+    <script>
+      // Measure the header and search bar, set padding and sticky positions
+      (function(){
+        const h = document.querySelector('body > header');
+        const searchBar = document.querySelector('body > div'); // The search bar div
+        const mainContent = document.querySelector('main');
+        const firstRow = document.querySelector('.full-list thead tr:first-child');
+
+        let hh = 0;
+        let searchBarHeight = 0;
+        let isSearchBarVisible = true;
+        let isInitialized = false;
+
+        function updateTableHeaderPositions() {
+          if(!h || !firstRow) return;
+
+          // Determine offset based on search bar visibility
+          const offset = isSearchBarVisible ? (hh + searchBarHeight) : hh;
+
+          // Update sticky table header
+          firstRow.querySelectorAll('th').forEach(th => {
+            th.style.top = offset + 'px';
+            // Only apply transition after initial setup
+            if(isInitialized) {
+              th.style.transition = 'top 0.2s ease';
+            }
+          });
+        }
+
+        function updateHeaderHeight(){
+          if(!h) return;
+          hh = h.getBoundingClientRect().height;
+          document.body.style.setProperty('--header-h', hh + 'px');
+
+          if(searchBar) {
+            searchBarHeight = searchBar.getBoundingClientRect().height;
+            const totalOffset = hh + searchBarHeight;
+
+            // Update main content padding to account for both header and search bar
+            // Reduce by 48px for tighter spacing
+            if(mainContent) {
+              mainContent.style.paddingTop = (totalOffset - 48) + 'px';
+            }
+          }
+
+          updateTableHeaderPositions();
+        }
+
+        // Check search bar visibility on scroll
+        function checkSearchBarVisibility() {
+          if(!searchBar) return;
+
+          const rect = searchBar.getBoundingClientRect();
+          const wasVisible = isSearchBarVisible;
+
+          // Search bar is visible if its bottom is below the header
+          isSearchBarVisible = rect.bottom > hh;
+
+          // Only update if visibility changed
+          if(wasVisible !== isSearchBarVisible) {
+            updateTableHeaderPositions();
+          }
+        }
+
+        window.addEventListener('scroll', checkSearchBarVisibility, { passive: true });
+        checkSearchBarVisibility();
+
+        window.addEventListener('load', updateHeaderHeight);
+        window.addEventListener('resize', updateHeaderHeight);
+        updateHeaderHeight();
+
+        // Run again after fonts load
+        if (document.fonts && document.fonts.ready) {
+          document.fonts.ready.then(updateHeaderHeight).catch(()=>{});
+        }
+
+        // Enable transitions after initial positioning
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            isInitialized = true;
+          });
+        });
+      })();
+    </script>
+  </body>
+</html>

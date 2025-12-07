@@ -1,0 +1,731 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Top Lists - PeerPulse</title>
+    <link rel="stylesheet" href="/static/style.css">
+  </head>
+  <body>
+    {% include 'header.html' %}
+    
+    <main style="padding-top: 16px;">
+      <div class="tabs-container">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+          <div class="tabs">
+            <button class="tab-btn {% if category == 'overall' %}active{% endif %}" onclick="window.location.href='?category=overall{% if friend_username %}&friend={{ friend_username }}{% endif %}'" style="{% if category == 'overall' %}background: #667eea; border-color: #764ba2;{% else %}background: #2a2a2a; border-color: #444;{% endif %}">Overall</button>
+            <button class="tab-btn {% if category == 'gameplay' %}active{% endif %}" onclick="window.location.href='?category=gameplay{% if friend_username %}&friend={{ friend_username }}{% endif %}'" style="{% if category == 'gameplay' %}background: #667eea; border-color: #764ba2;{% else %}background: #2a2a2a; border-color: #444;{% endif %}">Gameplay</button>
+            <button class="tab-btn {% if category == 'music' %}active{% endif %}" onclick="window.location.href='?category=music{% if friend_username %}&friend={{ friend_username }}{% endif %}'" style="{% if category == 'music' %}background: #667eea; border-color: #764ba2;{% else %}background: #2a2a2a; border-color: #444;{% endif %}">Music</button>
+            <button class="tab-btn {% if category == 'narrative' %}active{% endif %}" onclick="window.location.href='?category=narrative{% if friend_username %}&friend={{ friend_username }}{% endif %}'" style="{% if category == 'narrative' %}background: #667eea; border-color: #764ba2;{% else %}background: #2a2a2a; border-color: #444;{% endif %}">Narrative</button>
+          </div>
+          <div style="display: flex; gap: 10px;">
+            {% if friend_username %}
+              <button class="btn" onclick="window.location.href='?category={{ category }}'" style="background: #444; border-color: #555;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;">
+                  <path d="M19 12H5M12 19l-7-7 7-7"/>
+                </svg>
+                Back to My List
+              </button>
+            {% else %}
+              <button class="btn" id="editOrderBtn" onclick="toggleEditMode()" style="background: #444; border-color: #555;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;">
+                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                  <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                </svg>
+                Edit Order
+              </button>
+              <button class="btn" onclick="shareTopList()" style="margin-left: 10px; background: #2a2a2a; border-color: #444;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;">
+                  <circle cx="18" cy="5" r="3"></circle>
+                  <circle cx="6" cy="12" r="3"></circle>
+                  <circle cx="18" cy="19" r="3"></circle>
+                  <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+                  <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+                </svg>
+                Share List
+              </button>
+              <button class="btn" onclick="openCompareModal()" style="margin-left: 10px; background: #667eea; border-color: #764ba2;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;">
+                  <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                  <circle cx="8.5" cy="7" r="4"></circle>
+                  <polyline points="17 11 19 13 23 9"></polyline>
+                </svg>
+                Compare with Friends
+              </button>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+
+      <!-- Compare Modal -->
+      <div id="compareModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; align-items: center; justify-content: center;">
+        <div style="background: #1a1a1a; border: 1px solid #333; border-radius: 12px; padding: 32px; max-width: 500px; width: 90%; max-height: 80vh; overflow-y: auto;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+            <h2 style="margin: 0; color: #fff; font-size: 24px;">Compare with Friend</h2>
+            <button onclick="closeCompareModal()" style="background: none; border: none; color: #888; font-size: 28px; cursor: pointer; padding: 0; line-height: 1;">&times;</button>
+          </div>
+          <div id="friendsList" style="display: flex; flex-direction: column; gap: 12px;">
+            <div style="text-align: center; color: #888; padding: 20px;">Loading friends...</div>
+          </div>
+        </div>
+      </div>
+
+      {% if friend_username and friend_games %}
+        <!-- Comparison View - Two Lists Side by Side -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; max-width: 1400px; margin: 0 auto; padding: 0 20px;">
+          <!-- User's List -->
+          <div>
+            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 20px; padding: 16px; background: #2a2a2a; border-radius: 8px; border: 2px solid #667eea;">
+              {% if profile and profile.profile_picture %}
+                <img src="{{ profile.profile_picture }}" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;" alt="{{ username }}">
+              {% else %}
+                <div style="width: 40px; height: 40px; border-radius: 50%; background: #667eea; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 700; font-size: 16px;">
+                  {{ username[0].upper() if username else '?' }}
+                </div>
+              {% endif %}
+              <span style="font-weight: 600; font-size: 18px; color: #fff;">{{ username }}'s Top {{ category|capitalize }}</span>
+            </div>
+            <div class="full-list" style="padding: 0;">
+              {% for game in games %}
+              <div class="full-card compact" style="grid-template-columns: 60px 140px 1fr auto;">
+                <div class="rank-badge-large" style="min-width: 60px; font-size: 24px; padding: 8px;">
+                  <span class="rank-display">#{{ loop.index }}</span>
+                </div>
+
+                <div class="full-card-cover" style="width: 140px; height: 65px;">
+                  {% if game.cover_path %}
+                    <img src="{{ game.cover_path }}" alt="{{ game.name }}">
+                  {% else %}
+                    <div class="nocover">No Cover</div>
+                  {% endif %}
+                </div>
+
+                <div class="full-card-info">
+                  <div class="full-card-header">
+                    <a href="/game/{{ game.game_id }}" style="text-decoration: none; color: inherit;">
+                      <h3 style="font-size: 16px;">{{ game.name }}</h3>
+                    </a>
+                  </div>
+                </div>
+
+                <div class="score-box highlight" style="background: #667eea; border-color: #764ba2; min-width: 60px;">
+                  <span class="score-value" style="font-size: 20px;">{{ "%.1f"|format(game.get(score_key)) if game.get(score_key) is not none and game.get(score_key)|float % 1 != 0 else ("%.0f"|format(game.get(score_key)) if game.get(score_key) is not none else "-") }}</span>
+                </div>
+              </div>
+              {% endfor %}
+            </div>
+          </div>
+
+          <!-- Friend's List -->
+          <div>
+            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 20px; padding: 16px; background: #2a2a2a; border-radius: 8px; border: 2px solid #f59e0b;">
+              {% if friend_profile and friend_profile.profile_picture %}
+                <img src="{{ friend_profile.profile_picture }}" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;" alt="{{ friend_username }}">
+              {% else %}
+                <div style="width: 40px; height: 40px; border-radius: 50%; background: #f59e0b; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 700; font-size: 16px;">
+                  {{ friend_username[0].upper() if friend_username else '?' }}
+                </div>
+              {% endif %}
+              <span style="font-weight: 600; font-size: 18px; color: #fff;">{{ friend_username }}'s Top {{ category|capitalize }}</span>
+            </div>
+            <div class="full-list" style="padding: 0;">
+              {% for game in friend_games %}
+              <div class="full-card compact" style="grid-template-columns: 60px 140px 1fr auto;">
+                <div class="rank-badge-large" style="min-width: 60px; font-size: 24px; padding: 8px; background: linear-gradient(135deg, #f59e0b, #d97706); border-color: #f59e0b;">
+                  <span class="rank-display">#{{ loop.index }}</span>
+                </div>
+
+                <div class="full-card-cover" style="width: 140px; height: 65px;">
+                  {% if game.cover_path %}
+                    <img src="{{ game.cover_path }}" alt="{{ game.name }}">
+                  {% else %}
+                    <div class="nocover">No Cover</div>
+                  {% endif %}
+                </div>
+
+                <div class="full-card-info">
+                  <div class="full-card-header">
+                    <a href="/game/{{ game.game_id }}" style="text-decoration: none; color: inherit;">
+                      <h3 style="font-size: 16px;">{{ game.name }}</h3>
+                    </a>
+                  </div>
+                </div>
+
+                <div class="score-box highlight" style="background: #f59e0b; border-color: #d97706; min-width: 60px;">
+                  <span class="score-value" style="font-size: 20px;">{{ "%.1f"|format(game.get(score_key)) if game.get(score_key) is not none and game.get(score_key)|float % 1 != 0 else ("%.0f"|format(game.get(score_key)) if game.get(score_key) is not none else "-") }}</span>
+                </div>
+              </div>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+      {% else %}
+        <!-- Single List View -->
+        <div class="full-list" id="topList">
+          {% for game in games %}
+          {% if loop.index == 1 %}
+          <!-- Special frame for #1 game -->
+          <div class="favorite-frame">
+            <div class="favorite-header">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="#FFD700" stroke="#FFD700" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 8px;">
+                <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path>
+                <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path>
+                <path d="M4 22h16"></path>
+                <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"></path>
+                <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"></path>
+                <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"></path>
+              </svg>
+              <span style="font-size: 20px; font-weight: 700; color: #FFD700;">YOUR FAVORITE</span>
+            </div>
+          {% endif %}
+          <div class="full-card{% if loop.index == 1 %} favorite-card{% endif %}" data-game-id="{{ game.game_id }}" data-score="{{ game.get(score_key) }}">
+            <div class="rank-badge-large{% if loop.index == 1 %} rank-badge-favorite{% endif %}" data-rank="{{ loop.index }}">
+              <span class="rank-display">#{{ loop.index }}</span>
+              <input type="number" class="rank-input" value="{{ loop.index }}" min="1" max="{{ games|length }}" style="display: none;">
+            </div>
+
+            <div class="full-card-cover">
+              {% if game.cover_path %}
+                <img src="{{ game.cover_path }}" alt="{{ game.name }}">
+              {% else %}
+                <div class="nocover">No Cover</div>
+              {% endif %}
+            </div>
+
+            <div class="full-card-info">
+              <div class="full-card-header">
+                <a href="/game/{{ game.game_id }}" style="text-decoration: none; color: inherit; flex: 1; min-width: 0;">
+                  <h3>{{ game.name }}</h3>
+                </a>
+              </div>
+              <p class="full-card-meta">{{ game.release_date if game.release_date else 'Unknown Year' }} • {{ game.genres if game.genres else 'No Genre' }}</p>
+            </div>
+
+            <div class="full-card-scores">
+              {% if category == 'overall' %}
+                <div class="score-box highlight" style="background: #667eea; border-color: #764ba2;">
+                  <span class="score-label">Overall</span>
+                  <span class="score-value">{{ "%.1f"|format(game.enjoyment_score) if game.enjoyment_score is not none and game.enjoyment_score|float % 1 != 0 else ("%.0f"|format(game.enjoyment_score) if game.enjoyment_score is not none else "-") }}</span>
+                </div>
+              {% else %}
+                <div class="score-box" style="background: #2a2a2a; border-color: #444;">
+                  <span class="score-label">Overall</span>
+                  <span class="score-value">{{ "%.1f"|format(game.enjoyment_score) if game.enjoyment_score is not none and game.enjoyment_score|float % 1 != 0 else ("%.0f"|format(game.enjoyment_score) if game.enjoyment_score is not none else "-") }}</span>
+                </div>
+              {% endif %}
+
+              {% if category == 'gameplay' %}
+                <div class="score-box highlight" style="background: #667eea; border-color: #764ba2;">
+                  <span class="score-label">Gameplay</span>
+                  <span class="score-value">{{ "%.1f"|format(game.gameplay_score) if game.gameplay_score is not none and game.gameplay_score|float % 1 != 0 else ("%.0f"|format(game.gameplay_score) if game.gameplay_score is not none else "-") }}</span>
+                </div>
+              {% else %}
+                <div class="score-box" style="background: #2a2a2a; border-color: #444;">
+                  <span class="score-label">Gameplay</span>
+                  <span class="score-value">{{ "%.1f"|format(game.gameplay_score) if game.gameplay_score is not none and game.gameplay_score|float % 1 != 0 else ("%.0f"|format(game.gameplay_score) if game.gameplay_score is not none else "-") }}</span>
+                </div>
+              {% endif %}
+
+              {% if category == 'music' %}
+                <div class="score-box highlight" style="background: #667eea; border-color: #764ba2;">
+                  <span class="score-label">Music</span>
+                  <span class="score-value">{{ "%.1f"|format(game.music_score) if game.music_score is not none and game.music_score|float % 1 != 0 else ("%.0f"|format(game.music_score) if game.music_score is not none else "-") }}</span>
+                </div>
+              {% else %}
+                <div class="score-box" style="background: #2a2a2a; border-color: #444;">
+                  <span class="score-label">Music</span>
+                  <span class="score-value">{{ "%.1f"|format(game.music_score) if game.music_score is not none and game.music_score|float % 1 != 0 else ("%.0f"|format(game.music_score) if game.music_score is not none else "-") }}</span>
+                </div>
+              {% endif %}
+
+              {% if category == 'narrative' %}
+                <div class="score-box highlight" style="background: #667eea; border-color: #764ba2;">
+                  <span class="score-label">Narrative</span>
+                  <span class="score-value">{{ "%.1f"|format(game.narrative_score) if game.narrative_score is not none and game.narrative_score|float % 1 != 0 else ("%.0f"|format(game.narrative_score) if game.narrative_score is not none else "-") }}</span>
+                </div>
+              {% else %}
+                <div class="score-box" style="background: #2a2a2a; border-color: #444;">
+                  <span class="score-label">Narrative</span>
+                  <span class="score-value">{{ "%.1f"|format(game.narrative_score) if game.narrative_score is not none and game.narrative_score|float % 1 != 0 else ("%.0f"|format(game.narrative_score) if game.narrative_score is not none else "-") }}</span>
+                </div>
+              {% endif %}
+            </div>
+
+            <div class="full-card-actions">
+              <a href="/game/{{ game.game_id }}" class="btn btn-small">View Details</a>
+              <a href="/edit/{{ game.game_id }}" class="btn btn-small">Edit Review</a>
+            </div>
+          </div>
+          {% if loop.index == 1 %}
+          </div> <!-- Close favorite-frame -->
+          {% endif %}
+          {% endfor %}
+        </div>
+
+        {% if not games %}
+          <p style="text-align: center; color: #888; margin-top: 40px;">No games with {{ category }} scores yet. Start rating your games!</p>
+        {% endif %}
+      {% endif %}
+    </main>
+    
+    <script>
+      let editMode = false;
+      let draggedElement = null;
+      const category = '{{ category }}';
+      const scoreKey = '{{ score_key }}';
+
+      function toggleEditMode() {
+        editMode = !editMode;
+        const btn = document.getElementById('editOrderBtn');
+        const cards = document.querySelectorAll('.full-card');
+        
+        if (editMode) {
+          btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><polyline points="20 6 9 17 4 12"></polyline></svg>Save Order';
+          btn.style.background = '#0a7ea4';
+          btn.style.borderColor = '#0a7ea4';
+          
+          // Enable dragging and show number inputs
+          cards.forEach(card => {
+            card.draggable = true;
+            card.style.cursor = 'move';
+            const rankDisplay = card.querySelector('.rank-display');
+            const rankInput = card.querySelector('.rank-input');
+            rankDisplay.style.display = 'none';
+            rankInput.style.display = 'block';
+          });
+        } else {
+          btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>Edit Order';
+          btn.style.background = '#444';
+          btn.style.borderColor = '#555';
+          
+          // Disable dragging and hide number inputs
+          cards.forEach(card => {
+            card.draggable = false;
+            card.style.cursor = 'default';
+            const rankDisplay = card.querySelector('.rank-display');
+            const rankInput = card.querySelector('.rank-input');
+            rankDisplay.style.display = 'block';
+            rankInput.style.display = 'none';
+          });
+          
+          // Save the new order
+          saveOrder();
+        }
+      }
+
+      function saveOrder() {
+        const cards = Array.from(document.querySelectorAll('.full-card'));
+        const score = cards[0]?.dataset.score;
+        const gameIds = cards.map(card => parseInt(card.dataset.gameId));
+        
+        fetch('/api/reorder_ties', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            score_key: scoreKey,
+            group_score: parseFloat(score),
+            ordered_game_ids: gameIds
+          })
+        })
+        .then(res => res.json())
+        .then(data => {
+          if (data.success) {
+            location.reload();
+          } else {
+            alert('Failed to save order');
+          }
+        })
+        .catch(err => {
+          console.error(err);
+          alert('Error saving order');
+        });
+      }
+
+      // Drag and drop handlers
+      document.addEventListener('DOMContentLoaded', () => {
+        const list = document.getElementById('topList');
+        
+        list.addEventListener('dragstart', (e) => {
+          if (!editMode) return;
+          draggedElement = e.target.closest('.full-card');
+          if (draggedElement) {
+            draggedElement.style.opacity = '0.5';
+          }
+        });
+        
+        list.addEventListener('dragend', (e) => {
+          if (draggedElement) {
+            draggedElement.style.opacity = '1';
+            draggedElement = null;
+          }
+          updateRankDisplays();
+        });
+        
+        list.addEventListener('dragover', (e) => {
+          if (!editMode) return;
+          e.preventDefault();
+          const afterElement = getDragAfterElement(list, e.clientY);
+          if (afterElement == null) {
+            list.appendChild(draggedElement);
+          } else {
+            list.insertBefore(draggedElement, afterElement);
+          }
+        });
+        
+        // Handle rank input changes
+        list.addEventListener('input', (e) => {
+          if (e.target.classList.contains('rank-input')) {
+            const card = e.target.closest('.full-card');
+            const newRank = parseInt(e.target.value);
+            const cards = Array.from(list.querySelectorAll('.full-card'));
+            const currentIndex = cards.indexOf(card);
+            
+            if (newRank >= 1 && newRank <= cards.length && newRank !== currentIndex + 1) {
+              // Remove card from current position
+              card.remove();
+              // Insert at new position
+              if (newRank === 1) {
+                list.insertBefore(card, cards[0]);
+              } else if (newRank >= cards.length) {
+                list.appendChild(card);
+              } else {
+                list.insertBefore(card, cards[newRank - 1]);
+              }
+              updateRankDisplays();
+            }
+          }
+        });
+      });
+
+      function getDragAfterElement(container, y) {
+        const draggableElements = [...container.querySelectorAll('.full-card:not(.dragging)')];
+        
+        return draggableElements.reduce((closest, child) => {
+          const box = child.getBoundingClientRect();
+          const offset = y - box.top - box.height / 2;
+          
+          if (offset < 0 && offset > closest.offset) {
+            return { offset: offset, element: child };
+          } else {
+            return closest;
+          }
+        }, { offset: Number.NEGATIVE_INFINITY }).element;
+      }
+
+      function updateRankDisplays() {
+        const cards = document.querySelectorAll('.full-card');
+        cards.forEach((card, index) => {
+          const rank = index + 1;
+          card.querySelector('.rank-display').textContent = '#' + rank;
+          card.querySelector('.rank-input').value = rank;
+          card.dataset.rank = rank;
+        });
+      }
+
+      function shareTopList() {
+        const url = window.location.href;
+        if (navigator.share) {
+          navigator.share({
+            title: 'My Top 10 {{ category|capitalize }} Games',
+            text: 'Check out my top 10 {{ category }} games!',
+            url: url
+          }).catch(err => console.log('Share cancelled'));
+        } else {
+          // Fallback: copy to clipboard
+          navigator.clipboard.writeText(url).then(() => {
+            const btn = event.target.closest('button');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '✓ Link Copied!';
+            btn.style.background = '#0d9ec9';
+            setTimeout(() => {
+              btn.innerHTML = originalText;
+              btn.style.background = '';
+            }, 2000);
+          }).catch(err => {
+            alert('Failed to copy link');
+          });
+        }
+      }
+
+      function openCompareModal() {
+        const modal = document.getElementById('compareModal');
+        modal.style.display = 'flex';
+
+        // Fetch friends list
+        fetch('/api/friends')
+          .then(res => res.json())
+          .then(data => {
+            const friendsList = document.getElementById('friendsList');
+
+            if (data.friends && data.friends.length > 0) {
+              friendsList.innerHTML = data.friends.map(friend => `
+                <div onclick="compareWithFriend('${friend.username}')" style="display: flex; align-items: center; gap: 12px; padding: 12px; background: #2a2a2a; border: 1px solid #444; border-radius: 8px; cursor: pointer; transition: all 0.2s ease;">
+                  ${friend.profile_picture
+                    ? `<img src="${friend.profile_picture}" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;" alt="${friend.username}">`
+                    : `<div style="width: 40px; height: 40px; border-radius: 50%; background: #444; display: flex; align-items: center; justify-content: center; font-weight: 600; color: #888;">${friend.username[0].toUpperCase()}</div>`
+                  }
+                  <span style="color: #fff; font-weight: 500; font-size: 16px;">${friend.username}</span>
+                </div>
+              `).join('');
+
+              // Add hover effect
+              friendsList.querySelectorAll('div[onclick]').forEach(item => {
+                item.addEventListener('mouseenter', function() {
+                  this.style.background = '#333';
+                  this.style.borderColor = '#667eea';
+                });
+                item.addEventListener('mouseleave', function() {
+                  this.style.background = '#2a2a2a';
+                  this.style.borderColor = '#444';
+                });
+              });
+            } else {
+              friendsList.innerHTML = '<div style="text-align: center; color: #888; padding: 20px;">No friends yet. Add friends to compare your top lists!</div>';
+            }
+          })
+          .catch(err => {
+            console.error(err);
+            document.getElementById('friendsList').innerHTML = '<div style="text-align: center; color: #f66; padding: 20px;">Error loading friends</div>';
+          });
+      }
+
+      function closeCompareModal() {
+        document.getElementById('compareModal').style.display = 'none';
+      }
+
+      function compareWithFriend(friendUsername) {
+        // Navigate to toplists comparison with friend's username and current category
+        window.location.href = `/toplists?friend=${encodeURIComponent(friendUsername)}&category=${category}`;
+      }
+
+      // Close modal when clicking outside of it
+      document.addEventListener('DOMContentLoaded', () => {
+        const modal = document.getElementById('compareModal');
+        modal.addEventListener('click', (e) => {
+          if (e.target === modal) {
+            closeCompareModal();
+          }
+        });
+      });
+    </script>
+    
+    <style>
+      .tabs-container {
+        max-width: 1400px;
+        margin: 0 auto 30px;
+        padding: 0 20px;
+      }
+      .tabs {
+        display: flex;
+        gap: 10px;
+        border-bottom: 2px solid #333;
+        padding-bottom: 2px;
+      }
+      .tab-btn {
+        background: #1a1a1a;
+        border: 1px solid #333;
+        border-bottom: none;
+        color: #ccc;
+        padding: 12px 24px;
+        cursor: pointer;
+        font-size: 15px;
+        font-weight: 600;
+        transition: all 0.2s ease;
+        border-radius: 6px 6px 0 0;
+      }
+      .tab-btn:hover {
+        background: #252525;
+        color: #fff;
+      }
+      .tab-btn.active {
+        background: #0a7ea4;
+        color: #fff;
+        border-color: #0a7ea4;
+      }
+      .full-list {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 0 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+      }
+      .full-card {
+        display: grid;
+        grid-template-columns: 80px 200px 1fr auto auto;
+        gap: 20px;
+        align-items: center;
+        background: #2a2a2a;
+        border: 1px solid #444;
+        border-radius: 8px;
+        padding: 20px;
+        transition: all 0.2s ease;
+      }
+      .full-card:hover {
+        border-color: #667eea;
+        background: #333;
+      }
+      .rank-badge-large {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        border: 2px solid #667eea;
+        color: #fff;
+        font-weight: 700;
+        font-size: 28px;
+        padding: 12px;
+        border-radius: 8px;
+        text-align: center;
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        min-width: 80px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .rank-input {
+        width: 50px;
+        font-size: 28px;
+        font-weight: 700;
+        text-align: center;
+        background: transparent;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        border-radius: 4px;
+        color: #fff;
+        padding: 4px;
+      }
+      .rank-input:focus {
+        outline: none;
+        border-color: #fff;
+      }
+      .full-card-cover {
+        width: 200px;
+        height: 93px;
+        overflow: hidden;
+        border-radius: 6px;
+        border: 1px solid #333;
+        flex-shrink: 0;
+      }
+      .full-card-cover img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+      .full-card-cover .nocover {
+        width: 100%;
+        height: 100%;
+        background: #2a2a2a;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #666;
+        font-size: 14px;
+      }
+      .full-card-info {
+        flex: 1;
+        min-width: 0;
+      }
+      .full-card-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 8px;
+      }
+      .full-card-header h3 {
+        margin: 0;
+        font-size: 20px;
+        color: #fff;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        transition: color 0.2s ease;
+      }
+      .full-card-header a:hover h3 {
+        color: #0a7ea4;
+      }
+      .full-card-meta {
+        margin: 0;
+        color: #888;
+        font-size: 14px;
+      }
+      .full-card-scores {
+        display: flex;
+        gap: 12px;
+        flex-shrink: 0;
+      }
+      .score-box {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 10px 16px;
+        background: #2a2a2a;
+        border: 1px solid #444;
+        border-radius: 6px;
+        min-width: 80px;
+      }
+      .score-box.highlight {
+        background: #0a7ea4;
+        border-color: #0a7ea4;
+      }
+      .score-label {
+        font-size: 12px;
+        color: #888;
+        text-transform: uppercase;
+        font-weight: 600;
+        margin-bottom: 4px;
+      }
+      .score-box.highlight .score-label {
+        color: #fff;
+      }
+      .score-value {
+        font-size: 24px;
+        font-weight: 700;
+        color: #fff;
+      }
+      .full-card-actions {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        flex-shrink: 0;
+      }
+
+      /* Favorite #1 game frame styles */
+      .favorite-frame {
+        background: linear-gradient(135deg, rgba(255, 215, 0, 0.15), rgba(255, 165, 0, 0.1));
+        border: 3px solid #FFD700;
+        border-radius: 16px;
+        padding: 24px;
+        margin-bottom: 30px;
+        box-shadow: 0 8px 32px rgba(255, 215, 0, 0.2), 0 0 60px rgba(255, 215, 0, 0.1);
+        position: relative;
+      }
+      .favorite-header {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 20px;
+        padding-bottom: 16px;
+        border-bottom: 2px solid rgba(255, 215, 0, 0.3);
+      }
+      .favorite-card {
+        border-color: #FFD700 !important;
+        box-shadow: 0 4px 20px rgba(255, 215, 0, 0.15);
+      }
+      .favorite-card:hover {
+        border-color: #FFA500 !important;
+        box-shadow: 0 6px 28px rgba(255, 215, 0, 0.25);
+      }
+      .rank-badge-favorite {
+        background: linear-gradient(135deg, #FFD700, #FFA500) !important;
+        border-color: #FFD700 !important;
+        box-shadow: 0 6px 20px rgba(255, 215, 0, 0.4) !important;
+        animation: pulse-gold 2s ease-in-out infinite;
+      }
+      @keyframes pulse-gold {
+        0%, 100% {
+          box-shadow: 0 6px 20px rgba(255, 215, 0, 0.4);
+        }
+        50% {
+          box-shadow: 0 8px 28px rgba(255, 215, 0, 0.6);
+        }
+      }
+    </style>
+  </body>
+</html>
