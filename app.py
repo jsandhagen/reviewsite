@@ -22,8 +22,34 @@ from database import (
     purchase_random_superlative
 )
 
+from dotenv import load_dotenv
+load_dotenv()
+
 app = Flask(__name__)
-app.secret_key = 'your-secret-key-change-in-production'  # Change this in production!
+app.secret_key = os.environ.get('FLASK_SECRET_KEY', 'dev-key-change-in-production')
+
+# Alpha testing invite code
+ALPHA_INVITE_CODE = os.environ.get('ALPHA_INVITE_CODE', 'ALPHA2025')
+
+# Security: HTTPS enforcement in production
+@app.before_request
+def enforce_https():
+    """Redirect HTTP to HTTPS in production"""
+    if os.environ.get('FORCE_HTTPS') == '1':
+        if not request.is_secure and not request.headers.get('X-Forwarded-Proto') == 'https':
+            url = request.url.replace('http://', 'https://', 1)
+            return redirect(url, code=301)
+
+# Security: Add security headers to all responses
+@app.after_request
+def add_security_headers(response):
+    """Add security headers to all responses"""
+    response.headers['X-Content-Type-Options'] = 'nosniff'
+    response.headers['X-Frame-Options'] = 'SAMEORIGIN'
+    response.headers['X-XSS-Protection'] = '1; mode=block'
+    if os.environ.get('FORCE_HTTPS') == '1':
+        response.headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains'
+    return response
 
 # Initialize database on startup
 init_db()
@@ -97,14 +123,19 @@ def register():
         username = request.form.get('username', '').strip()
         password = request.form.get('password', '').strip()
         confirm = request.form.get('confirm_password', '').strip()
+        invite_code = request.form.get('invite_code', '').strip()
         steam_url = request.form.get('steam_url', '').strip()
-        
+
+        # Check invite code for alpha access
+        if invite_code != ALPHA_INVITE_CODE:
+            return render_template('register.html', error='Invalid invite code. PeerPulse is currently in alpha testing.')
+
         if not username or not password:
             return render_template('register.html', error='Username and password required')
-        
+
         if password != confirm:
             return render_template('register.html', error='Passwords do not match')
-        
+
         if len(password) < 4:
             return render_template('register.html', error='Password must be at least 4 characters')
         
@@ -1961,4 +1992,6 @@ def api_unlock_superlative():
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    # Debug mode OFF in production
+    debug_mode = os.environ.get('FLASK_ENV') != 'production'
+    app.run(debug=debug_mode, host='0.0.0.0')
