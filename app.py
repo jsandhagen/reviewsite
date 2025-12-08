@@ -77,7 +77,8 @@ def login_required(f):
     """Decorator to require login for a route."""
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        if 'user_id' not in session:
+        user_id = session.get('user_id')
+        if not user_id:
             return redirect(url_for('login', next=request.url))
         return f(*args, **kwargs)
     return decorated_function
@@ -141,7 +142,9 @@ def register():
         
         success, message = create_user(username, password)
         if success:
-            user_id = verify_user(username, password)[1]
+            verified, user_id = verify_user(username, password)
+            if not verified or not user_id:
+                return render_template('register.html', error='Registration succeeded but login failed. Please try logging in.')
             session['user_id'] = user_id
             session['username'] = username
             
@@ -1732,8 +1735,17 @@ def api_send_friend_request():
     data = request.get_json() or {}
     username = data.get('username')
 
+    # Debug logging
+    print(f"DEBUG: send_friend_request called")
+    print(f"DEBUG: user_id from session: {user_id}")
+    print(f"DEBUG: session keys: {list(session.keys())}")
+    print(f"DEBUG: target username: {username}")
+
     if not username:
         return jsonify({'success': False, 'message': 'Username required'}), 400
+
+    if not user_id:
+        return jsonify({'success': False, 'message': 'Session error: user_id is None'}), 400
 
     success, message = send_friend_request(user_id, username)
     return jsonify({'success': success, 'message': message})
@@ -2015,6 +2027,17 @@ def backup_database():
         download_name=download_name,
         mimetype='application/x-sqlite3'
     )
+
+
+@app.route('/api/debug/session')
+def debug_session():
+    """Debug endpoint to check session state."""
+    return jsonify({
+        'session_data': dict(session),
+        'user_id': session.get('user_id'),
+        'username': session.get('username'),
+        'has_user_id_key': 'user_id' in session
+    })
 
 
 @app.route('/admin/db-status')
