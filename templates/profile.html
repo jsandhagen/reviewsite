@@ -506,7 +506,7 @@
               </form>
 
               <!-- Admin Database Backup Button -->
-              {% if user_is_admin %}
+              {% if is_admin %}
               <div class="upload-section" style="margin-top: 12px;">
                 <a href="{{ url_for('backup_database') }}" class="btn" style="text-decoration: none; display: inline-block;">
                   💾 Backup Database
