@@ -1991,6 +1991,26 @@ def api_unlock_superlative():
     return jsonify({'success': success, 'message': message, 'title': title_name})
 
 
+@app.route('/admin/backup-database')
+@admin_required
+def backup_database():
+    """Admin-only endpoint to download the database file."""
+    from flask import send_file
+    import os
+    from datetime import datetime
+
+    db_path = os.path.join(os.path.dirname(__file__), 'ratings.db')
+    timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+    download_name = f'ratings_backup_{timestamp}.db'
+
+    return send_file(
+        db_path,
+        as_attachment=True,
+        download_name=download_name,
+        mimetype='application/x-sqlite3'
+    )
+
+
 if __name__ == '__main__':
     # Debug mode OFF in production
     debug_mode = os.environ.get('FLASK_ENV') != 'production'
