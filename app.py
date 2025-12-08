@@ -72,13 +72,15 @@ bulk_update_status = {
     'logs': []
 }
 
+# Global tracker for Steam import during registration
+import_progress = {}
+
 
 def login_required(f):
     """Decorator to require login for a route."""
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        user_id = session.get('user_id')
-        if not user_id:
+        if 'user_id' not in session or not session.get('user_id'):
             return redirect(url_for('login', next=request.url))
         return f(*args, **kwargs)
     return decorated_function
@@ -99,6 +101,10 @@ def admin_required(f):
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    # Clear any corrupted session data
+    if 'user_id' in session and not session.get('user_id'):
+        session.clear()
+
     if request.method == 'POST':
         username = request.form.get('username', '').strip()
         password = request.form.get('password', '').strip()
@@ -120,6 +126,10 @@ def login():
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
+    # Clear any corrupted session data
+    if 'user_id' in session and not session.get('user_id'):
+        session.clear()
+
     if request.method == 'POST':
         username = request.form.get('username', '').strip()
         password = request.form.get('password', '').strip()
@@ -142,24 +152,60 @@ def register():
         
         success, message = create_user(username, password)
         if success:
-            user_id = verify_user(username, password)[1]
+            verified, user_id = verify_user(username, password)
+            if not verified or not user_id:
+                return render_template('register.html', error='Registration succeeded but login failed. Please try logging in.')
             session['user_id'] = user_id
             session['username'] = username
             
-            # If Steam URL provided, link it and import games
+            # If Steam URL provided, link it and start import in background with progress tracking
             if steam_url:
                 try:
                     from steam_integration import extract_steamid64, import_steam_games
                     steam_id = extract_steamid64(steam_url)
                     if steam_id:
                         set_user_steam_profile(user_id, steam_url)
-                        # Import games in background (don't block registration)
+
+                        # Initialize progress tracking for this user
+                        import_progress[user_id] = {
+                            'status': 'starting',
+                            'total': 0,
+                            'current': 0,
+                            'imported': 0,
+                            'message': 'Fetching Steam library...'
+                        }
+
+                        # Import games in background with progress tracking (non-daemon thread)
                         import threading
-                        def import_in_background():
+                        def import_with_progress():
                             try:
                                 games = import_steam_games(steam_id, download_covers=True, covers_dir=COVERS_DIR)
+
+                                if not games:
+                                    import_progress[user_id] = {
+                                        'status': 'complete',
+                                        'total': 0,
+                                        'current': 0,
+                                        'imported': 0,
+                                        'message': 'No games found. Make sure your game details are public.'
+                                    }
+                                    return
+
+                                import_progress[user_id] = {
+                                    'status': 'importing',
+                                    'total': len(games),
+                                    'current': 0,
+                                    'imported': 0,
+                                    'message': f'Importing {len(games)} games...'
+                                }
+
+                                imported_count = 0
                                 backlog_order = 1
-                                for game_data in games:
+
+                                for idx, game_data in enumerate(games, 1):
+                                    import_progress[user_id]['current'] = idx
+                                    import_progress[user_id]['message'] = f'Importing {game_data["name"]}...'
+
                                     game_id = add_or_get_game(
                                         name=game_data['name'],
                                         app_id=game_data['app_id'],
@@ -174,21 +220,17 @@ def register():
                                         sale_price=game_data.get('sale_price'),
                                         cover_etag=game_data.get('cover_etag')
                                     )
-                                    
+
                                     # Check if user already has this game
                                     with get_db() as conn:
                                         c = conn.cursor()
                                         c.execute('''
-                                            SELECT 1 FROM user_scores 
+                                            SELECT 1 FROM user_scores
                                             WHERE user_id = ? AND game_id = ?
                                         ''', (user_id, game_id))
                                         existing = c.fetchone()
-                                    
-                                    if existing:
-                                        # Game already exists - only update playtime
-                                        if game_data.get('playtime_hours'):
-                                            set_user_playtime(user_id, game_id, game_data['playtime_hours'])
-                                    else:
+
+                                    if not existing:
                                         # New game - add to backlog
                                         add_game_to_user_backlog(user_id, game_id)
                                         if game_data.get('playtime_hours'):
@@ -201,13 +243,35 @@ def register():
                                             )
                                             conn.commit()
                                         backlog_order += 1
+                                        imported_count += 1
+                                        import_progress[user_id]['imported'] = imported_count
+
+                                # Mark as complete
+                                import_progress[user_id] = {
+                                    'status': 'complete',
+                                    'total': len(games),
+                                    'current': len(games),
+                                    'imported': imported_count,
+                                    'message': f'Successfully imported {imported_count} games!'
+                                }
+
                             except Exception as e:
-                                print(f"Background Steam import error: {e}")
-                        
-                        threading.Thread(target=import_in_background, daemon=True).start()
+                                print(f"Steam import error during registration: {e}")
+                                import_progress[user_id] = {
+                                    'status': 'error',
+                                    'message': f'Import failed: {str(e)}'
+                                }
+
+                        thread = threading.Thread(target=import_with_progress, daemon=False)
+                        thread.start()
+
+                        # Redirect to processing page
+                        return redirect(url_for('registration_processing'))
+
                 except Exception as e:
                     print(f"Steam linking during registration failed: {e}")
-            
+                    session['warning'] = f'Registration successful, but Steam linking failed: {str(e)}'
+
             return redirect(url_for('index'))
         else:
             return render_template('register.html', error=message)
@@ -2081,6 +2145,25 @@ def db_status():
             'success': False,
             'error': str(e)
         })
+
+
+@app.route('/registration_processing')
+@login_required
+def registration_processing():
+    """Show processing page while Steam import is running"""
+    return render_template('registration_processing.html')
+
+
+@app.route('/api/import_progress')
+@login_required
+def get_import_progress():
+    """API endpoint to check Steam import progress"""
+    user_id = session.get('user_id')
+    progress = import_progress.get(user_id, {
+        'status': 'not_found',
+        'message': 'No import in progress'
+    })
+    return jsonify(progress)
 
 
 if __name__ == '__main__':

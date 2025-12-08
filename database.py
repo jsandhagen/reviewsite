@@ -231,11 +231,14 @@ def init_db():
 
 def create_user(username, password, user_type='user'):
     """Create a new user. Returns (success, message)."""
+    import hashlib
+    # Hash the password before storing
+    password_hash = hashlib.sha256(password.encode()).hexdigest()
     with get_db() as conn:
         c = conn.cursor()
         try:
             c.execute('INSERT INTO users (username, password, user_type) VALUES (?, ?, ?)',
-                     (username, password, user_type))
+                     (username, password_hash, user_type))
             conn.commit()
             return True, "User created successfully"
         except sqlite3.IntegrityError:
