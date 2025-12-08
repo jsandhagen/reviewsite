@@ -504,6 +504,16 @@
                 <input type="file" name="avatar" accept="image/png,image/jpeg,image/webp,image/gif">
                 <button class="btn" type="submit">Upload Picture</button>
               </form>
+
+              <!-- Admin Database Backup Button -->
+              {% if user_is_admin %}
+              <div class="upload-section" style="margin-top: 12px;">
+                <a href="{{ url_for('backup_database') }}" class="btn" style="text-decoration: none; display: inline-block;">
+                  💾 Backup Database
+                </a>
+                <small style="color: #888; margin-left: 8px;">Admin only - Download current database</small>
+              </div>
+              {% endif %}
               {% endif %}
             </div>
           </div>
