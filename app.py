@@ -2017,6 +2017,51 @@ def backup_database():
     )
 
 
+@app.route('/admin/db-status')
+@admin_required
+def db_status():
+    """Admin-only endpoint to check database tables and friend requests status."""
+    try:
+        with get_db() as conn:
+            c = conn.cursor()
+
+            # Check if friends table exists
+            c.execute("""
+                SELECT name FROM sqlite_master
+                WHERE type='table' AND name='friends'
+            """)
+            friends_table_exists = c.fetchone() is not None
+
+            # Count friend requests
+            c.execute("SELECT COUNT(*) as count FROM friends WHERE status='pending'")
+            pending_count = dict(c.fetchone())['count']
+
+            c.execute("SELECT COUNT(*) as count FROM friends WHERE status='accepted'")
+            accepted_count = dict(c.fetchone())['count']
+
+            # Get sample of recent requests
+            c.execute("""
+                SELECT f.id, f.user_id, f.friend_id, f.status, f.created_at
+                FROM friends f
+                ORDER BY f.created_at DESC
+                LIMIT 10
+            """)
+            recent_requests = [dict(row) for row in c.fetchall()]
+
+            return jsonify({
+                'success': True,
+                'friends_table_exists': friends_table_exists,
+                'pending_requests': pending_count,
+                'accepted_friendships': accepted_count,
+                'recent_requests': recent_requests
+            })
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        })
+
+
 if __name__ == '__main__':
     # Debug mode OFF in production
     debug_mode = os.environ.get('FLASK_ENV') != 'production'
