@@ -142,9 +142,7 @@ def register():
         
         success, message = create_user(username, password)
         if success:
-            verified, user_id = verify_user(username, password)
-            if not verified or not user_id:
-                return render_template('register.html', error='Registration succeeded but login failed. Please try logging in.')
+            user_id = verify_user(username, password)[1]
             session['user_id'] = user_id
             session['username'] = username
             
