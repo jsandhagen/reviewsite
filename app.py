@@ -880,108 +880,114 @@ def link_steam():
     """Link a Steam profile and import games to backlog."""
     user_id = session.get('user_id')
     steam_url = request.form.get('steam_url', '').strip()
-    
+
     if not steam_url:
         session['error'] = 'Please provide a Steam profile URL'
         return redirect(url_for('profile'))
-    
+
     try:
         from steam_integration import extract_steamid64, import_steam_games
         import requests as req_mod
-        
+
         # Validate Steam URL and extract Steam ID
         steam_id = extract_steamid64(steam_url)
         if not steam_id:
             session['error'] = 'Invalid Steam profile URL. Please use a valid Steam profile link.'
             return redirect(url_for('profile'))
-        
+
         # Save the Steam profile URL
         set_user_steam_profile(user_id, steam_url)
-        
-        # Import games from Steam
-        games = import_steam_games(steam_id, download_covers=True, covers_dir=COVERS_DIR)
-        
-        if not games:
-            session['error'] = 'Could not fetch games from Steam. Make sure your game details are public.'
-            return redirect(url_for('profile'))
-        
-        # Add games to database and user's backlog
-        imported_count = 0
-        updated_count = 0
-        backlog_order = 1
-        
-        for game_data in games:
-            # Add or get the game in the master games table
-            game_id = add_or_get_game(
-                name=game_data['name'],
-                app_id=game_data['app_id'],
-                release_date=game_data.get('release_date'),
-                description=game_data.get('description'),
-                genres=game_data.get('genres'),
-                price=game_data.get('price'),
-                cover_path=game_data.get('cover_path'),
-                developer=game_data.get('developer'),
-                publisher=game_data.get('publisher'),
-                original_price=game_data.get('original_price'),
-                sale_price=game_data.get('sale_price'),
-                cover_etag=game_data.get('cover_etag')
-            )
-            
-            # Check if user already has this game (in backlog or reviewed)
-            with get_db() as conn:
-                c = conn.cursor()
-                c.execute('''
-                    SELECT enjoyment_score, gameplay_score, music_score, narrative_score 
-                    FROM user_scores 
-                    WHERE user_id = ? AND game_id = ?
-                ''', (user_id, game_id))
-                existing = c.fetchone()
-            
-            if existing:
-                # Game already exists - only update playtime
-                if game_data.get('playtime_hours'):
-                    set_user_playtime(user_id, game_id, game_data['playtime_hours'])
-                    updated_count += 1
-            else:
-                # New game - add to backlog
-                add_game_to_user_backlog(user_id, game_id)
-                
-                # Set playtime if available
-                if game_data.get('playtime_hours'):
-                    set_user_playtime(user_id, game_id, game_data['playtime_hours'])
-                
-                # Set backlog order (sorted by playtime, already sorted in import_steam_games)
+
+        # Import games in background (don't block the request)
+        import threading
+        def import_in_background():
+            try:
+                # Import games from Steam
+                games = import_steam_games(steam_id, download_covers=True, covers_dir=COVERS_DIR)
+
+                if not games:
+                    print(f"Could not fetch games from Steam for user {user_id}")
+                    return
+
+                # Add games to database and user's backlog
+                imported_count = 0
+                updated_count = 0
+                backlog_order = 1
+
+                for game_data in games:
+                    # Add or get the game in the master games table
+                    game_id = add_or_get_game(
+                        name=game_data['name'],
+                        app_id=game_data['app_id'],
+                        release_date=game_data.get('release_date'),
+                        description=game_data.get('description'),
+                        genres=game_data.get('genres'),
+                        price=game_data.get('price'),
+                        cover_path=game_data.get('cover_path'),
+                        developer=game_data.get('developer'),
+                        publisher=game_data.get('publisher'),
+                        original_price=game_data.get('original_price'),
+                        sale_price=game_data.get('sale_price'),
+                        cover_etag=game_data.get('cover_etag')
+                    )
+
+                    # Check if user already has this game (in backlog or reviewed)
+                    with get_db() as conn:
+                        c = conn.cursor()
+                        c.execute('''
+                            SELECT enjoyment_score, gameplay_score, music_score, narrative_score
+                            FROM user_scores
+                            WHERE user_id = ? AND game_id = ?
+                        ''', (user_id, game_id))
+                        existing = c.fetchone()
+
+                    if existing:
+                        # Game already exists - only update playtime
+                        if game_data.get('playtime_hours'):
+                            set_user_playtime(user_id, game_id, game_data['playtime_hours'])
+                            updated_count += 1
+                    else:
+                        # New game - add to backlog
+                        add_game_to_user_backlog(user_id, game_id)
+
+                        # Set playtime if available
+                        if game_data.get('playtime_hours'):
+                            set_user_playtime(user_id, game_id, game_data['playtime_hours'])
+
+                        # Set backlog order (sorted by playtime, already sorted in import_steam_games)
+                        with get_db() as conn:
+                            c = conn.cursor()
+                            c.execute(
+                                'UPDATE user_scores SET backlog_order = ? WHERE user_id = ? AND game_id = ?',
+                                (backlog_order, user_id, game_id)
+                            )
+                            conn.commit()
+                        backlog_order += 1
+                        imported_count += 1
+
+                # Mark sync time
                 with get_db() as conn:
                     c = conn.cursor()
-                    c.execute(
-                        'UPDATE user_scores SET backlog_order = ? WHERE user_id = ? AND game_id = ?',
-                        (backlog_order, user_id, game_id)
-                    )
+                    c.execute('''
+                        INSERT INTO steam_update_log (user_id, last_update)
+                        VALUES (?, CURRENT_TIMESTAMP)
+                        ON CONFLICT(user_id) DO UPDATE SET last_update = CURRENT_TIMESTAMP
+                    ''', (user_id,))
                     conn.commit()
-                backlog_order += 1
-                imported_count += 1
-        
-        if imported_count > 0 and updated_count > 0:
-            session['success'] = f'Successfully linked Steam profile! Added {imported_count} new games and updated {updated_count} playtimes.'
-        elif imported_count > 0:
-            session['success'] = f'Successfully linked Steam profile and imported {imported_count} games to your backlog!'
-        elif updated_count > 0:
-            session['success'] = f'Steam profile linked. Updated {updated_count} playtimes (no new games).'
-        else:
-            session['success'] = 'Steam profile linked.'
-        
-        # Mark sync time
-        with get_db() as conn:
-            c = conn.cursor()
-            c.execute('''
-                INSERT INTO steam_update_log (user_id, last_update)
-                VALUES (?, CURRENT_TIMESTAMP)
-                ON CONFLICT(user_id) DO UPDATE SET last_update = CURRENT_TIMESTAMP
-            ''', (user_id,))
-            conn.commit()
-        
+
+                print(f"Background Steam import completed for user {user_id}: {imported_count} imported, {updated_count} updated")
+
+            except Exception as e:
+                print(f"Background Steam import failed for user {user_id}: {e}")
+
+        thread = threading.Thread(target=import_in_background)
+        thread.daemon = True
+        thread.start()
+
+        # Return immediately with success message
+        session['success'] = 'Steam profile linked! Your games are being imported in the background. Refresh the page in a few moments to see them.'
         return redirect(url_for('profile'))
-        
+
     except Exception as e:
         print(f"Error linking Steam: {e}")
         session['error'] = f'Error linking Steam profile: {str(e)}'
