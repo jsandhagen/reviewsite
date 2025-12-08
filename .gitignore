@@ -14,6 +14,7 @@ ENV/
 
 # Database
 *.db
+!ratings.db
 *.db-journal
 *.db.backup_*
 
