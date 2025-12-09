@@ -139,9 +139,14 @@ def download_cover_art(app_id, game_name, covers_dir, existing_etag=None):
     filepath = os.path.join(covers_dir, filename)
     r2_key = f"covers/{filename}"
 
+    # Set headers to avoid 403 errors from Steam CDN
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+    }
+
     try:
         # First, do a HEAD request to check ETag
-        head_response = requests.head(url, timeout=10)
+        head_response = requests.head(url, headers=headers, timeout=10)
         if head_response.status_code != 200:
             return None, None
 
@@ -163,7 +168,7 @@ def download_cover_art(app_id, game_name, covers_dir, existing_etag=None):
             return cloudflare_storage.get_public_url(r2_key), existing_etag
 
         # Download the image
-        response = requests.get(url, timeout=30)
+        response = requests.get(url, headers=headers, timeout=30)
         if response.status_code != 200:
             return None, None
 
