@@ -293,6 +293,46 @@ def logout():
     return redirect(url_for('login'))
 
 
+@app.route('/admin/convert-r2-urls')
+@login_required
+def convert_r2_urls():
+    """Admin route to convert R2 public URLs to Flask backend URLs"""
+    from flask import jsonify
+
+    # Check if user is admin
+    current_user_id = session.get('user_id')
+    if not is_admin(current_user_id):
+        return jsonify({'error': 'Unauthorized - Admin only'}), 403
+
+    with get_db() as conn:
+        c = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+
+        # Update game covers
+        c.execute(r"""
+            UPDATE games
+            SET cover_path = '/r2/' || SUBSTRING(cover_path FROM 'r2\.dev/(.*)$')
+            WHERE cover_path LIKE '%r2.dev%'
+        """)
+        games_updated = c.rowcount
+
+        # Update profile pictures
+        c.execute(r"""
+            UPDATE users
+            SET profile_picture = '/r2/' || SUBSTRING(profile_picture FROM 'r2\.dev/(.*)$')
+            WHERE profile_picture LIKE '%r2.dev%'
+        """)
+        profiles_updated = c.rowcount
+
+        conn.commit()
+
+    return jsonify({
+        'success': True,
+        'games_updated': games_updated,
+        'profiles_updated': profiles_updated,
+        'message': 'URLs converted to Flask backend routes'
+    })
+
+
 @app.route('/r2/<path:r2_key>')
 def serve_r2_image(r2_key):
     """Serve images from R2 through Flask backend"""
