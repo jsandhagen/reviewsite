@@ -296,7 +296,7 @@ def logout():
 @app.route('/admin/convert-r2-urls')
 @login_required
 def convert_r2_urls():
-    """Admin route to convert R2 public URLs to Flask backend URLs"""
+    """Admin route to convert static URLs to R2 Flask backend URLs"""
     from flask import jsonify
 
     # Check if user is admin
@@ -307,29 +307,48 @@ def convert_r2_urls():
     with get_db() as conn:
         c = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
 
-        # Update game covers
+        # Convert /static/covers/* to /r2/covers/*
+        c.execute(r"""
+            UPDATE games
+            SET cover_path = REPLACE(cover_path, '/static/', '/r2/')
+            WHERE cover_path LIKE '/static/%'
+        """)
+        games_static = c.rowcount
+
+        # Convert r2.dev URLs to /r2/* (if any exist)
         c.execute(r"""
             UPDATE games
             SET cover_path = '/r2/' || SUBSTRING(cover_path FROM 'r2\.dev/(.*)$')
             WHERE cover_path LIKE '%r2.dev%'
         """)
-        games_updated = c.rowcount
+        games_r2dev = c.rowcount
 
-        # Update profile pictures
+        # Convert /static/profiles/* to /r2/profiles/*
+        c.execute(r"""
+            UPDATE users
+            SET profile_picture = REPLACE(profile_picture, '/static/', '/r2/')
+            WHERE profile_picture LIKE '/static/%'
+        """)
+        profiles_static = c.rowcount
+
+        # Convert r2.dev profile URLs (if any exist)
         c.execute(r"""
             UPDATE users
             SET profile_picture = '/r2/' || SUBSTRING(profile_picture FROM 'r2\.dev/(.*)$')
             WHERE profile_picture LIKE '%r2.dev%'
         """)
-        profiles_updated = c.rowcount
+        profiles_r2dev = c.rowcount
 
         conn.commit()
 
     return jsonify({
         'success': True,
-        'games_updated': games_updated,
-        'profiles_updated': profiles_updated,
-        'message': 'URLs converted to Flask backend routes'
+        'games_from_static': games_static,
+        'games_from_r2dev': games_r2dev,
+        'profiles_from_static': profiles_static,
+        'profiles_from_r2dev': profiles_r2dev,
+        'total_updated': games_static + games_r2dev + profiles_static + profiles_r2dev,
+        'message': 'URLs converted to Flask R2 backend routes'
     })
 
 
