@@ -28,6 +28,7 @@ from database import (
     get_review_points, get_unlocked_superlative_slots, set_favorite_game, get_user_profile_by_username,
     purchase_random_superlative
 )
+import cloudflare_storage
 
 from dotenv import load_dotenv
 load_dotenv()
@@ -290,6 +291,30 @@ def register():
 def logout():
     session.clear()
     return redirect(url_for('login'))
+
+
+@app.route('/r2/<path:r2_key>')
+def serve_r2_image(r2_key):
+    """Serve images from R2 through Flask backend"""
+    from flask import send_file, abort
+    import mimetypes
+
+    # Download file from R2
+    file_obj = cloudflare_storage.download_to_memory(r2_key)
+
+    if file_obj is None:
+        abort(404)
+
+    # Determine content type from file extension
+    content_type = mimetypes.guess_type(r2_key)[0] or 'application/octet-stream'
+
+    # Serve file
+    return send_file(
+        file_obj,
+        mimetype=content_type,
+        as_attachment=False,
+        download_name=os.path.basename(r2_key)
+    )
 
 
 def slugify(name):
@@ -905,11 +930,27 @@ def view_profile(username):
             from time import time
             ext = os.path.splitext(f.filename)[1].lower()
             fname = _sanitize_filename(f"user_{current_user_id}_{int(time())}{ext}")
-            outpath = os.path.join(PROFILE_DIR, fname)
-            f.save(outpath)
-            web_path = f"/static/profiles/{fname}"
-            set_user_profile_picture(current_user_id, web_path)
-            return redirect(url_for('view_profile', username=username))
+
+            # Upload to Cloudflare R2
+            r2_key = f"profiles/{fname}"
+            r2_url = cloudflare_storage.upload_file_object(f, r2_key)
+
+            if r2_url:
+                # Also save locally as backup
+                outpath = os.path.join(PROFILE_DIR, fname)
+                f.seek(0)  # Reset file pointer after R2 upload
+                f.save(outpath)
+
+                # Store R2 URL in database
+                set_user_profile_picture(current_user_id, r2_url)
+                return redirect(url_for('view_profile', username=username))
+            else:
+                # Fallback to local storage if R2 fails
+                outpath = os.path.join(PROFILE_DIR, fname)
+                f.save(outpath)
+                web_path = f"/static/profiles/{fname}"
+                set_user_profile_picture(current_user_id, web_path)
+                return redirect(url_for('view_profile', username=username))
         else:
             return render_template('profile.html', profile=prof, error='Invalid image file',
                                  username=current_username, is_own_profile=is_own_profile,

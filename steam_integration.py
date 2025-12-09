@@ -6,6 +6,7 @@ import re
 from urllib.parse import urlparse
 from PIL import Image
 from io import BytesIO
+import cloudflare_storage
 
 # Use your Steam API key here
 API_KEY = "EF41FB111ABBA588DDAE7EBEF933D669"
@@ -122,45 +123,64 @@ def clean_filename(name):
 def download_cover_art(app_id, game_name, covers_dir, existing_etag=None):
     """
     Download cover art from Steam CDN if it doesn't exist or has changed.
-    
+    Uploads to Cloudflare R2 and saves locally as backup.
+
     Args:
         app_id: Steam app ID
         game_name: Name of the game
         covers_dir: Directory to save covers
         existing_etag: ETag from previous download (if any)
-    
+
     Returns:
         tuple: (cover_path, etag) or (None, None) if download failed
     """
     url = f"https://cdn.cloudflare.steamstatic.com/steam/apps/{app_id}/header.jpg"
     filename = f"{app_id}_{clean_filename(game_name)}.png"
     filepath = os.path.join(covers_dir, filename)
-    
+    r2_key = f"covers/{filename}"
+
     try:
         # First, do a HEAD request to check ETag
         head_response = requests.head(url, timeout=10)
         if head_response.status_code != 200:
             return None, None
-        
+
         new_etag = head_response.headers.get('ETag', '')
-        
-        # If file exists and ETag matches, skip download
+
+        # Check if file exists in R2 with matching ETag
+        r2_etag = cloudflare_storage.get_etag(r2_key)
+        if r2_etag and existing_etag and new_etag == existing_etag:
+            # Cover hasn't changed, return R2 URL
+            return cloudflare_storage.get_public_url(r2_key), existing_etag
+
+        # Also check local file
         if os.path.exists(filepath) and existing_etag and new_etag == existing_etag:
-            # Cover hasn't changed
-            return f"/static/covers/{filename}", existing_etag
-        
+            # Cover hasn't changed locally, but upload to R2 if missing
+            if not r2_etag:
+                r2_url = cloudflare_storage.upload_file(filepath, r2_key, 'image/png')
+                if r2_url:
+                    return r2_url, existing_etag
+            return cloudflare_storage.get_public_url(r2_key), existing_etag
+
         # Download the image
         response = requests.get(url, timeout=30)
         if response.status_code != 200:
             return None, None
-        
-        # Convert to PNG and save
+
+        # Convert to PNG and save locally
         image = Image.open(BytesIO(response.content))
         image = image.convert("RGB")
         image.save(filepath, "PNG")
-        
-        return f"/static/covers/{filename}", new_etag
-        
+
+        # Upload to Cloudflare R2
+        r2_url = cloudflare_storage.upload_file(filepath, r2_key, 'image/png')
+
+        if r2_url:
+            return r2_url, new_etag
+        else:
+            # Fallback to local path if R2 upload fails
+            return f"/static/covers/{filename}", new_etag
+
     except Exception as e:
         print(f"Error downloading cover for {game_name} (appid {app_id}): {e}")
         return None, None
