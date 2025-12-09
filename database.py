@@ -1,18 +1,22 @@
 import os
-import sqlite3
+import psycopg2
+import psycopg2.extras
 from contextlib import contextmanager
 from datetime import datetime
 
-DB_PATH = os.path.join(os.path.dirname(__file__), "ratings.db")
+# Get database URL from environment variable
+DATABASE_URL = os.environ.get('DATABASE_URL')
+if not DATABASE_URL:
+    raise ValueError("DATABASE_URL environment variable is required")
 
 
 @contextmanager
 def get_db():
     """Context manager for database connections."""
-    conn = sqlite3.connect(DB_PATH)
-    conn.row_factory = sqlite3.Row
-    conn.execute("PRAGMA encoding = 'UTF-8'")
+    conn = psycopg2.connect(DATABASE_URL)
+    cursor_factory = psycopg2.extras.RealDictCursor
     try:
+        # Create a cursor with RealDictCursor for dict-like row access
         yield conn
         conn.commit()
     except Exception:
@@ -25,47 +29,28 @@ def get_db():
 def init_db():
     """Initialize the database with required tables."""
     with get_db() as conn:
-        c = conn.cursor()
-        
+        c = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+
         # Users table
         c.execute('''
             CREATE TABLE IF NOT EXISTS users (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                id SERIAL PRIMARY KEY,
                 username TEXT UNIQUE NOT NULL,
                 password TEXT NOT NULL,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                profile_picture TEXT,
+                steam_profile_url TEXT,
+                user_type TEXT DEFAULT 'user',
+                favorite_game_id INTEGER,
+                review_points INTEGER DEFAULT 0,
+                active_title INTEGER
             )
         ''')
-        # Add optional profile fields if missing
-        try:
-            c.execute("ALTER TABLE users ADD COLUMN profile_picture TEXT")
-        except Exception:
-            pass
-        try:
-            c.execute("ALTER TABLE users ADD COLUMN steam_profile_url TEXT")
-        except Exception:
-            pass
-        try:
-            c.execute("ALTER TABLE users ADD COLUMN user_type TEXT DEFAULT 'user'")
-        except Exception:
-            pass
-        try:
-            c.execute("ALTER TABLE users ADD COLUMN favorite_game_id INTEGER")
-        except Exception:
-            pass
-        try:
-            c.execute("ALTER TABLE users ADD COLUMN review_points INTEGER DEFAULT 0")
-        except Exception:
-            pass
-        try:
-            c.execute("ALTER TABLE users ADD COLUMN active_title INTEGER")
-        except Exception:
-            pass
 
         # Games table (master list of all games with enhanced metadata)
         c.execute('''
             CREATE TABLE IF NOT EXISTS games (
-                game_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                game_id SERIAL PRIMARY KEY,
                 app_id TEXT,
                 name TEXT NOT NULL,
                 release_date TEXT,
@@ -76,31 +61,23 @@ def init_db():
                 average_enjoyment_score REAL DEFAULT 0,
                 num_ratings INTEGER DEFAULT 0,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                developer TEXT,
+                publisher TEXT,
+                original_price REAL,
+                sale_price REAL,
+                cover_etag TEXT,
+                average_gameplay_score REAL,
+                average_music_score REAL,
+                average_narrative_score REAL,
+                pv_ratio REAL
             )
         ''')
-        
-        # Add new fields to games table if missing
-        new_game_columns = [
-            ("developer", "TEXT"),
-            ("publisher", "TEXT"),
-            ("original_price", "REAL"),
-            ("sale_price", "REAL"),
-            ("cover_etag", "TEXT"),
-            ("average_gameplay_score", "REAL"),
-            ("average_music_score", "REAL"),
-            ("average_narrative_score", "REAL"),
-            ("pv_ratio", "REAL")
-        ]
-        for col_name, col_type in new_game_columns:
-            try:
-                c.execute(f"ALTER TABLE games ADD COLUMN {col_name} {col_type}")
-            except Exception:
-                pass
+
         # User game scores (individual ratings per user per game)
         c.execute('''
             CREATE TABLE IF NOT EXISTS user_scores (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                id SERIAL PRIMARY KEY,
                 user_id INTEGER NOT NULL,
                 game_id INTEGER NOT NULL,
                 enjoyment_score REAL,
@@ -113,6 +90,13 @@ def init_db():
                 gameplay_order INTEGER,
                 music_order INTEGER,
                 narrative_order INTEGER,
+                backlog_order INTEGER,
+                review_text TEXT,
+                difficulty TEXT,
+                graphics_quality TEXT,
+                completion_time REAL,
+                replayability TEXT,
+                style TEXT,
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
                 FOREIGN KEY (game_id) REFERENCES games (game_id) ON DELETE CASCADE,
@@ -120,29 +104,6 @@ def init_db():
             )
         ''')
 
-        # In case the table exists from an older schema, ensure the hours_played column is present
-        try:
-            c.execute("ALTER TABLE user_scores ADD COLUMN hours_played REAL")
-        except Exception:
-            pass
-        # Add tie-breaker order columns if missing
-        for col in ("enjoyment_order","gameplay_order","music_order","narrative_order","backlog_order"):
-            try:
-                c.execute(f"ALTER TABLE user_scores ADD COLUMN {col} INTEGER")
-            except Exception:
-                pass
-        # Add review_text column if missing
-        try:
-            c.execute("ALTER TABLE user_scores ADD COLUMN review_text TEXT")
-        except Exception:
-            pass
-        # Add game attribute columns if missing
-        for col in ["difficulty TEXT", "graphics_quality TEXT", "completion_time REAL", "replayability TEXT", "style TEXT"]:
-            try:
-                c.execute(f"ALTER TABLE user_scores ADD COLUMN {col}")
-            except Exception:
-                pass
-        
         # Steam update log table for tracking automatic syncs
         c.execute('''
             CREATE TABLE IF NOT EXISTS steam_update_log (
@@ -155,7 +116,7 @@ def init_db():
         # Friends table for friend relationships
         c.execute('''
             CREATE TABLE IF NOT EXISTS friends (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                id SERIAL PRIMARY KEY,
                 user_id INTEGER NOT NULL,
                 friend_id INTEGER NOT NULL,
                 status TEXT NOT NULL DEFAULT 'pending',
@@ -171,7 +132,7 @@ def init_db():
         # Superlatives/Pulse Points table
         c.execute('''
             CREATE TABLE IF NOT EXISTS superlatives (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                id SERIAL PRIMARY KEY,
                 name TEXT UNIQUE NOT NULL,
                 description TEXT,
                 category TEXT NOT NULL,
@@ -183,7 +144,7 @@ def init_db():
         # User superlatives (unlocked achievements)
         c.execute('''
             CREATE TABLE IF NOT EXISTS user_superlatives (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                id SERIAL PRIMARY KEY,
                 user_id INTEGER NOT NULL,
                 superlative_id INTEGER NOT NULL,
                 game_id INTEGER,
@@ -224,7 +185,7 @@ def init_db():
                 ('Great Minds', 'Your #1 game matches a friend\'s #1', 'friend'),
                 ('Addicts', 'Both played the same game >100 hours', 'friend')
             ]
-            c.executemany('INSERT INTO superlatives (name, description, category) VALUES (?, ?, ?)', superlatives_data)
+            c.executemany('INSERT INTO superlatives (name, description, category) VALUES (%s, %s, %s)', superlatives_data)
 
         conn.commit()
 
@@ -235,13 +196,13 @@ def create_user(username, password, user_type='user'):
     # Hash the password before storing
     password_hash = hashlib.sha256(password.encode()).hexdigest()
     with get_db() as conn:
-        c = conn.cursor()
+        c = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
         try:
-            c.execute('INSERT INTO users (username, password, user_type) VALUES (?, ?, ?)',
+            c.execute('INSERT INTO users (username, password, user_type) VALUES (%s, %s, %s)',
                      (username, password_hash, user_type))
             conn.commit()
             return True, "User created successfully"
-        except sqlite3.IntegrityError:
+        except psycopg2.IntegrityError:
             return False, "Username already exists"
         except Exception as e:
             return False, str(e)
@@ -251,8 +212,8 @@ def verify_user(username, password):
     """Verify user credentials. Returns (success, user_id)."""
     import hashlib
     with get_db() as conn:
-        c = conn.cursor()
-        c.execute('SELECT id, password FROM users WHERE username = ?', (username,))
+        c = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+        c.execute('SELECT id, password FROM users WHERE username = %s', (username,))
         row = c.fetchone()
         if row:
             # Hash the provided password and compare with stored hash
@@ -265,8 +226,8 @@ def verify_user(username, password):
 def get_user(user_id):
     """Get user info by ID."""
     with get_db() as conn:
-        c = conn.cursor()
-        c.execute('SELECT id, username, user_type FROM users WHERE id = ?', (user_id,))
+        c = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+        c.execute('SELECT id, username, user_type FROM users WHERE id = %s', (user_id,))
         row = c.fetchone()
         return dict(row) if row else None
 
@@ -274,8 +235,8 @@ def get_user(user_id):
 def get_user_profile(user_id):
     """Return basic profile info for a user."""
     with get_db() as conn:
-        c = conn.cursor()
-        c.execute('SELECT id, username, created_at, profile_picture, steam_profile_url, user_type, favorite_game_id, review_points, active_title FROM users WHERE id = ?', (user_id,))
+        c = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+        c.execute('SELECT id, username, created_at, profile_picture, steam_profile_url, user_type, favorite_game_id, review_points, active_title FROM users WHERE id = %s', (user_id,))
         row = c.fetchone()
         if not row:
             return None
@@ -283,7 +244,7 @@ def get_user_profile(user_id):
         profile = dict(row)
 
         # Add last Steam sync time if available
-        c.execute('SELECT last_update FROM steam_update_log WHERE user_id = ?', (user_id,))
+        c.execute('SELECT last_update FROM steam_update_log WHERE user_id = %s', (user_id,))
         sync_row = c.fetchone()
         if sync_row:
             profile['steam_last_sync'] = sync_row['last_update']
@@ -298,8 +259,8 @@ def get_user_profile(user_id):
                        us.difficulty, us.graphics_quality, us.completion_time,
                        us.replayability, us.style
                 FROM games g
-                LEFT JOIN user_scores us ON g.game_id = us.game_id AND us.user_id = ?
-                WHERE g.game_id = ?
+                LEFT JOIN user_scores us ON g.game_id = us.game_id AND us.user_id = %s
+                WHERE g.game_id = %s
             ''', (user_id, profile['favorite_game_id']))
             fav_row = c.fetchone()
             if fav_row:
@@ -311,33 +272,33 @@ def get_user_profile(user_id):
 def set_user_profile_picture(user_id, path):
     """Update a user's profile picture path."""
     with get_db() as conn:
-        c = conn.cursor()
-        c.execute('UPDATE users SET profile_picture = ?, created_at = created_at WHERE id = ?', (path, user_id))
+        c = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+        c.execute('UPDATE users SET profile_picture = %s, created_at = created_at WHERE id = %s', (path, user_id))
         conn.commit()
 
 
 def set_user_steam_profile(user_id, steam_url):
     """Update a user's Steam profile URL."""
     with get_db() as conn:
-        c = conn.cursor()
-        c.execute('UPDATE users SET steam_profile_url = ? WHERE id = ?', (steam_url, user_id))
+        c = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+        c.execute('UPDATE users SET steam_profile_url = %s WHERE id = %s', (steam_url, user_id))
         conn.commit()
 
 
 def set_favorite_game(user_id, game_id):
     """Set the user's favorite game."""
     with get_db() as conn:
-        c = conn.cursor()
+        c = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
         # Verify the user has reviewed this game
         c.execute('''
             SELECT 1 FROM user_scores
-            WHERE user_id = ? AND game_id = ?
+            WHERE user_id = %s AND game_id = %s
             AND enjoyment_score IS NOT NULL
         ''', (user_id, game_id))
         if not c.fetchone():
             return False, "You must review a game before setting it as your favorite"
 
-        c.execute('UPDATE users SET favorite_game_id = ? WHERE id = ?', (game_id, user_id))
+        c.execute('UPDATE users SET favorite_game_id = %s WHERE id = %s', (game_id, user_id))
         conn.commit()
         return True, "Favorite game updated!"
 
@@ -345,8 +306,8 @@ def set_favorite_game(user_id, game_id):
 def get_user_profile_by_username(username):
     """Get user profile by username."""
     with get_db() as conn:
-        c = conn.cursor()
-        c.execute('SELECT id FROM users WHERE username = ?', (username,))
+        c = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+        c.execute('SELECT id FROM users WHERE username = %s', (username,))
         row = c.fetchone()
         if row:
             return get_user_profile(row['id'])
@@ -356,7 +317,7 @@ def get_user_profile_by_username(username):
 def check_superlative_eligibility(user_id, superlative_name):
     """Check if a user is eligible for a specific superlative. Returns (eligible, game_id)."""
     with get_db() as conn:
-        c = conn.cursor()
+        c = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
         user_games = get_user_games(user_id)
 
         if not user_games:
@@ -372,7 +333,7 @@ def check_superlative_eligibility(user_id, superlative_name):
         elif superlative_name == 'Die on this Hill':
             for game in user_games:
                 if game.get('enjoyment_score'):
-                    c.execute('SELECT average_enjoyment_score FROM games WHERE game_id = ?', (game['game_id'],))
+                    c.execute('SELECT average_enjoyment_score FROM games WHERE game_id = %s', (game['game_id'],))
                     avg_row = c.fetchone()
                     if avg_row and avg_row['average_enjoyment_score']:
                         if game['enjoyment_score'] - avg_row['average_enjoyment_score'] > 2:
@@ -381,7 +342,7 @@ def check_superlative_eligibility(user_id, superlative_name):
         elif superlative_name == 'Agree to Disagree':
             for game in user_games:
                 if game.get('enjoyment_score'):
-                    c.execute('SELECT average_enjoyment_score FROM games WHERE game_id = ?', (game['game_id'],))
+                    c.execute('SELECT average_enjoyment_score FROM games WHERE game_id = %s', (game['game_id'],))
                     avg_row = c.fetchone()
                     if avg_row and avg_row['average_enjoyment_score']:
                         if avg_row['average_enjoyment_score'] - game['enjoyment_score'] > 2:
@@ -405,7 +366,7 @@ def check_superlative_eligibility(user_id, superlative_name):
         elif superlative_name == 'Worth Every Nickel':
             for game in user_games:
                 if game.get('hours_played') and game.get('hours_played') > 0:
-                    c.execute('SELECT price, original_price FROM games WHERE game_id = ?', (game['game_id'],))
+                    c.execute('SELECT price, original_price FROM games WHERE game_id = %s', (game['game_id'],))
                     price_row = c.fetchone()
                     price = price_row['original_price'] or price_row['price'] if price_row else None
                     if price and (price / game['hours_played']) <= 0.05:
@@ -456,7 +417,7 @@ def check_superlative_eligibility(user_id, superlative_name):
                            key=lambda x: (-x['enjoyment_score'], x.get('enjoyment_order') or 999999))[:10]
             for game in top_10:
                 if game.get('hours_played') and game.get('hours_played') > 0:
-                    c.execute('SELECT price, original_price FROM games WHERE game_id = ?', (game['game_id'],))
+                    c.execute('SELECT price, original_price FROM games WHERE game_id = %s', (game['game_id'],))
                     price_row = c.fetchone()
                     price = price_row['original_price'] or price_row['price'] if price_row else None
                     if price and (price / game['hours_played']) > 2:
@@ -475,7 +436,7 @@ def check_superlative_eligibility(user_id, superlative_name):
 
         elif superlative_name == 'Early Adopter':
             for game in user_games:
-                c.execute('SELECT COUNT(*) as count FROM user_scores WHERE game_id = ?', (game['game_id'],))
+                c.execute('SELECT COUNT(*) as count FROM user_scores WHERE game_id = %s', (game['game_id'],))
                 count = c.fetchone()['count']
                 if count <= 10:
                     return True, game['game_id']
@@ -488,10 +449,10 @@ def purchase_random_superlative(user_id, cost=10):
     import random
 
     with get_db() as conn:
-        c = conn.cursor()
+        c = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
 
         # Check if user has enough RP
-        c.execute('SELECT review_points FROM users WHERE id = ?', (user_id,))
+        c.execute('SELECT review_points FROM users WHERE id = %s', (user_id,))
         row = c.fetchone()
         if not row:
             return False, "User not found", None
@@ -504,7 +465,7 @@ def purchase_random_superlative(user_id, cost=10):
         unlocked_slots = get_unlocked_superlative_slots(user_id)
         c.execute('''
             SELECT COUNT(*) as count FROM user_superlatives
-            WHERE user_id = ?
+            WHERE user_id = %s
         ''', (user_id,))
         total_unlocked = c.fetchone()['count']
 
@@ -516,7 +477,7 @@ def purchase_random_superlative(user_id, cost=10):
             SELECT s.id, s.name, s.category
             FROM superlatives s
             WHERE s.id NOT IN (
-                SELECT superlative_id FROM user_superlatives WHERE user_id = ?
+                SELECT superlative_id FROM user_superlatives WHERE user_id = %s
             )
         ''', (user_id,))
         all_available = c.fetchall()
@@ -548,13 +509,13 @@ def purchase_random_superlative(user_id, cost=10):
         # Deduct RP and unlock superlative
         c.execute('''
             UPDATE users
-            SET review_points = review_points - ?
-            WHERE id = ?
+            SET review_points = review_points - %s
+            WHERE id = %s
         ''', (cost, user_id))
 
         c.execute('''
             INSERT INTO user_superlatives (user_id, superlative_id, game_id)
-            VALUES (?, ?, ?)
+            VALUES (%s, %s, %s)
         ''', (user_id, superlative_id, game_id))
 
         conn.commit()
@@ -565,11 +526,11 @@ def add_or_get_game(name, app_id=None, release_date=None, description=None, genr
                     developer=None, publisher=None, original_price=None, sale_price=None, cover_etag=None):
     """Add a game or update existing game with new information, return game_id."""
     with get_db() as conn:
-        c = conn.cursor()
+        c = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
         
         # First, try to find by app_id if provided (more reliable than name)
         if app_id:
-            c.execute('SELECT game_id FROM games WHERE app_id = ?', (app_id,))
+            c.execute('SELECT game_id FROM games WHERE app_id = %s', (app_id,))
             row = c.fetchone()
             if row:
                 game_id = row['game_id']
@@ -581,7 +542,7 @@ def add_or_get_game(name, app_id=None, release_date=None, description=None, genr
                 return game_id
         
         # If not found by app_id, try by name
-        c.execute('SELECT game_id FROM games WHERE name = ?', (name,))
+        c.execute('SELECT game_id FROM games WHERE name = %s', (name,))
         row = c.fetchone()
         if row:
             game_id = row['game_id']
@@ -594,19 +555,21 @@ def add_or_get_game(name, app_id=None, release_date=None, description=None, genr
         
         # Game doesn't exist, create it
         c.execute('''
-            INSERT INTO games (app_id, name, release_date, description, genres, price, cover_path, 
+            INSERT INTO games (app_id, name, release_date, description, genres, price, cover_path,
                              developer, publisher, original_price, sale_price, cover_etag, average_enjoyment_score, num_ratings)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, 0)
-        ''', (app_id, name, release_date, description, genres, price, cover_path, 
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, 0, 0)
+            RETURNING game_id
+        ''', (app_id, name, release_date, description, genres, price, cover_path,
               developer, publisher, original_price, sale_price, cover_etag))
+        result = c.fetchone()
         conn.commit()
-        return c.lastrowid
+        return result['game_id'] if result else None
 
 
 def get_all_games():
     """Get list of all games in database."""
     with get_db() as conn:
-        c = conn.cursor()
+        c = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
         c.execute('''
             SELECT game_id, app_id, name, release_date, description, genres, price, cover_path, 
                    average_enjoyment_score, num_ratings, created_at, updated_at 
@@ -619,7 +582,7 @@ def get_all_games():
 def get_user_games(user_id):
     """Get all games with scores for a specific user."""
     with get_db() as conn:
-        c = conn.cursor()
+        c = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
         c.execute('''
             SELECT g.game_id, g.app_id, g.name, g.release_date, g.description, g.genres, g.price, 
                    g.cover_path, g.average_enjoyment_score,
@@ -629,7 +592,7 @@ def get_user_games(user_id):
                    us.backlog_order, us.review_text, us.difficulty, us.graphics_quality,
                    us.completion_time, us.replayability, us.style
             FROM games g
-            INNER JOIN user_scores us ON g.game_id = us.game_id AND us.user_id = ?
+            INNER JOIN user_scores us ON g.game_id = us.game_id AND us.user_id = %s
             ORDER BY g.name
         ''', (user_id,))
         return [dict(row) for row in c.fetchall()]
@@ -650,7 +613,7 @@ def set_tie_order(user_id, score_key, ordered_game_ids):
     if not order_col:
         return False
     with get_db() as conn:
-        c = conn.cursor()
+        c = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
         pos = 1
         for gid in ordered_game_ids:
             try:
@@ -658,8 +621,8 @@ def set_tie_order(user_id, score_key, ordered_game_ids):
             except Exception:
                 continue
             c.execute(
-                f'''UPDATE user_scores SET {order_col} = ?, updated_at = CURRENT_TIMESTAMP
-                    WHERE user_id = ? AND game_id = ?''',
+                f'''UPDATE user_scores SET {order_col} = %s, updated_at = CURRENT_TIMESTAMP
+                    WHERE user_id = %s AND game_id = %s''',
                 (pos, user_id, gid_int)
             )
             pos += 1
@@ -670,7 +633,7 @@ def set_tie_order(user_id, score_key, ordered_game_ids):
 def set_backlog_order(user_id, ordered_game_ids):
     """Set the backlog order for games with no scores."""
     with get_db() as conn:
-        c = conn.cursor()
+        c = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
         pos = 1
         for gid in ordered_game_ids:
             try:
@@ -678,8 +641,8 @@ def set_backlog_order(user_id, ordered_game_ids):
             except Exception:
                 continue
             c.execute(
-                '''UPDATE user_scores SET backlog_order = ?, updated_at = CURRENT_TIMESTAMP
-                    WHERE user_id = ? AND game_id = ?''',
+                '''UPDATE user_scores SET backlog_order = %s, updated_at = CURRENT_TIMESTAMP
+                    WHERE user_id = %s AND game_id = %s''',
                 (pos, user_id, gid_int)
             )
             pos += 1
@@ -690,16 +653,16 @@ def set_backlog_order(user_id, ordered_game_ids):
 def add_game_to_user_backlog(user_id, game_id):
     """Add a game to user's backlog by creating a user_scores entry with no scores."""
     with get_db() as conn:
-        c = conn.cursor()
+        c = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
         # Check if entry already exists
-        c.execute('SELECT 1 FROM user_scores WHERE user_id = ? AND game_id = ?', (user_id, game_id))
+        c.execute('SELECT 1 FROM user_scores WHERE user_id = %s AND game_id = %s', (user_id, game_id))
         if c.fetchone():
             return True  # Already exists
         
         # Create entry with no scores
         c.execute(
             '''INSERT INTO user_scores (user_id, game_id, backlog_order)
-               VALUES (?, ?, 0)''',
+               VALUES (%s, %s, 0)''',
             (user_id, game_id)
         )
         conn.commit()
@@ -709,13 +672,13 @@ def add_game_to_user_backlog(user_id, game_id):
 def set_user_score(user_id, game_id, enjoyment=None, gameplay=None, music=None, narrative=None, metacritic=None, review_text=None, difficulty=None, graphics_quality=None, completion_time=None, replayability=None, style=None):
     """Set or update user scores for a game. Metacritic is kept for backwards compatibility but not used."""
     with get_db() as conn:
-        c = conn.cursor()
+        c = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
 
         # Check if this is a new review (user hasn't scored this game before)
         c.execute('''
             SELECT enjoyment_score, gameplay_score, music_score, narrative_score
             FROM user_scores
-            WHERE user_id = ? AND game_id = ?
+            WHERE user_id = %s AND game_id = %s
         ''', (user_id, game_id))
         existing = c.fetchone()
 
@@ -732,25 +695,24 @@ def set_user_score(user_id, game_id, enjoyment=None, gameplay=None, music=None, 
         c.execute('''
             INSERT INTO user_scores
             (user_id, game_id, enjoyment_score, gameplay_score, music_score, narrative_score, review_text, difficulty, graphics_quality, completion_time, replayability, style)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             ON CONFLICT(user_id, game_id) DO UPDATE SET
-            enjoyment_score = COALESCE(?, enjoyment_score),
-            gameplay_score = COALESCE(?, gameplay_score),
-            music_score = COALESCE(?, music_score),
-            narrative_score = COALESCE(?, narrative_score),
-            review_text = ?,
-            difficulty = ?,
-            graphics_quality = ?,
-            completion_time = ?,
-            replayability = ?,
-            style = ?,
+            enjoyment_score = COALESCE(EXCLUDED.enjoyment_score, user_scores.enjoyment_score),
+            gameplay_score = COALESCE(EXCLUDED.gameplay_score, user_scores.gameplay_score),
+            music_score = COALESCE(EXCLUDED.music_score, user_scores.music_score),
+            narrative_score = COALESCE(EXCLUDED.narrative_score, user_scores.narrative_score),
+            review_text = EXCLUDED.review_text,
+            difficulty = EXCLUDED.difficulty,
+            graphics_quality = EXCLUDED.graphics_quality,
+            completion_time = EXCLUDED.completion_time,
+            replayability = EXCLUDED.replayability,
+            style = EXCLUDED.style,
             updated_at = CURRENT_TIMESTAMP
-        ''', (user_id, game_id, enjoyment, gameplay, music, narrative, review_text, difficulty, graphics_quality, completion_time, replayability, style,
-              enjoyment, gameplay, music, narrative, review_text, difficulty, graphics_quality, completion_time, replayability, style))
+        ''', (user_id, game_id, enjoyment, gameplay, music, narrative, review_text, difficulty, graphics_quality, completion_time, replayability, style))
 
         # Award 1 RP if this is a new review
         if is_new_review:
-            c.execute('UPDATE users SET review_points = review_points + 1 WHERE id = ?', (user_id,))
+            c.execute('UPDATE users SET review_points = review_points + 1 WHERE id = %s', (user_id,))
 
         conn.commit()
         
@@ -764,7 +726,7 @@ def set_user_score(user_id, game_id, enjoyment=None, gameplay=None, music=None, 
                 AVG(hours_played) as avg_hours,
                 COUNT(*) as num_ratings
             FROM user_scores 
-            WHERE game_id = ? AND enjoyment_score IS NOT NULL
+            WHERE game_id = %s AND enjoyment_score IS NOT NULL
         ''', (game_id,))
         result = c.fetchone()
         avg_enjoyment = result['avg_enjoyment'] if result and result['avg_enjoyment'] else 0
@@ -775,7 +737,7 @@ def set_user_score(user_id, game_id, enjoyment=None, gameplay=None, music=None, 
         num_ratings = result['num_ratings'] if result else 0
         
         # Calculate PV ratio (price per hour)
-        c.execute('SELECT price FROM games WHERE game_id = ?', (game_id,))
+        c.execute('SELECT price FROM games WHERE game_id = %s', (game_id,))
         price_row = c.fetchone()
         pv_ratio = None
         if price_row and price_row['price'] and avg_hours and avg_hours > 0:
@@ -783,14 +745,14 @@ def set_user_score(user_id, game_id, enjoyment=None, gameplay=None, music=None, 
         
         c.execute('''
             UPDATE games 
-            SET average_enjoyment_score = ?, 
-                average_gameplay_score = ?,
-                average_music_score = ?,
-                average_narrative_score = ?,
-                pv_ratio = ?,
-                num_ratings = ?, 
+            SET average_enjoyment_score = %s, 
+                average_gameplay_score = %s,
+                average_music_score = %s,
+                average_narrative_score = %s,
+                pv_ratio = %s,
+                num_ratings = %s, 
                 updated_at = CURRENT_TIMESTAMP
-            WHERE game_id = ?
+            WHERE game_id = %s
         ''', (avg_enjoyment, avg_gameplay, avg_music, avg_narrative, pv_ratio, num_ratings, game_id))
         conn.commit()
 
@@ -798,31 +760,31 @@ def set_user_score(user_id, game_id, enjoyment=None, gameplay=None, music=None, 
 def set_user_playtime(user_id, game_id, hours_played=None):
     """Set or update a user's playtime for a game (in hours)."""
     with get_db() as conn:
-        c = conn.cursor()
+        c = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
         c.execute('''
             INSERT INTO user_scores (user_id, game_id, hours_played)
-            VALUES (?, ?, ?)
+            VALUES (%s, %s, %s)
             ON CONFLICT(user_id, game_id) DO UPDATE SET
-            hours_played = COALESCE(?, hours_played),
+            hours_played = COALESCE(EXCLUDED.hours_played, user_scores.hours_played),
             updated_at = CURRENT_TIMESTAMP
-        ''', (user_id, game_id, hours_played, hours_played))
+        ''', (user_id, game_id, hours_played))
         conn.commit()
 
 
 def delete_game(game_id):
     """Delete a game and all its associated scores."""
     with get_db() as conn:
-        c = conn.cursor()
-        c.execute('DELETE FROM user_scores WHERE game_id = ?', (game_id,))
-        c.execute('DELETE FROM games WHERE id = ?', (game_id,))
+        c = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+        c.execute('DELETE FROM user_scores WHERE game_id = %s', (game_id,))
+        c.execute('DELETE FROM games WHERE id = %s', (game_id,))
         conn.commit()
 
 
 def delete_user_score(user_id, game_id):
     """Delete a specific user's score for a game."""
     with get_db() as conn:
-        c = conn.cursor()
-        c.execute('DELETE FROM user_scores WHERE user_id = ? AND game_id = ?',
+        c = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+        c.execute('DELETE FROM user_scores WHERE user_id = %s AND game_id = %s',
                  (user_id, game_id))
         conn.commit()
 
@@ -831,51 +793,51 @@ def update_game_info(game_id, name=None, app_id=None, release_date=None, descrip
                     developer=None, publisher=None, original_price=None, sale_price=None, cover_etag=None):
     """Update game metadata. Only updates fields that are provided (not None)."""
     with get_db() as conn:
-        c = conn.cursor()
+        c = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
         updates = []
         values = []
         
         if name is not None:
-            updates.append("name = ?")
+            updates.append("name = %s")
             values.append(name)
         if app_id is not None:
-            updates.append("app_id = ?")
+            updates.append("app_id = %s")
             values.append(app_id)
         if release_date is not None:
-            updates.append("release_date = ?")
+            updates.append("release_date = %s")
             values.append(release_date)
         if description is not None:
-            updates.append("description = ?")
+            updates.append("description = %s")
             values.append(description)
         if genres is not None:
-            updates.append("genres = ?")
+            updates.append("genres = %s")
             values.append(genres)
         if price is not None:
-            updates.append("price = ?")
+            updates.append("price = %s")
             values.append(price)
         if cover_path is not None:
-            updates.append("cover_path = ?")
+            updates.append("cover_path = %s")
             values.append(cover_path)
         if developer is not None:
-            updates.append("developer = ?")
+            updates.append("developer = %s")
             values.append(developer)
         if publisher is not None:
-            updates.append("publisher = ?")
+            updates.append("publisher = %s")
             values.append(publisher)
         if original_price is not None:
-            updates.append("original_price = ?")
+            updates.append("original_price = %s")
             values.append(original_price)
         if sale_price is not None:
-            updates.append("sale_price = ?")
+            updates.append("sale_price = %s")
             values.append(sale_price)
         if cover_etag is not None:
-            updates.append("cover_etag = ?")
+            updates.append("cover_etag = %s")
             values.append(cover_etag)
         
         if updates:
             updates.append("updated_at = CURRENT_TIMESTAMP")
             values.append(game_id)
-            query = f"UPDATE games SET {', '.join(updates)} WHERE game_id = ?"
+            query = f"UPDATE games SET {', '.join(updates)} WHERE game_id = %s"
             c.execute(query, values)
             conn.commit()
 
@@ -944,14 +906,14 @@ def import_csv_data(user_id, csv_content):
 def search_games(query):
     """Search for games in the database by name with fuzzy matching."""
     with get_db() as conn:
-        c = conn.cursor()
+        c = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
         # Split query into words for fuzzy matching
         words = query.strip().split()
         if not words:
             return []
         
         # Build fuzzy search pattern - each word should appear somewhere
-        conditions = ' AND '.join(['name LIKE ?' for _ in words])
+        conditions = ' AND '.join(['name LIKE %s' for _ in words])
         patterns = [f"%{word}%" for word in words]
         
         c.execute(f'''
@@ -960,8 +922,8 @@ def search_games(query):
             WHERE {conditions}
             ORDER BY 
                 CASE 
-                    WHEN LOWER(name) = LOWER(?) THEN 0
-                    WHEN LOWER(name) LIKE LOWER(?) THEN 1
+                    WHEN LOWER(name) = LOWER(%s) THEN 0
+                    WHEN LOWER(name) LIKE LOWER(%s) THEN 1
                     ELSE 2
                 END,
                 name
@@ -1012,11 +974,11 @@ def search_games(query):
 def add_game_to_user_list(user_id, game_id):
     """Add a game to user's list with default null scores."""
     with get_db() as conn:
-        c = conn.cursor()
+        c = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
         # Check if already exists
         c.execute('''
             SELECT 1 FROM user_scores 
-            WHERE user_id = ? AND game_id = ?
+            WHERE user_id = %s AND game_id = %s
         ''', (user_id, game_id))
         if c.fetchone():
             return False  # Already in list
@@ -1024,7 +986,7 @@ def add_game_to_user_list(user_id, game_id):
         # Add with null scores
         c.execute('''
             INSERT INTO user_scores (user_id, game_id)
-            VALUES (?, ?)
+            VALUES (%s, %s)
         ''', (user_id, game_id))
         return True
 
@@ -1032,7 +994,7 @@ def add_game_to_user_list(user_id, game_id):
 def get_all_games_with_avg_scores(user_id=None):
     """Get all games with their average community scores, sorted by enjoyment score descending."""
     with get_db() as conn:
-        c = conn.cursor()
+        c = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
         c.execute('''
             SELECT 
                 g.game_id,
@@ -1116,7 +1078,7 @@ def get_all_games_with_avg_scores(user_id=None):
             
             # Check if user has reviewed this game
             if user_id:
-                c.execute('SELECT 1 FROM user_scores WHERE user_id = ? AND game_id = ?', (user_id, game['game_id']))
+                c.execute('SELECT 1 FROM user_scores WHERE user_id = %s AND game_id = %s', (user_id, game['game_id']))
                 game['user_reviewed'] = c.fetchone() is not None
             else:
                 game['user_reviewed'] = False
@@ -1129,7 +1091,7 @@ def get_all_games_with_avg_scores(user_id=None):
 def get_game_detail(game_id, user_id=None):
     """Get detailed information about a specific game including description and community scores."""
     with get_db() as conn:
-        c = conn.cursor()
+        c = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
         c.execute('''
             SELECT 
                 g.game_id,
@@ -1152,7 +1114,7 @@ def get_game_detail(game_id, user_id=None):
                 COUNT(DISTINCT us.user_id) as num_ratings
             FROM games g
             LEFT JOIN user_scores us ON g.game_id = us.game_id
-            WHERE g.game_id = ?
+            WHERE g.game_id = %s
             GROUP BY g.game_id
         ''', (game_id,))
         
@@ -1185,7 +1147,7 @@ def get_game_detail(game_id, user_id=None):
             c.execute('''
                 SELECT enjoyment_score, gameplay_score, music_score, narrative_score 
                 FROM user_scores 
-                WHERE user_id = ? AND game_id = ?
+                WHERE user_id = %s AND game_id = %s
             ''', (user_id, game['game_id']))
             user_score = c.fetchone()
             if user_score:
@@ -1206,8 +1168,8 @@ def get_game_detail(game_id, user_id=None):
 def is_admin(user_id):
     """Check if a user is an admin."""
     with get_db() as conn:
-        c = conn.cursor()
-        c.execute('SELECT user_type FROM users WHERE id = ?', (user_id,))
+        c = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+        c.execute('SELECT user_type FROM users WHERE id = %s', (user_id,))
         row = c.fetchone()
         return row and row['user_type'] == 'admin'
 
@@ -1223,7 +1185,7 @@ def admin_update_game_info(game_id, **kwargs):
 
     for field, value in kwargs.items():
         if field in allowed_fields and value is not None:
-            updates.append(f"{field} = ?")
+            updates.append(f"{field} = %s")
             values.append(value)
 
     if not updates:
@@ -1232,8 +1194,8 @@ def admin_update_game_info(game_id, **kwargs):
     values.append(game_id)
 
     with get_db() as conn:
-        c = conn.cursor()
-        query = f"UPDATE games SET {', '.join(updates)}, updated_at = CURRENT_TIMESTAMP WHERE game_id = ?"
+        c = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+        query = f"UPDATE games SET {', '.join(updates)}, updated_at = CURRENT_TIMESTAMP WHERE game_id = %s"
         c.execute(query, values)
         conn.commit()
         return True
@@ -1244,10 +1206,10 @@ def admin_update_game_info(game_id, **kwargs):
 def send_friend_request(user_id, friend_username):
     """Send a friend request to another user. Returns (success, message)."""
     with get_db() as conn:
-        c = conn.cursor()
+        c = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
 
         # Get friend's user ID
-        c.execute('SELECT id FROM users WHERE username = ?', (friend_username,))
+        c.execute('SELECT id FROM users WHERE username = %s', (friend_username,))
         friend = c.fetchone()
 
         if not friend:
@@ -1261,7 +1223,7 @@ def send_friend_request(user_id, friend_username):
         # Check if friendship already exists
         c.execute('''
             SELECT status FROM friends
-            WHERE (user_id = ? AND friend_id = ?) OR (user_id = ? AND friend_id = ?)
+            WHERE (user_id = %s AND friend_id = %s) OR (user_id = %s AND friend_id = %s)
         ''', (user_id, friend_id, friend_id, user_id))
         existing = c.fetchone()
 
@@ -1277,7 +1239,7 @@ def send_friend_request(user_id, friend_username):
         try:
             c.execute('''
                 INSERT INTO friends (user_id, friend_id, status)
-                VALUES (?, ?, 'pending')
+                VALUES (%s, %s, 'pending')
             ''', (user_id, friend_id))
             conn.commit()
             return True, "Friend request sent"
@@ -1288,12 +1250,12 @@ def send_friend_request(user_id, friend_username):
 def get_friend_requests(user_id):
     """Get pending friend requests for a user."""
     with get_db() as conn:
-        c = conn.cursor()
+        c = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
         c.execute('''
             SELECT f.id, f.user_id, u.username, u.profile_picture, f.created_at
             FROM friends f
             JOIN users u ON f.user_id = u.id
-            WHERE f.friend_id = ? AND f.status = 'pending'
+            WHERE f.friend_id = %s AND f.status = 'pending'
             ORDER BY f.created_at DESC
         ''', (user_id,))
         return [dict(row) for row in c.fetchall()]
@@ -1302,12 +1264,12 @@ def get_friend_requests(user_id):
 def get_sent_requests(user_id):
     """Get friend requests sent by the user."""
     with get_db() as conn:
-        c = conn.cursor()
+        c = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
         c.execute('''
             SELECT f.id, f.friend_id, u.username, u.profile_picture, f.created_at, f.status
             FROM friends f
             JOIN users u ON f.friend_id = u.id
-            WHERE f.user_id = ? AND f.status = 'pending'
+            WHERE f.user_id = %s AND f.status = 'pending'
             ORDER BY f.created_at DESC
         ''', (user_id,))
         return [dict(row) for row in c.fetchall()]
@@ -1316,10 +1278,10 @@ def get_sent_requests(user_id):
 def accept_friend_request(request_id, user_id):
     """Accept a friend request. Returns (success, message)."""
     with get_db() as conn:
-        c = conn.cursor()
+        c = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
 
         # Verify this request is for the current user
-        c.execute('SELECT user_id, friend_id FROM friends WHERE id = ? AND friend_id = ?',
+        c.execute('SELECT user_id, friend_id FROM friends WHERE id = %s AND friend_id = %s',
                  (request_id, user_id))
         request = c.fetchone()
 
@@ -1327,7 +1289,7 @@ def accept_friend_request(request_id, user_id):
             return False, "Friend request not found"
 
         # Update status to accepted
-        c.execute('UPDATE friends SET status = ? WHERE id = ?', ('accepted', request_id))
+        c.execute('UPDATE friends SET status = %s WHERE id = %s', ('accepted', request_id))
         conn.commit()
         return True, "Friend request accepted"
 
@@ -1335,10 +1297,10 @@ def accept_friend_request(request_id, user_id):
 def reject_friend_request(request_id, user_id):
     """Reject a friend request. Returns (success, message)."""
     with get_db() as conn:
-        c = conn.cursor()
+        c = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
 
         # Verify this request is for the current user
-        c.execute('SELECT user_id, friend_id FROM friends WHERE id = ? AND friend_id = ?',
+        c.execute('SELECT user_id, friend_id FROM friends WHERE id = %s AND friend_id = %s',
                  (request_id, user_id))
         request = c.fetchone()
 
@@ -1346,7 +1308,7 @@ def reject_friend_request(request_id, user_id):
             return False, "Friend request not found"
 
         # Delete the request
-        c.execute('DELETE FROM friends WHERE id = ?', (request_id,))
+        c.execute('DELETE FROM friends WHERE id = %s', (request_id,))
         conn.commit()
         return True, "Friend request rejected"
 
@@ -1354,12 +1316,12 @@ def reject_friend_request(request_id, user_id):
 def remove_friend(user_id, friend_id):
     """Remove a friend. Returns (success, message)."""
     with get_db() as conn:
-        c = conn.cursor()
+        c = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
 
         # Delete friendship (works both ways)
         c.execute('''
             DELETE FROM friends
-            WHERE (user_id = ? AND friend_id = ?) OR (user_id = ? AND friend_id = ?)
+            WHERE (user_id = %s AND friend_id = %s) OR (user_id = %s AND friend_id = %s)
         ''', (user_id, friend_id, friend_id, user_id))
 
         if c.rowcount == 0:
@@ -1372,11 +1334,11 @@ def remove_friend(user_id, friend_id):
 def get_friends(user_id):
     """Get all accepted friends for a user."""
     with get_db() as conn:
-        c = conn.cursor()
+        c = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
         c.execute('''
             SELECT
                 CASE
-                    WHEN f.user_id = ? THEN f.friend_id
+                    WHEN f.user_id = %s THEN f.friend_id
                     ELSE f.user_id
                 END as friend_user_id,
                 u.username,
@@ -1384,11 +1346,11 @@ def get_friends(user_id):
             FROM friends f
             JOIN users u ON (
                 CASE
-                    WHEN f.user_id = ? THEN f.friend_id = u.id
+                    WHEN f.user_id = %s THEN f.friend_id = u.id
                     ELSE f.user_id = u.id
                 END
             )
-            WHERE (f.user_id = ? OR f.friend_id = ?) AND f.status = 'accepted'
+            WHERE (f.user_id = %s OR f.friend_id = %s) AND f.status = 'accepted'
             ORDER BY u.username
         ''', (user_id, user_id, user_id, user_id))
         return [dict(row) for row in c.fetchall()]
@@ -1397,19 +1359,19 @@ def get_friends(user_id):
 def search_users(query, exclude_user_id=None):
     """Search for users by username."""
     with get_db() as conn:
-        c = conn.cursor()
+        c = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
         if exclude_user_id:
             c.execute('''
                 SELECT id, username, profile_picture
                 FROM users
-                WHERE username LIKE ? AND id != ?
+                WHERE username LIKE %s AND id != %s
                 LIMIT 20
             ''', (f'%{query}%', exclude_user_id))
         else:
             c.execute('''
                 SELECT id, username, profile_picture
                 FROM users
-                WHERE username LIKE ?
+                WHERE username LIKE %s
                 LIMIT 20
             ''', (f'%{query}%',))
         return [dict(row) for row in c.fetchall()]
@@ -1420,8 +1382,8 @@ def search_users(query, exclude_user_id=None):
 def get_review_points(user_id):
     """Get the user's current review points."""
     with get_db() as conn:
-        c = conn.cursor()
-        c.execute('SELECT review_points FROM users WHERE id = ?', (user_id,))
+        c = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+        c.execute('SELECT review_points FROM users WHERE id = %s', (user_id,))
         row = c.fetchone()
         return row['review_points'] if row else 0
 
@@ -1437,7 +1399,7 @@ def get_unlocked_superlative_slots(user_id):
 def get_all_superlatives():
     """Get all superlative definitions."""
     with get_db() as conn:
-        c = conn.cursor()
+        c = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
         c.execute('SELECT * FROM superlatives ORDER BY category, name')
         return [dict(row) for row in c.fetchall()]
 
@@ -1445,7 +1407,7 @@ def get_all_superlatives():
 def get_user_superlatives(user_id):
     """Get all unlocked superlatives for a user."""
     with get_db() as conn:
-        c = conn.cursor()
+        c = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
         c.execute('''
             SELECT
                 s.id, s.name, s.description, s.category,
@@ -1456,7 +1418,7 @@ def get_user_superlatives(user_id):
             JOIN superlatives s ON us.superlative_id = s.id
             LEFT JOIN games g ON us.game_id = g.game_id
             LEFT JOIN users u ON us.friend_id = u.id
-            WHERE us.user_id = ?
+            WHERE us.user_id = %s
             ORDER BY us.unlocked_at DESC
         ''', (user_id,))
         return [dict(row) for row in c.fetchall()]
@@ -1465,10 +1427,10 @@ def get_user_superlatives(user_id):
 def unlock_superlative(user_id, superlative_name, game_id=None, friend_id=None):
     """Unlock a superlative for a user. Returns (success, message)."""
     with get_db() as conn:
-        c = conn.cursor()
+        c = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
 
         # Get superlative ID
-        c.execute('SELECT id FROM superlatives WHERE name = ?', (superlative_name,))
+        c.execute('SELECT id FROM superlatives WHERE name = %s', (superlative_name,))
         superlative = c.fetchone()
         if not superlative:
             return False, "Superlative not found"
@@ -1478,7 +1440,7 @@ def unlock_superlative(user_id, superlative_name, game_id=None, friend_id=None):
         # Check if already unlocked (any instance of this superlative)
         c.execute('''
             SELECT 1 FROM user_superlatives
-            WHERE user_id = ? AND superlative_id = ?
+            WHERE user_id = %s AND superlative_id = %s
         ''', (user_id, superlative_id))
 
         if c.fetchone():
@@ -1486,7 +1448,7 @@ def unlock_superlative(user_id, superlative_name, game_id=None, friend_id=None):
 
         # Check if user has enough unlocked slots (1 slot per 5 RP)
         unlocked_slots = get_unlocked_superlative_slots(user_id)
-        c.execute('SELECT COUNT(*) as count FROM user_superlatives WHERE user_id = ?', (user_id,))
+        c.execute('SELECT COUNT(*) as count FROM user_superlatives WHERE user_id = %s', (user_id,))
         current_unlocked = c.fetchone()['count']
 
         if current_unlocked >= unlocked_slots:
@@ -1496,7 +1458,7 @@ def unlock_superlative(user_id, superlative_name, game_id=None, friend_id=None):
         try:
             c.execute('''
                 INSERT INTO user_superlatives (user_id, superlative_id, game_id, friend_id)
-                VALUES (?, ?, ?, ?)
+                VALUES (%s, %s, %s, %s)
             ''', (user_id, superlative_id, game_id, friend_id))
             conn.commit()
             return True, "Superlative unlocked!"
@@ -1507,19 +1469,19 @@ def unlock_superlative(user_id, superlative_name, game_id=None, friend_id=None):
 def set_active_title(user_id, superlative_id):
     """Set the user's active title/superlative."""
     with get_db() as conn:
-        c = conn.cursor()
+        c = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
 
         # Verify user has unlocked this superlative
         c.execute('''
             SELECT 1 FROM user_superlatives
-            WHERE user_id = ? AND superlative_id = ?
+            WHERE user_id = %s AND superlative_id = %s
         ''', (user_id, superlative_id))
 
         if not c.fetchone():
             return False, "You haven't unlocked this title"
 
         # Set as active
-        c.execute('UPDATE users SET active_title = ? WHERE id = ?', (superlative_id, user_id))
+        c.execute('UPDATE users SET active_title = %s WHERE id = %s', (superlative_id, user_id))
         conn.commit()
         return True, "Title activated!"
 
@@ -1527,20 +1489,20 @@ def set_active_title(user_id, superlative_id):
 def clear_active_title(user_id):
     """Clear the user's active title."""
     with get_db() as conn:
-        c = conn.cursor()
-        c.execute('UPDATE users SET active_title = NULL WHERE id = ?', (user_id,))
+        c = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+        c.execute('UPDATE users SET active_title = NULL WHERE id = %s', (user_id,))
         conn.commit()
 
 
 def get_active_title(user_id):
     """Get the user's active title name."""
     with get_db() as conn:
-        c = conn.cursor()
+        c = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
         c.execute('''
             SELECT s.name
             FROM users u
             LEFT JOIN superlatives s ON u.active_title = s.id
-            WHERE u.id = ?
+            WHERE u.id = %s
         ''', (user_id,))
         row = c.fetchone()
         return row['name'] if row and row['name'] else None
@@ -1551,7 +1513,7 @@ def calculate_solo_superlatives(user_id):
     unlocked = []
 
     with get_db() as conn:
-        c = conn.cursor()
+        c = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
 
         # Get user's games with scores and playtime
         user_games = get_user_games(user_id)
@@ -1570,7 +1532,7 @@ def calculate_solo_superlatives(user_id):
         # 2. Die on this Hill - score >2 points above community average
         for game in user_games:
             if game.get('enjoyment_score'):
-                c.execute('SELECT average_enjoyment_score FROM games WHERE game_id = ?', (game['game_id'],))
+                c.execute('SELECT average_enjoyment_score FROM games WHERE game_id = %s', (game['game_id'],))
                 avg_row = c.fetchone()
                 if avg_row and avg_row['average_enjoyment_score']:
                     diff = game['enjoyment_score'] - avg_row['average_enjoyment_score']
@@ -1582,7 +1544,7 @@ def calculate_solo_superlatives(user_id):
         # 3. Agree to Disagree - score >2 points below community average
         for game in user_games:
             if game.get('enjoyment_score'):
-                c.execute('SELECT average_enjoyment_score FROM games WHERE game_id = ?', (game['game_id'],))
+                c.execute('SELECT average_enjoyment_score FROM games WHERE game_id = %s', (game['game_id'],))
                 avg_row = c.fetchone()
                 if avg_row and avg_row['average_enjoyment_score']:
                     diff = avg_row['average_enjoyment_score'] - game['enjoyment_score']
@@ -1622,7 +1584,7 @@ def calculate_solo_superlatives(user_id):
         # 6. Worth Every Nickel - PV ratio <=0.05
         for game in user_games:
             if game.get('hours_played') and game.get('hours_played') > 0:
-                c.execute('SELECT price FROM games WHERE game_id = ?', (game['game_id'],))
+                c.execute('SELECT price FROM games WHERE game_id = %s', (game['game_id'],))
                 price_row = c.fetchone()
                 if price_row and price_row['price']:
                     pv_ratio = price_row['price'] / game['hours_played']
@@ -1692,7 +1654,7 @@ def calculate_solo_superlatives(user_id):
                        key=lambda x: (-x['enjoyment_score'], x.get('enjoyment_order') or 999999))[:10]
         for game in top_10:
             if game.get('hours_played') and game.get('hours_played') > 0:
-                c.execute('SELECT price FROM games WHERE game_id = ?', (game['game_id'],))
+                c.execute('SELECT price FROM games WHERE game_id = %s', (game['game_id'],))
                 price_row = c.fetchone()
                 if price_row and price_row['price']:
                     pv_ratio = price_row['price'] / game['hours_played']
@@ -1721,7 +1683,7 @@ def calculate_solo_superlatives(user_id):
         for game in user_games:
             if game.get('enjoyment_score') and game.get('updated_at'):
                 # Get game release date
-                c.execute('SELECT release_date FROM games WHERE game_id = ?', (game['game_id'],))
+                c.execute('SELECT release_date FROM games WHERE game_id = %s', (game['game_id'],))
                 game_row = c.fetchone()
                 if game_row and game_row['release_date']:
                     try:
@@ -1769,7 +1731,7 @@ def calculate_friend_superlatives(user_id, friend_id):
     unlocked = []
 
     with get_db() as conn:
-        c = conn.cursor()
+        c = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
 
         # Get both users' games
         user_games = {g['game_id']: g for g in get_user_games(user_id) if g.get('enjoyment_score')}
@@ -1797,7 +1759,7 @@ def calculate_friend_superlatives(user_id, friend_id):
             user_score = user_games[game_id].get('enjoyment_score')
             friend_score = friend_games[game_id].get('enjoyment_score')
             if user_score and friend_score:
-                c.execute('SELECT average_enjoyment_score FROM games WHERE game_id = ?', (game_id,))
+                c.execute('SELECT average_enjoyment_score FROM games WHERE game_id = %s', (game_id,))
                 avg_row = c.fetchone()
                 if avg_row and avg_row['average_enjoyment_score']:
                     user_diff = user_score - avg_row['average_enjoyment_score']

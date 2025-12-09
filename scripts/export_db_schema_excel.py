@@ -1,31 +1,48 @@
 import os
-import sqlite3
+import sys
+sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
+
+from database import get_db
 from openpyxl import Workbook
 from openpyxl.styles import Font, Alignment
 
 ROOT = os.path.dirname(os.path.dirname(__file__))
-DB_PATH = os.path.join(ROOT, 'ratings.db')
 OUT_PATH = os.path.join(ROOT, 'database_schema.xlsx')
 
 
 def get_tables(conn):
     cur = conn.cursor()
-    cur.execute("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' ORDER BY name")
-    return [r[0] for r in cur.fetchall()]
+    cur.execute("""
+        SELECT tablename FROM pg_tables
+        WHERE schemaname='public'
+        ORDER BY tablename
+    """)
+    return [r['tablename'] for r in cur.fetchall()]
 
 
 def table_info(conn, table):
     cur = conn.cursor()
-    cur.execute(f"PRAGMA table_info({table})")
+    cur.execute(f"""
+        SELECT
+            ordinal_position as cid,
+            column_name as name,
+            data_type as type,
+            CASE WHEN is_nullable = 'NO' THEN 1 ELSE 0 END as notnull,
+            column_default as dflt_value,
+            CASE WHEN column_default LIKE 'nextval%%' THEN 1 ELSE 0 END as pk
+        FROM information_schema.columns
+        WHERE table_schema = 'public' AND table_name = %s
+        ORDER BY ordinal_position
+    """, (table,))
     cols = cur.fetchall()
     return [
         {
-            'cid': c[0],
-            'name': c[1],
-            'type': c[2],
-            'notnull': bool(c[3]),
-            'dflt_value': c[4],
-            'pk': bool(c[5]),
+            'cid': c['cid'],
+            'name': c['name'],
+            'type': c['type'],
+            'notnull': bool(c['notnull']),
+            'dflt_value': c['dflt_value'],
+            'pk': bool(c['pk']),
         }
         for c in cols
     ]
@@ -33,20 +50,43 @@ def table_info(conn, table):
 
 def foreign_keys(conn, table):
     cur = conn.cursor()
-    cur.execute(f"PRAGMA foreign_key_list({table})")
+    cur.execute(f"""
+        SELECT
+            tc.constraint_name as id,
+            0 as seq,
+            ccu.table_name as table,
+            kcu.column_name as "from",
+            ccu.column_name as "to",
+            rc.update_rule as on_update,
+            rc.delete_rule as on_delete,
+            '' as match
+        FROM information_schema.table_constraints AS tc
+        JOIN information_schema.key_column_usage AS kcu
+            ON tc.constraint_name = kcu.constraint_name
+            AND tc.table_schema = kcu.table_schema
+        JOIN information_schema.constraint_column_usage AS ccu
+            ON ccu.constraint_name = tc.constraint_name
+            AND ccu.table_schema = tc.table_schema
+        JOIN information_schema.referential_constraints AS rc
+            ON rc.constraint_name = tc.constraint_name
+            AND rc.constraint_schema = tc.table_schema
+        WHERE tc.constraint_type = 'FOREIGN KEY'
+            AND tc.table_schema = 'public'
+            AND tc.table_name = %s
+    """, (table,))
     rows = cur.fetchall()
     return [
         {
-            'id': r[0],
-            'seq': r[1],
-            'table': r[2],
-            'from': r[3],
-            'to': r[4],
-            'on_update': r[5],
-            'on_delete': r[6],
-            'match': r[7],
+            'id': idx,
+            'seq': r['seq'],
+            'table': r['table'],
+            'from': r['from'],
+            'to': r['to'],
+            'on_update': r['on_update'],
+            'on_delete': r['on_delete'],
+            'match': r['match'],
         }
-        for r in rows
+        for idx, r in enumerate(rows)
     ]
 
 
@@ -61,15 +101,11 @@ def autosize(ws):
 
 
 def main():
-    if not os.path.exists(DB_PATH):
-        raise SystemExit(f"Database not found: {DB_PATH}")
-
     wb = Workbook()
     # Remove default sheet
     wb.remove(wb.active)
 
-    with sqlite3.connect(DB_PATH) as conn:
-        conn.row_factory = sqlite3.Row
+    with get_db() as conn:
         tables = get_tables(conn)
         # Ensure preferred order if present
         preferred = ['users', 'games', 'user_scores']

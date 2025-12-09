@@ -1,29 +1,49 @@
-import sqlite3
+import os
+from dotenv import load_dotenv
+import psycopg2.extras
 
-conn = sqlite3.connect('ratings.db')
-c = conn.cursor()
+# Load environment variables
+load_dotenv()
 
-# Get all tables
-c.execute("SELECT name FROM sqlite_master WHERE type='table'")
-tables = c.fetchall()
+from database import get_db
 
-for table in tables:
-    table_name = table[0]
-    print(f"\n{'='*60}")
-    print(f"TABLE: {table_name}")
-    print(f"{'='*60}")
-    
-    c.execute(f'PRAGMA table_info({table_name})')
-    cols = c.fetchall()
-    
-    for col in cols:
-        col_id, col_name, col_type, not_null, default, pk = col
-        pk_marker = " [PRIMARY KEY]" if pk else ""
-        print(f"  {col_name:<25} {col_type:<15}{pk_marker}")
-    
-    # Show row count
-    c.execute(f'SELECT COUNT(*) FROM {table_name}')
-    count = c.fetchone()[0]
-    print(f"\nRow count: {count}")
+with get_db() as conn:
+    c = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
 
-conn.close()
+    # Get all tables from PostgreSQL
+    c.execute("""
+        SELECT tablename FROM pg_tables
+        WHERE schemaname='public'
+        ORDER BY tablename
+    """)
+    tables = c.fetchall()
+
+    for table in tables:
+        table_name = table['tablename']
+        print(f"\n{'='*60}")
+        print(f"TABLE: {table_name}")
+        print(f"{'='*60}")
+
+        # Get column information from information_schema
+        c.execute(f'''
+            SELECT column_name, data_type, is_nullable, column_default
+            FROM information_schema.columns
+            WHERE table_schema = 'public' AND table_name = %s
+            ORDER BY ordinal_position
+        ''', (table_name,))
+        cols = c.fetchall()
+
+        for col in cols:
+            col_name = col['column_name']
+            col_type = col['data_type']
+            nullable = col['is_nullable']
+            default = col['column_default']
+
+            pk_marker = " [PRIMARY KEY]" if default and 'nextval' in str(default) else ""
+            null_marker = "" if nullable == 'YES' else " NOT NULL"
+            print(f"  {col_name:<25} {col_type:<15}{null_marker}{pk_marker}")
+
+        # Show row count
+        c.execute(f'SELECT COUNT(*) FROM {table_name}')
+        count = c.fetchone()['count']
+        print(f"\nRow count: {count}")

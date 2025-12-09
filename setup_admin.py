@@ -2,21 +2,21 @@
 Setup script to create admin account and remove test users.
 Run this before deploying.
 """
-import sqlite3
+from database import get_db
 import hashlib
 
-DB_PATH = 'ratings.db'
+
 
 def hash_password(password):
     """Hash a password using SHA-256."""
     return hashlib.sha256(password.encode()).hexdigest()
 
 def setup_admin():
-    conn = sqlite3.connect(DB_PATH)
+    conn = get_db()
     c = conn.cursor()
 
     # Find the existing admin user
-    c.execute('SELECT id, username FROM users WHERE user_type = ?', ('admin',))
+    c.execute('SELECT id, username FROM users WHERE user_type = %s', ('admin',))
     admin_user = c.fetchone()
 
     if admin_user:
@@ -32,8 +32,8 @@ def setup_admin():
 
         c.execute('''
             UPDATE users
-            SET username = ?, password = ?
-            WHERE id = ?
+            SET username = %s, password = %s
+            WHERE id = %s
         ''', (username, password_hash, admin_id))
 
         print(f"Admin account updated (all reviews and data preserved)")
@@ -46,13 +46,13 @@ def setup_admin():
 
         c.execute('''
             INSERT INTO users (username, password, user_type, review_points)
-            VALUES (?, ?, 'admin', 0)
+            VALUES (%s, %s, 'admin', 0)
         ''', (username, password_hash))
 
         print("New admin account created: Jsaber")
 
     # Remove testuser if it exists
-    c.execute('SELECT id FROM users WHERE username = ?', ('testuser',))
+    c.execute('SELECT id FROM users WHERE username = %s', ('testuser',))
     testuser = c.fetchone()
 
     if testuser:
@@ -60,10 +60,10 @@ def setup_admin():
         print(f"\nRemoving testuser account (ID: {testuser_id})...")
 
         # Delete testuser's data
-        c.execute('DELETE FROM user_scores WHERE user_id = ?', (testuser_id,))
-        c.execute('DELETE FROM user_superlatives WHERE user_id = ?', (testuser_id,))
-        c.execute('DELETE FROM friends WHERE user_id = ? OR friend_id = ?', (testuser_id, testuser_id))
-        c.execute('DELETE FROM users WHERE id = ?', (testuser_id,))
+        c.execute('DELETE FROM user_scores WHERE user_id = %s', (testuser_id,))
+        c.execute('DELETE FROM user_superlatives WHERE user_id = %s', (testuser_id,))
+        c.execute('DELETE FROM friends WHERE user_id = %s OR friend_id = %s', (testuser_id, testuser_id))
+        c.execute('DELETE FROM users WHERE id = %s', (testuser_id,))
 
         print("Testuser account removed")
     else:
@@ -80,7 +80,7 @@ def setup_admin():
         user_type = user[1] if user[1] else 'regular'
         print(f"Username: {user[0]}, Type: {user_type}")
 
-    conn.close()
+    # Connection handled by context manager
     print("\nAdmin setup complete!")
 
 if __name__ == '__main__':

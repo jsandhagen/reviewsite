@@ -1,6 +1,13 @@
+from dotenv import load_dotenv
+
+# Load environment variables FIRST before any other imports that need them
+load_dotenv()
+
 from flask import Flask, render_template, request, redirect, url_for, send_file, session, jsonify
 import urllib.parse
 import sys
+import psycopg2
+import psycopg2.extras
 try:
     import requests
 except ImportError:
@@ -223,10 +230,10 @@ def register():
 
                                     # Check if user already has this game
                                     with get_db() as conn:
-                                        c = conn.cursor()
+                                        c = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
                                         c.execute('''
                                             SELECT 1 FROM user_scores
-                                            WHERE user_id = ? AND game_id = ?
+                                            WHERE user_id = %s AND game_id = %s
                                         ''', (user_id, game_id))
                                         existing = c.fetchone()
 
@@ -236,9 +243,9 @@ def register():
                                         if game_data.get('playtime_hours'):
                                             set_user_playtime(user_id, game_id, game_data['playtime_hours'])
                                         with get_db() as conn:
-                                            c = conn.cursor()
+                                            c = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
                                             c.execute(
-                                                'UPDATE user_scores SET backlog_order = ? WHERE user_id = ? AND game_id = ?',
+                                                'UPDATE user_scores SET backlog_order = %s WHERE user_id = %s AND game_id = %s',
                                                 (backlog_order, user_id, game_id)
                                             )
                                             conn.commit()
@@ -522,8 +529,8 @@ def toplists():
     if friend_username:
         # Get friend's user ID
         with get_db() as conn:
-            c = conn.cursor()
-            c.execute('SELECT id FROM users WHERE username = ?', (friend_username,))
+            c = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+            c.execute('SELECT id FROM users WHERE username = %s', (friend_username,))
             friend = c.fetchone()
 
         if friend:
@@ -998,11 +1005,11 @@ def link_steam():
 
                     # Check if user already has this game (in backlog or reviewed)
                     with get_db() as conn:
-                        c = conn.cursor()
+                        c = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
                         c.execute('''
                             SELECT enjoyment_score, gameplay_score, music_score, narrative_score
                             FROM user_scores
-                            WHERE user_id = ? AND game_id = ?
+                            WHERE user_id = %s AND game_id = %s
                         ''', (user_id, game_id))
                         existing = c.fetchone()
 
@@ -1021,9 +1028,9 @@ def link_steam():
 
                         # Set backlog order (sorted by playtime, already sorted in import_steam_games)
                         with get_db() as conn:
-                            c = conn.cursor()
+                            c = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
                             c.execute(
-                                'UPDATE user_scores SET backlog_order = ? WHERE user_id = ? AND game_id = ?',
+                                'UPDATE user_scores SET backlog_order = %s WHERE user_id = %s AND game_id = %s',
                                 (backlog_order, user_id, game_id)
                             )
                             conn.commit()
@@ -1032,10 +1039,10 @@ def link_steam():
 
                 # Mark sync time
                 with get_db() as conn:
-                    c = conn.cursor()
+                    c = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
                     c.execute('''
                         INSERT INTO steam_update_log (user_id, last_update)
-                        VALUES (?, CURRENT_TIMESTAMP)
+                        VALUES (%s, CURRENT_TIMESTAMP)
                         ON CONFLICT(user_id) DO UPDATE SET last_update = CURRENT_TIMESTAMP
                     ''', (user_id,))
                     conn.commit()
@@ -1103,11 +1110,11 @@ def import_steam():
             
             # Check if user already has this game (in backlog or reviewed)
             with get_db() as conn:
-                c = conn.cursor()
+                c = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
                 c.execute('''
                     SELECT enjoyment_score, gameplay_score, music_score, narrative_score 
                     FROM user_scores 
-                    WHERE user_id = ? AND game_id = ?
+                    WHERE user_id = %s AND game_id = %s
                 ''', (user_id, game_id))
                 existing = c.fetchone()
             
@@ -1126,9 +1133,9 @@ def import_steam():
                 
                 # Set backlog order
                 with get_db() as conn:
-                    c = conn.cursor()
+                    c = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
                     c.execute(
-                        'UPDATE user_scores SET backlog_order = ? WHERE user_id = ? AND game_id = ?',
+                        'UPDATE user_scores SET backlog_order = %s WHERE user_id = %s AND game_id = %s',
                         (backlog_order, user_id, game_id)
                     )
                     conn.commit()
@@ -1146,10 +1153,10 @@ def import_steam():
         
         # Mark sync time
         with get_db() as conn:
-            c = conn.cursor()
+            c = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
             c.execute('''
                 INSERT INTO steam_update_log (user_id, last_update)
-                VALUES (?, CURRENT_TIMESTAMP)
+                VALUES (%s, CURRENT_TIMESTAMP)
                 ON CONFLICT(user_id) DO UPDATE SET last_update = CURRENT_TIMESTAMP
             ''', (user_id,))
             conn.commit()
@@ -1454,7 +1461,7 @@ def admin_refresh_game(game_id):
         if requests:
             try:
                 # Get game details from Steam Store API
-                details_url = f"https://store.steampowered.com/api/appdetails?appids={app_id}&cc=us"
+                details_url = f"https://store.steampowered.com/api/appdetails%sappids={app_id}&cc=us"
                 print(f"[ADMIN REFRESH] Fetching from {details_url}")
                 response = requests.get(details_url, timeout=10)
                 
@@ -1571,7 +1578,7 @@ def admin_update_all_games():
         
         # Get all games with Steam App IDs
         with get_db() as conn:
-            c = conn.cursor()
+            c = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
             c.execute("SELECT game_id, name, app_id, cover_etag FROM games WHERE app_id IS NOT NULL")
             games = c.fetchall()
         
@@ -1620,7 +1627,7 @@ def admin_update_all_games():
                     
                     # Fetch from Steam API
                     if requests:
-                        details_url = f"https://store.steampowered.com/api/appdetails?appids={app_id}&cc=us"
+                        details_url = f"https://store.steampowered.com/api/appdetails%sappids={app_id}&cc=us"
                         response = requests.get(details_url, timeout=10)
                         
                         if response.status_code == 200:
@@ -1848,8 +1855,8 @@ def compare_games(username):
 
     # Get friend's user ID
     with get_db() as conn:
-        c = conn.cursor()
-        c.execute('SELECT id FROM users WHERE username = ?', (username,))
+        c = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+        c.execute('SELECT id FROM users WHERE username = %s', (username,))
         friend = c.fetchone()
 
     if not friend:
@@ -2074,21 +2081,40 @@ def api_unlock_superlative():
 @app.route('/admin/backup-database')
 @admin_required
 def backup_database():
-    """Admin-only endpoint to download the database file."""
+    """Admin-only endpoint to download database backup (PostgreSQL dump)."""
     from flask import send_file
     import os
     from datetime import datetime
+    import subprocess
+    import tempfile
 
-    db_path = os.path.join(os.path.dirname(__file__), 'ratings.db')
     timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-    download_name = f'ratings_backup_{timestamp}.db'
+    download_name = f'ratings_backup_{timestamp}.sql'
 
-    return send_file(
-        db_path,
-        as_attachment=True,
-        download_name=download_name,
-        mimetype='application/x-sqlite3'
-    )
+    # Create a temporary file for the PostgreSQL dump
+    temp_file = tempfile.NamedTemporaryFile(delete=False, suffix='.sql')
+    temp_path = temp_file.name
+    temp_file.close()
+
+    try:
+        # Use pg_dump to create a backup
+        database_url = os.environ.get('DATABASE_URL')
+        if database_url:
+            subprocess.run(['pg_dump', database_url, '-f', temp_path], check=True)
+            return send_file(
+                temp_path,
+                as_attachment=True,
+                download_name=download_name,
+                mimetype='application/sql'
+            )
+        else:
+            return jsonify({'error': 'DATABASE_URL not configured'}), 500
+    except Exception as e:
+        return jsonify({'error': f'Backup failed: {str(e)}'}), 500
+    finally:
+        # Clean up temp file after sending
+        if os.path.exists(temp_path):
+            os.unlink(temp_path)
 
 
 @app.route('/api/debug/session')
@@ -2108,12 +2134,12 @@ def db_status():
     """Admin-only endpoint to check database tables and friend requests status."""
     try:
         with get_db() as conn:
-            c = conn.cursor()
+            c = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
 
             # Check if friends table exists
             c.execute("""
-                SELECT name FROM sqlite_master
-                WHERE type='table' AND name='friends'
+                SELECT tablename FROM pg_tables
+                WHERE schemaname='public' AND tablename='friends'
             """)
             friends_table_exists = c.fetchone() is not None
 

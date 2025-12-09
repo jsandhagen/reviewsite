@@ -494,7 +494,7 @@
                 </div>
               </div>
 
-              <div class="member-since">Member since: {{ (profile.created_at if profile else '')[:10] }}</div>
+              <div class="member-since">Member since: {{ profile.created_at.strftime('%Y-%m-%d') if profile and profile.created_at else '' }}</div>
 
               {% if error %}<div class="error">{{ error }}</div>{% endif %}
               {% if success %}<div class="success">{{ success }}</div>{% endif %}
@@ -613,7 +613,7 @@
               <div>✓ Steam profile linked</div>
               <div style="color:#aaa;font-size:13px;margin-top:4px">{{ profile.steam_profile_url }}</div>
               {% if profile.steam_last_sync %}
-                <div style="color:#888;font-size:12px;margin-top:4px">Last synced: {{ profile.steam_last_sync[:16].replace('T', ' ') }}</div>
+                <div style="color:#888;font-size:12px;margin-top:4px">Last synced: {{ profile.steam_last_sync.strftime('%Y-%m-%d %H:%M') if profile.steam_last_sync else '' }}</div>
               {% endif %}
             </div>
             <form method="post" action="/import_steam" style="margin-top:12px">

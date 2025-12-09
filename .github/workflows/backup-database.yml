@@ -1,0 +1,31 @@
+name: Backup Database
+
+on:
+  schedule:
+    # Run daily at 2 AM UTC
+    - cron: '0 2 * * *'
+  workflow_dispatch: # Allow manual trigger
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Download database from Render
+        run: |
+          # This requires setting up Render API access
+          # Download database from Render shell
+          echo "TODO: Set up Render API access"
+          # curl -X POST https://api.render.com/v1/services/$SERVICE_ID/shell \
+          #   -H "Authorization: Bearer $RENDER_API_KEY" \
+          #   -d "command=cat ratings.db | base64" > db_backup.txt
+
+      - name: Commit and push backup
+        run: |
+          git config user.name "GitHub Actions Bot"
+          git config user.email "actions@github.com"
+          git add ratings.db
+          git commit -m "Automated database backup [skip ci]" || echo "No changes"
+          git push

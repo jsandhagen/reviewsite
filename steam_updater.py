@@ -3,6 +3,7 @@ import time
 import threading
 import logging
 import os
+import psycopg2.extras
 from datetime import datetime, timedelta
 from database import get_db, add_or_get_game, add_game_to_user_backlog, set_user_playtime
 from steam_integration import import_steam_games
@@ -72,7 +73,7 @@ class SteamUpdater:
     def _update_all_steam_accounts(self):
         """Update all users with linked Steam accounts."""
         with get_db() as conn:
-            c = conn.cursor()
+            c = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
             
             # Get all users with Steam profiles linked
             c.execute('''
@@ -117,7 +118,7 @@ class SteamUpdater:
     def _should_skip_user(self, user_id):
         """Check if user was updated recently (within last 23 hours)."""
         with get_db() as conn:
-            c = conn.cursor()
+            c = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
             # Store last update time in a simple table
             c.execute('''
                 CREATE TABLE IF NOT EXISTS steam_update_log (
@@ -127,12 +128,16 @@ class SteamUpdater:
             ''')
             
             c.execute('''
-                SELECT last_update FROM steam_update_log WHERE user_id = ?
+                SELECT last_update FROM steam_update_log WHERE user_id = %s
             ''', (user_id,))
             row = c.fetchone()
             
             if row:
-                last_update = datetime.fromisoformat(row['last_update'])
+                # PostgreSQL returns datetime objects directly, not strings
+                last_update = row['last_update']
+                if isinstance(last_update, str):
+                    # Fallback for any string timestamps
+                    last_update = datetime.fromisoformat(last_update)
                 hours_since = (datetime.now() - last_update).total_seconds() / 3600
                 if hours_since < 23:
                     return True
@@ -142,10 +147,10 @@ class SteamUpdater:
     def _mark_user_updated(self, user_id):
         """Mark that a user's library was just updated."""
         with get_db() as conn:
-            c = conn.cursor()
+            c = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
             c.execute('''
                 INSERT INTO steam_update_log (user_id, last_update)
-                VALUES (?, CURRENT_TIMESTAMP)
+                VALUES (%s, CURRENT_TIMESTAMP)
                 ON CONFLICT(user_id) DO UPDATE SET last_update = CURRENT_TIMESTAMP
             ''', (user_id,))
             conn.commit()
@@ -154,7 +159,7 @@ class SteamUpdater:
         """Update a single user's Steam library."""
         # Get existing games from database to check for complete metadata
         with get_db() as conn:
-            c = conn.cursor()
+            c = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
             c.execute('''
                 SELECT app_id, name, description, genres, developer, publisher, 
                        price, original_price, sale_price, release_date, cover_etag
@@ -182,12 +187,12 @@ class SteamUpdater:
         
         # Get existing games in user's library
         with get_db() as conn:
-            c = conn.cursor()
+            c = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
             c.execute('''
                 SELECT g.app_id, us.hours_played 
                 FROM user_scores us
                 JOIN games g ON us.game_id = g.game_id
-                WHERE us.user_id = ?
+                WHERE us.user_id = %s
             ''', (user_id,))
             existing = {row['app_id']: row['hours_played'] for row in c.fetchall()}
         
