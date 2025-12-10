@@ -153,15 +153,15 @@ def download_cover_art(app_id, game_name, covers_dir, existing_etag=None):
         new_etag = head_response.headers.get('ETag', '')
 
         # Check if file exists in R2 with matching ETag
-        r2_etag = cloudflare_storage.get_etag(r2_key)
-        if r2_etag and existing_etag and new_etag == existing_etag:
-            # Cover hasn't changed, return R2 URL
+        r2_exists = cloudflare_storage.file_exists(r2_key)
+        if r2_exists and existing_etag and new_etag == existing_etag:
+            # Cover exists in R2 and hasn't changed, return R2 URL
             return cloudflare_storage.get_public_url(r2_key), existing_etag
 
         # Also check local file
         if os.path.exists(filepath) and existing_etag and new_etag == existing_etag:
             # Cover hasn't changed locally, but upload to R2 if missing
-            if not r2_etag:
+            if not r2_exists:
                 r2_url = cloudflare_storage.upload_file(filepath, r2_key, 'image/png')
                 if r2_url:
                     return r2_url, existing_etag
@@ -262,8 +262,8 @@ def import_steam_games(steam_id, progress_callback=None, skip_complete_games=Fal
                     "cover_etag": existing.get('cover_etag')
                 }
                 
-                # Download cover if requested and missing
-                if download_covers and covers_dir and not existing.get('cover_path'):
+                # Download cover if requested (will check ETag and R2 existence)
+                if download_covers and covers_dir:
                     cover_path, cover_etag = download_cover_art(
                         appid, name, covers_dir, existing.get('cover_etag')
                     )
