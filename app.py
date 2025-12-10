@@ -1721,10 +1721,10 @@ def admin_update_all_games():
             add_log(f"Starting update for {len(games)} games...")
             
             for idx, game in enumerate(games, 1):
-                game_id = game[0]
-                game_name = game[1]
-                app_id = game[2]
-                cover_etag = game[3]
+                game_id = game['game_id']
+                game_name = game['name']
+                app_id = game['app_id']
+                cover_etag = game['cover_etag']
                 
                 bulk_update_status['current'] = idx
                 bulk_update_status['current_game'] = game_name
