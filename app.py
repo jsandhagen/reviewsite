@@ -25,8 +25,8 @@ from database import (
     reject_friend_request, remove_friend, get_friends, search_users,
     get_all_superlatives, get_user_superlatives, calculate_solo_superlatives,
     calculate_friend_superlatives, set_active_title, clear_active_title, get_active_title,
-    get_review_points, get_unlocked_superlative_slots, set_favorite_game, get_user_profile_by_username,
-    purchase_random_superlative
+    get_review_points, set_favorite_game, get_user_profile_by_username,
+    purchase_solo_superlative, purchase_friend_superlative, get_friends_with_mystery_titles
 )
 import cloudflare_storage
 
@@ -1025,7 +1025,6 @@ def view_profile(username):
     user_is_admin = is_admin(current_user_id) if is_own_profile else False
     active_title = get_active_title(profile_user_id)
     review_points = get_review_points(profile_user_id)
-    unlocked_slots = get_unlocked_superlative_slots(profile_user_id)
 
     # Get user's reviewed games for favorite game selector (only for own profile)
     reviewed_games = []
@@ -1046,7 +1045,6 @@ def view_profile(username):
                          is_admin=user_is_admin,
                          active_title=active_title,
                          review_points=review_points,
-                         unlocked_slots=unlocked_slots,
                          is_own_profile=is_own_profile,
                          reviewed_games=reviewed_games,
                          unlocked_superlatives=unlocked_superlatives)
@@ -2101,7 +2099,6 @@ def superlatives():
 
     user_prof = get_user_profile(user_id)
     review_points = get_review_points(user_id)
-    unlocked_slots = get_unlocked_superlative_slots(user_id)
 
     # Count total available superlatives
     all_sups = get_all_superlatives()
@@ -2115,7 +2112,6 @@ def superlatives():
                          username=username,
                          profile=user_prof,
                          review_points=review_points,
-                         unlocked_slots=unlocked_slots,
                          active_page='superlatives')
 
 
@@ -2180,13 +2176,36 @@ def api_set_favorite_game():
     return jsonify({'success': success, 'message': message})
 
 
+@app.route('/api/friends_with_mystery_titles')
+@login_required
+def api_friends_with_mystery_titles():
+    """Get friends who have mystery titles available to unlock."""
+    user_id = session.get('user_id')
+    friends_with_titles = get_friends_with_mystery_titles(user_id)
+
+    if not friends_with_titles:
+        return jsonify({'success': False, 'message': 'No friends have mystery titles available', 'friends': []})
+
+    return jsonify({'success': True, 'friends': friends_with_titles})
+
+
 @app.route('/api/unlock_superlative', methods=['POST'])
 @login_required
 def api_unlock_superlative():
-    """Unlock a random superlative by spending RP."""
+    """Unlock a superlative by spending RP."""
     user_id = session.get('user_id')
+    data = request.get_json() or {}
 
-    success, message, title_name = purchase_random_superlative(user_id, cost=10)
+    unlock_type = data.get('type', 'solo')  # 'solo' or 'friend'
+    friend_id = data.get('friend_id')  # Required if type is 'friend'
+
+    if unlock_type == 'friend':
+        if not friend_id:
+            return jsonify({'success': False, 'message': 'Friend ID required for friend titles'})
+        success, message, title_name = purchase_friend_superlative(user_id, friend_id, cost=10)
+    else:
+        success, message, title_name = purchase_solo_superlative(user_id, cost=10)
+
     return jsonify({'success': success, 'message': message, 'title': title_name})
 
 

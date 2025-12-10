@@ -488,10 +488,6 @@
                   <div class="stat-label">Review Points</div>
                   <div class="stat-value">{{ review_points }} RP</div>
                 </div>
-                <div class="stat-box">
-                  <div class="stat-label">Pulse Point Slots</div>
-                  <div class="stat-value purple">{{ unlocked_slots }}</div>
-                </div>
               </div>
 
               <div class="member-since">Member since: {{ profile.created_at.strftime('%Y-%m-%d') if profile and profile.created_at else '' }}</div>

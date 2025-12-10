@@ -522,6 +522,201 @@ def purchase_random_superlative(user_id, cost=10):
         return True, f'Successfully unlocked "{superlative_name}"!', superlative_name
 
 
+def purchase_solo_superlative(user_id, cost=10):
+    """Purchase a random solo superlative by spending RP."""
+    import random
+
+    with get_db() as conn:
+        c = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+
+        # Check if user has enough RP
+        c.execute('SELECT review_points FROM users WHERE id = %s', (user_id,))
+        row = c.fetchone()
+        if not row:
+            return False, "User not found", None
+
+        review_points = row['review_points'] or 0
+        if review_points < cost:
+            return False, f"Not enough RP. You need {cost} RP but only have {review_points} RP", None
+
+        # Get all solo superlatives the user hasn't unlocked yet
+        c.execute('''
+            SELECT s.id, s.name, s.category
+            FROM superlatives s
+            WHERE s.category = 'solo' AND s.id NOT IN (
+                SELECT superlative_id FROM user_superlatives WHERE user_id = %s
+            )
+        ''', (user_id,))
+        all_available = c.fetchall()
+
+        if not all_available:
+            return False, "You have unlocked all available solo titles!", None
+
+        # Filter to only eligible superlatives
+        eligible = []
+        for sup in all_available:
+            is_eligible, game_id = check_superlative_eligibility(user_id, sup['name'])
+            if is_eligible:
+                eligible.append(dict(sup, game_id=game_id))
+
+        if not eligible:
+            return False, "You don't qualify for any remaining solo titles. Keep playing and reviewing games!", None
+
+        # Pick a random eligible one
+        chosen = random.choice(eligible)
+        superlative_id = chosen['id']
+        superlative_name = chosen['name']
+        game_id = chosen.get('game_id')
+
+        # Deduct RP and unlock superlative
+        c.execute('UPDATE users SET review_points = review_points - %s WHERE id = %s', (cost, user_id))
+        c.execute('INSERT INTO user_superlatives (user_id, superlative_id, game_id) VALUES (%s, %s, %s)',
+                  (user_id, superlative_id, game_id))
+
+        conn.commit()
+        return True, f'Successfully unlocked "{superlative_name}"!', superlative_name
+
+
+def purchase_friend_superlative(user_id, friend_id, cost=10):
+    """Purchase a random friend superlative with a specific friend by spending RP."""
+    import random
+
+    with get_db() as conn:
+        c = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+
+        # Check if user has enough RP
+        c.execute('SELECT review_points FROM users WHERE id = %s', (user_id,))
+        row = c.fetchone()
+        if not row:
+            return False, "User not found", None
+
+        review_points = row['review_points'] or 0
+        if review_points < cost:
+            return False, f"Not enough RP. You need {cost} RP but only have {review_points} RP", None
+
+        # Verify they are friends
+        c.execute('''
+            SELECT 1 FROM friends
+            WHERE (user_id = %s AND friend_user_id = %s)
+               OR (user_id = %s AND friend_user_id = %s)
+        ''', (user_id, friend_id, friend_id, user_id))
+        if not c.fetchone():
+            return False, "You are not friends with this user", None
+
+        # Get all friend superlatives the user hasn't unlocked yet
+        c.execute('''
+            SELECT s.id, s.name, s.category
+            FROM superlatives s
+            WHERE s.category = 'friend' AND s.id NOT IN (
+                SELECT superlative_id FROM user_superlatives WHERE user_id = %s
+            )
+        ''', (user_id,))
+        all_available = c.fetchall()
+
+        if not all_available:
+            return False, "You have unlocked all available friend titles!", None
+
+        # Filter to eligible ones with this specific friend
+        eligible = []
+        for sup in all_available:
+            is_eligible, game_id = check_friend_superlative_eligibility(user_id, friend_id, sup['name'])
+            if is_eligible:
+                eligible.append(dict(sup, game_id=game_id))
+
+        if not eligible:
+            c.execute('SELECT username FROM users WHERE id = %s', (friend_id,))
+            friend_row = c.fetchone()
+            friend_name = friend_row['username'] if friend_row else 'this friend'
+            return False, f"You don't qualify for any titles with {friend_name}. Play and review more games together!", None
+
+        # Pick a random eligible one
+        chosen = random.choice(eligible)
+        superlative_id = chosen['id']
+        superlative_name = chosen['name']
+        game_id = chosen.get('game_id')
+
+        # Deduct RP and unlock superlative
+        c.execute('UPDATE users SET review_points = review_points - %s WHERE id = %s', (cost, user_id))
+        c.execute('INSERT INTO user_superlatives (user_id, superlative_id, game_id, friend_id) VALUES (%s, %s, %s, %s)',
+                  (user_id, superlative_id, game_id, friend_id))
+
+        conn.commit()
+        return True, f'Successfully unlocked "{superlative_name}"!', superlative_name
+
+
+def get_friends_with_mystery_titles(user_id):
+    """Get list of friends who have mystery titles available to unlock."""
+    with get_db() as conn:
+        c = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+
+        # Get all friends
+        friends = get_friends(user_id)
+        friends_with_titles = []
+
+        for friend in friends:
+            friend_id = friend['friend_user_id']
+
+            # Get all friend superlatives not yet unlocked
+            c.execute('''
+                SELECT s.id, s.name
+                FROM superlatives s
+                WHERE s.category = 'friend' AND s.id NOT IN (
+                    SELECT superlative_id FROM user_superlatives WHERE user_id = %s
+                )
+            ''', (user_id,))
+            available_sups = c.fetchall()
+
+            # Count how many are eligible with this friend
+            eligible_count = 0
+            for sup in available_sups:
+                is_eligible, _ = check_friend_superlative_eligibility(user_id, friend_id, sup['name'])
+                if is_eligible:
+                    eligible_count += 1
+
+            if eligible_count > 0:
+                friends_with_titles.append({
+                    'friend_id': friend_id,
+                    'username': friend['username'],
+                    'avatar': friend.get('avatar_path'),
+                    'available_count': eligible_count
+                })
+
+        return friends_with_titles
+
+
+def check_friend_superlative_eligibility(user_id, friend_id, superlative_name):
+    """Check if user is eligible for a specific friend superlative with a specific friend."""
+    # This is a simplified version - you'll need to implement the actual eligibility logic
+    # based on your superlative requirements
+    with get_db() as conn:
+        c = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+
+        # Get common games between user and friend
+        c.execute('''
+            SELECT
+                g.game_id,
+                g.name,
+                us1.enjoyment as user_enjoyment,
+                us2.enjoyment as friend_enjoyment,
+                us1.gameplay as user_gameplay,
+                us2.gameplay as friend_gameplay
+            FROM games g
+            JOIN user_scores us1 ON g.game_id = us1.game_id AND us1.user_id = %s
+            JOIN user_scores us2 ON g.game_id = us2.game_id AND us2.user_id = %s
+            WHERE us1.enjoyment IS NOT NULL AND us2.enjoyment IS NOT NULL
+        ''', (user_id, friend_id))
+
+        common_games = c.fetchall()
+
+        if not common_games:
+            return False, None
+
+        # Check specific superlative requirements
+        # For now, return the first common game as eligible
+        # You can add more specific logic based on superlative_name
+        return True, common_games[0]['game_id']
+
+
 def add_or_get_game(name, app_id=None, release_date=None, description=None, genres=None, price=None, cover_path=None, 
                     developer=None, publisher=None, original_price=None, sale_price=None, cover_etag=None):
     """Add a game or update existing game with new information, return game_id."""
