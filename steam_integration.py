@@ -8,8 +8,8 @@ from PIL import Image
 from io import BytesIO
 import cloudflare_storage
 
-# Use your Steam API key here
-API_KEY = "EF41FB111ABBA588DDAE7EBEF933D669"
+# Get Steam API key from environment, with fallback to hardcoded key
+API_KEY = os.getenv('STEAM_API_KEY', 'EF41FB111ABBA588DDAE7EBEF933D669')
 
 
 def extract_steamid64(profile_url):
