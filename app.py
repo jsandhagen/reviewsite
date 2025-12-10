@@ -1569,7 +1569,10 @@ def admin_refresh_game(game_id):
                 # Get game details from Steam Store API
                 details_url = f"https://store.steampowered.com/api/appdetails%sappids={app_id}&cc=us"
                 print(f"[ADMIN REFRESH] Fetching from {details_url}")
-                response = requests.get(details_url, timeout=10)
+                headers = {
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+                }
+                response = requests.get(details_url, headers=headers, timeout=10)
                 
                 if response.status_code == 200:
                     response.encoding = 'utf-8'  # Ensure proper encoding
@@ -1734,7 +1737,10 @@ def admin_update_all_games():
                     # Fetch from Steam API
                     if requests:
                         details_url = f"https://store.steampowered.com/api/appdetails%sappids={app_id}&cc=us"
-                        response = requests.get(details_url, timeout=10)
+                        headers = {
+                            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+                        }
+                        response = requests.get(details_url, headers=headers, timeout=10)
                         
                         if response.status_code == 200:
                             response.encoding = 'utf-8'

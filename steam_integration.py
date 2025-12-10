@@ -27,13 +27,16 @@ def extract_steamid64(profile_url):
     # Handle /profiles/STEAMID64
     if path.startswith("profiles/"):
         return path.split("/")[1]
-    
+
     # Handle /id/customURL
     elif path.startswith("id/"):
         customid = path.split("/")[1]
         url = f"https://api.steampowered.com/ISteamUser/ResolveVanityURL/v1/?key={API_KEY}&vanityurl={customid}"
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+        }
         try:
-            resp = requests.get(url, timeout=10)
+            resp = requests.get(url, headers=headers, timeout=10)
             data = resp.json().get("response", {})
             if data.get("success") == 1:
                 return data.get("steamid")
@@ -41,7 +44,7 @@ def extract_steamid64(profile_url):
                 return None
         except Exception:
             return None
-    
+
     # Handle direct numeric ID
     else:
         if path.isdigit():
@@ -59,9 +62,12 @@ def get_owned_games(steam_id):
         "include_appinfo": True,
         "include_played_free_games": True
     }
-    
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+    }
+
     try:
-        resp = requests.get(url, params=params, timeout=10)
+        resp = requests.get(url, params=params, headers=headers, timeout=10)
         resp.raise_for_status()
         return resp.json().get("response", {}).get("games", [])
     except Exception as e:
@@ -72,21 +78,24 @@ def get_owned_games(steam_id):
 def get_store_details(appid, retries=3):
     """Fetch game details from Steam Store API."""
     url = f"https://store.steampowered.com/api/appdetails?appids={appid}&cc=us"
-    
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+    }
+
     for attempt in range(retries):
         try:
-            resp = requests.get(url, timeout=10)
+            resp = requests.get(url, headers=headers, timeout=10)
             if resp.status_code == 429:
                 # Rate limited, wait and retry
                 time.sleep(0.5 + attempt * 0.5)
                 continue
-            
+
             resp.raise_for_status()
             info = resp.json().get(str(appid), {})
-            
+
             if not info.get("success"):
                 return None
-            
+
             return info.get("data", {})
         except Exception as e:
             if attempt < retries - 1:
@@ -94,7 +103,7 @@ def get_store_details(appid, retries=3):
             else:
                 print(f"Error fetching store details for appid {appid}: {e}")
                 return None
-    
+
     return None
 
 
