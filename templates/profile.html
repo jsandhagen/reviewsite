@@ -496,10 +496,10 @@
 
               <div class="member-since">Member since: {{ profile.created_at.strftime('%Y-%m-%d') if profile and profile.created_at else '' }}</div>
 
+              {% if is_own_profile %}
               {% if error %}<div class="error">{{ error }}</div>{% endif %}
               {% if success %}<div class="success">{{ success }}</div>{% endif %}
 
-              {% if is_own_profile %}
               <form class="upload-section" method="post" enctype="multipart/form-data">
                 <input type="file" name="avatar" accept="image/png,image/jpeg,image/webp,image/gif">
                 <button class="btn" type="submit">Upload Picture</button>

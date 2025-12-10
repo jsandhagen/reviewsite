@@ -912,16 +912,16 @@ def search_games(query):
         if not words:
             return []
         
-        # Build fuzzy search pattern - each word should appear somewhere
-        conditions = ' AND '.join(['name LIKE %s' for _ in words])
+        # Build fuzzy search pattern - each word should appear somewhere (case-insensitive)
+        conditions = ' AND '.join(['name ILIKE %s' for _ in words])
         patterns = [f"%{word}%" for word in words]
-        
+
         c.execute(f'''
             SELECT game_id, name, release_date, cover_path, developer
             FROM games
             WHERE {conditions}
-            ORDER BY 
-                CASE 
+            ORDER BY
+                CASE
                     WHEN LOWER(name) = LOWER(%s) THEN 0
                     WHEN LOWER(name) LIKE LOWER(%s) THEN 1
                     ELSE 2
