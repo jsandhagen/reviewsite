@@ -354,8 +354,8 @@ def convert_r2_urls():
 
 @app.route('/r2/<path:r2_key>')
 def serve_r2_image(r2_key):
-    """Serve images from R2 through Flask backend"""
-    from flask import send_file, abort
+    """Serve images from R2 through Flask backend with caching"""
+    from flask import send_file, abort, make_response
     import mimetypes
 
     # Download file from R2
@@ -367,13 +367,19 @@ def serve_r2_image(r2_key):
     # Determine content type from file extension
     content_type = mimetypes.guess_type(r2_key)[0] or 'application/octet-stream'
 
-    # Serve file
-    return send_file(
+    # Create response with file
+    response = make_response(send_file(
         file_obj,
         mimetype=content_type,
         as_attachment=False,
         download_name=os.path.basename(r2_key)
-    )
+    ))
+
+    # Add aggressive caching headers (cache for 1 year)
+    response.headers['Cache-Control'] = 'public, max-age=31536000, immutable'
+    response.headers['ETag'] = f'"{r2_key}"'
+
+    return response
 
 
 def slugify(name):
