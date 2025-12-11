@@ -1271,9 +1271,14 @@ def get_all_games_with_avg_scores(user_id=None):
             else:
                 game['playtime_value'] = None
             
-            # Check if user has reviewed this game
+            # Check if user has reviewed this game (has at least one score)
             if user_id:
-                c.execute('SELECT 1 FROM user_scores WHERE user_id = %s AND game_id = %s', (user_id, game['game_id']))
+                c.execute('''
+                    SELECT 1 FROM user_scores
+                    WHERE user_id = %s AND game_id = %s
+                    AND (enjoyment_score IS NOT NULL OR gameplay_score IS NOT NULL
+                         OR music_score IS NOT NULL OR narrative_score IS NOT NULL)
+                ''', (user_id, game['game_id']))
                 game['user_reviewed'] = c.fetchone() is not None
             else:
                 game['user_reviewed'] = False

@@ -10,17 +10,17 @@
     {% include 'header.html' %}
     
     <!-- Page-specific controls -->
-    <div style="position: sticky; top: 0; z-index: 100; display: flex; justify-content: flex-start; align-items: center; padding: 16px 24px; background: #1a1a1a; border-bottom: 1px solid #333;">
-      <div style="display: flex; gap: 12px; align-items: center;">
-        <form id="search" method="get" action="/" style="margin: 0;">
+    <div class="page-controls" style="position: sticky; top: 0; z-index: 100; display: flex; justify-content: flex-start; align-items: center; padding: 16px 24px; background: #1a1a1a; border-bottom: 1px solid #333;">
+      <div class="controls-inner" style="display: flex; gap: 12px; align-items: center; width: 100%;">
+        <form id="search" method="get" action="/" style="margin: 0; flex: 1;">
           <div style="position: relative; display: flex; gap: 8px;">
             <input id="search-input" name="q" placeholder="Search games..." value="{{ q }}" autocomplete="off" style="width: 300px; background: #2a2a2a; color: var(--text); border: 1px solid #444; padding: 8px 12px; border-radius: 6px; font-size: 14px;">
             <button type="submit" class="btn" style="background: #667eea; color: white; border: none;">Search</button>
             <div id="search-results" style="display: none; position: absolute; top: 100%; left: 0; width: 500px; background: #1a1a1a; border: 1px solid #333; border-top: none; border-radius: 0 0 8px 8px; max-height: 400px; overflow-y: auto; z-index: 1000; box-shadow: 0 4px 12px rgba(0,0,0,0.5);"></div>
           </div>
         </form>
-        
-        <div style="display: flex; gap: 8px; align-items: center;">
+
+        <div class="sort-controls" style="display: flex; gap: 8px; align-items: center;">
           <label style="color: var(--muted); font-size: 14px;">Sort by:</label>
           <select id="sort-select" onchange="window.location.href='/?sort='+this.value+(document.getElementById('search-input').value ? '&q='+encodeURIComponent(document.getElementById('search-input').value) : '')" style="background: #2a2a2a; color: var(--text); border: 1px solid #444; padding: 8px 12px; border-radius: 6px; font-size: 14px; cursor: pointer;">
             <option value="enjoyment" {% if sort_by == 'enjoyment' %}selected{% endif %}>Overall Score</option>

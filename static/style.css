@@ -256,5 +256,406 @@ tr.drag-over-after{box-shadow: 0 3px 0 #2b6fb2 inset}
   animation: bump 300ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+/* ========================================
+   MOBILE RESPONSIVE STYLES
+   ======================================== */
+
+/* Tablet breakpoint (768px and below) */
+@media (max-width: 768px) {
+  /* Grid adjustments for tablets */
+  .grid {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 14px;
+  }
+
+  /* Header spacing */
+  header {
+    gap: 8px;
+    padding: 12px;
+  }
+
+  header h1 {
+    font-size: 18px;
+  }
+
+  /* Reduce score badge sizes */
+  .score {
+    width: 64px;
+    height: 64px;
+  }
+
+  .score .label {
+    font-size: 10px;
+  }
+
+  .score .value {
+    font-size: 16px;
+  }
+
+  .score-featured {
+    width: 84px;
+    height: 84px;
+  }
+
+  .score-featured .value {
+    font-size: 24px;
+  }
+}
+
+/* Mobile breakpoint (480px and below) */
+@media (max-width: 480px) {
+  /* Full-width grid on mobile */
+  .grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  /* Header mobile layout */
+  header {
+    flex-wrap: wrap !important;
+    gap: 8px !important;
+    padding: 10px !important;
+    justify-content: flex-start !important;
+  }
+
+  /* Logo and nav container */
+  header > div:first-child {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 8px !important;
+    width: 100%;
+  }
+
+  header h1 {
+    font-size: 18px !important;
+  }
+
+  /* Navigation buttons */
+  header nav {
+    flex-wrap: wrap !important;
+    gap: 6px !important;
+    width: 100% !important;
+    justify-content: flex-start !important;
+  }
+
+  header nav .btn {
+    flex: 0 1 auto;
+    padding: 6px 10px !important;
+    font-size: 13px !important;
+  }
+
+  /* User menu positioning */
+  .user-menu {
+    position: absolute !important;
+    top: 10px;
+    right: 10px;
+    margin-left: 0 !important;
+    gap: 6px !important;
+  }
+
+  /* Hide username text on mobile, keep avatar */
+  .user-menu .username {
+    display: none !important;
+  }
+
+  .user-menu .logout-btn {
+    padding: 6px 10px !important;
+    font-size: 12px !important;
+  }
+
+  /* Smaller buttons on mobile */
+  .btn {
+    padding: 8px 12px;
+    font-size: 13px;
+  }
+
+  /* Make action buttons full-width or wrap better */
+  .actions {
+    flex-wrap: wrap;
+    width: 100%;
+  }
+
+  .actions .btn {
+    flex: 1;
+    min-width: 80px;
+    text-align: center;
+  }
+
+  /* Reduce score badges for mobile */
+  .score {
+    width: 56px;
+    height: 56px;
+  }
+
+  .score .label {
+    font-size: 9px;
+  }
+
+  .score .value {
+    font-size: 14px;
+  }
+
+  .score-featured {
+    width: 72px;
+    height: 72px;
+  }
+
+  .score-featured .label {
+    font-size: 11px;
+  }
+
+  .score-featured .value {
+    font-size: 20px;
+  }
+
+  /* Card meta adjustments */
+  .meta h2 {
+    font-size: 16px;
+  }
+
+  .game-tags {
+    max-width: 100%;
+  }
+
+  /* Hide tables on mobile - will be replaced with card view in templates */
+  .full-list {
+    display: none !important;
+  }
+
+  /* Show mobile card view on mobile */
+  .mobile-card-view {
+    display: flex !important;
+    flex-direction: column;
+    gap: 12px;
+    padding: 0 10px;
+  }
+
+  .mobile-card {
+    background: var(--card);
+    border-radius: 10px;
+    padding: 12px;
+    border: 1px solid #333;
+  }
+
+  .mobile-card-header {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 10px;
+  }
+
+  .mobile-card-cover {
+    flex-shrink: 0;
+    width: 120px;
+  }
+
+  .mobile-card-cover img {
+    width: 100%;
+    height: auto;
+    border-radius: 6px;
+  }
+
+  .mobile-card-info {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .mobile-card-title {
+    font-size: 16px;
+    font-weight: 600;
+    margin: 0 0 4px 0;
+    word-break: break-word;
+  }
+
+  .mobile-card-meta {
+    font-size: 12px;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+
+  .mobile-card-scores {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
+    margin-bottom: 10px;
+  }
+
+  .mobile-card-score {
+    background: #333;
+    border-radius: 8px;
+    padding: 8px;
+    text-align: center;
+  }
+
+  .mobile-card-score .label {
+    font-size: 10px;
+    color: var(--muted);
+    display: block;
+    margin-bottom: 2px;
+  }
+
+  .mobile-card-score .value {
+    font-size: 16px;
+    font-weight: 700;
+    display: block;
+  }
+
+  .mobile-card-genres {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-bottom: 10px;
+  }
+
+  .mobile-card-actions {
+    display: flex;
+    gap: 8px;
+  }
+
+  .mobile-card-actions .btn {
+    flex: 1;
+    text-align: center;
+  }
+
+  /* Modal adjustments */
+  .modal-content {
+    width: 95%;
+    max-height: 90vh;
+  }
+
+  .modal-header {
+    padding: 14px;
+  }
+
+  .modal-header h2 {
+    font-size: 18px;
+  }
+
+  .modal-body {
+    padding: 14px;
+  }
+
+  /* Edit page full-screen on mobile */
+  .editpage {
+    max-width: 100%;
+    margin: 0;
+    padding: 14px;
+    border-radius: 0;
+    min-height: 100vh;
+  }
+
+  /* Main content adjustments */
+  main {
+    padding: 12px;
+  }
+
+  /* Index page controls mobile */
+  .page-controls {
+    padding: 10px !important;
+  }
+
+  .controls-inner {
+    flex-direction: column !important;
+    gap: 10px !important;
+    align-items: stretch !important;
+  }
+
+  .controls-inner form {
+    width: 100%;
+  }
+
+  .controls-inner form > div {
+    flex-direction: column !important;
+    gap: 8px !important;
+  }
+
+  #search-input {
+    width: 100% !important;
+    max-width: none !important;
+  }
+
+  #search-results {
+    width: calc(100vw - 20px) !important;
+    max-width: 500px;
+  }
+
+  .controls-inner .btn {
+    width: 100%;
+  }
+
+  .sort-controls {
+    width: 100%;
+    flex-direction: row !important;
+    justify-content: space-between;
+  }
+
+  .sort-controls label {
+    white-space: nowrap;
+    font-size: 13px !important;
+  }
+
+  .sort-controls select {
+    flex: 1;
+    min-width: 0;
+  }
+
+  /* Backlog/Full reviews page controls mobile */
+  .backlog-controls,
+  .full-controls {
+    padding: 10px !important;
+  }
+
+  .backlog-controls > div,
+  .full-controls > div {
+    flex-direction: column !important;
+    gap: 8px !important;
+  }
+
+  .backlog-controls form,
+  .full-controls form {
+    width: 100%;
+  }
+
+  .backlog-controls form > div,
+  .full-controls form > div {
+    flex-direction: column !important;
+    gap: 8px !important;
+  }
+
+  .backlog-controls input[type="search"],
+  .full-controls input[type="search"] {
+    width: 100% !important;
+    max-width: none !important;
+  }
+
+  .backlog-controls .btn,
+  .full-controls .btn {
+    width: 100%;
+  }
+
+  /* Game detail page mobile */
+  .card .cover {
+    width: 100% !important;
+    height: auto !important;
+    max-width: 420px;
+    margin: 0 auto;
+  }
+
+  .card .cover img,
+  .card .cover .nocover {
+    width: 100% !important;
+    height: auto !important;
+    aspect-ratio: 2/1;
+  }
+
+  .card .meta {
+    min-width: 0 !important;
+    flex: 1 1 100%;
+  }
+
+  /* Ensure cards stack properly on mobile */
+  .card {
+    flex-direction: column !important;
+  }
+}
 
 

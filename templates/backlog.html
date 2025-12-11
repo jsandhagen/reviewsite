@@ -10,9 +10,9 @@
     {% include 'header.html' %}
     
     <!-- Page-specific controls -->
-    <div style="position: sticky; top: var(--header-h, 72px); z-index: 100; display: flex; justify-content: flex-start; align-items: center; padding: 16px 24px; background: #1a1a1a; border-bottom: 1px solid #333;">
-      <div style="display: flex; gap: 12px; align-items: center;">
-        <form method="get" action="/backlog" style="margin: 0;">
+    <div class="backlog-controls" style="position: sticky; top: var(--header-h, 72px); z-index: 100; display: flex; justify-content: flex-start; align-items: center; padding: 16px 24px; background: #1a1a1a; border-bottom: 1px solid #333;">
+      <div style="display: flex; gap: 12px; align-items: center; width: 100%;">
+        <form method="get" action="/backlog" style="margin: 0; flex: 1;">
           <div style="display: flex; gap: 8px;">
             <input id="search" name="q" type="search" placeholder="Search games..." value="{{ q or '' }}" autocomplete="off" style="width: 300px; background: #2a2a2a; color: var(--text); border: 1px solid #444; padding: 8px 12px; border-radius: 6px; font-size: 14px;">
             <button type="submit" class="btn" style="background: #667eea; color: white; border: none;">Search</button>
@@ -195,6 +195,83 @@
           {% endfor %}
         </tbody>
       </table>
+
+      <!-- Mobile card view (hidden on desktop) -->
+      <div class="mobile-card-view" style="display: none;">
+        {% for game in games %}
+        <div class="mobile-card">
+          <div class="mobile-card-header">
+            <div class="mobile-card-cover">
+              {% if game.get('cover_path') %}
+                <img src="{{ game['cover_path'] }}" alt="{{ game['name'] }} cover" loading="lazy">
+              {% else %}
+                <div style="width: 100%; height: 60px; background: #333; border-radius: 6px; display: flex; align-items: center; justify-content: center; color: #888; font-size: 11px;">No Image</div>
+              {% endif %}
+            </div>
+            <div class="mobile-card-info">
+              <h3 class="mobile-card-title">
+                <a href="/game/{{ game['game_id'] }}" style="text-decoration: none; color: inherit;">{{ game['name'] }}</a>
+              </h3>
+              <div class="mobile-card-meta">
+                #{{ loop.index }} in backlog
+              </div>
+              {% if game.get('community_enjoyment') %}
+                <div style="margin-top: 6px;">
+                  <span style="color: var(--muted); font-size: 11px;">Community: </span>
+                  {% set score = game.get('community_enjoyment') %}
+                  {% if score == 10 %}
+                    {% set hue = 120 %}
+                  {% elif score >= 7 %}
+                    {% set hue = 60 + ((score - 7) / 3) * 60 %}
+                  {% elif score >= 5 %}
+                    {% set hue = ((score - 5) / 2) * 60 %}
+                  {% else %}
+                    {% set hue = 0 %}
+                  {% endif %}
+                  <span style="display: inline-block; background: hsl({{ hue }}, 78%, 42%); color: white; padding: 2px 8px; border-radius: 4px; font-weight: 700; font-size: 13px;">{{ score|int if score == score|int else score }}</span>
+                </div>
+              {% endif %}
+            </div>
+          </div>
+
+          {% if game.get('genres') or game.get('price') or game.get('hours_played') %}
+          <div style="display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; font-size: 12px;">
+            {% if game.get('hours_played') %}
+              <span style="background: #2a2a2a; padding: 4px 8px; border-radius: 4px;">⏱️ {{ "%.1f"|format(game['hours_played']) }}h</span>
+            {% endif %}
+            {% if game.get('price') %}
+              <span style="background: #2b6fb2; padding: 4px 8px; border-radius: 4px; color: white;">
+                {% if game.get('original_price') is not none and game['original_price'] > game['price'] %}
+                  <span style="text-decoration: line-through;">${{ "%.2f"|format(game['original_price']) }}</span>
+                  <span style="margin-left: 2px;">${{ "%.2f"|format(game['price']) }}</span>
+                {% else %}
+                  ${{ "%.2f"|format(game['price']) }}
+                {% endif %}
+              </span>
+            {% endif %}
+          </div>
+          {% endif %}
+
+          {% if game.get('genres') %}
+          <div class="mobile-card-genres">
+            {% for genre in game.get('genres', '').split(', ')[:3] %}
+              {% if genre.strip() %}
+                <span class="genre-tag">{{ genre.strip() }}</span>
+              {% endif %}
+            {% endfor %}
+          </div>
+          {% endif %}
+
+          <div class="mobile-card-actions">
+            <a href="/edit/{{ game['game_id'] }}" class="btn">Add Review</a>
+            <form method="post" action="/delete/{{ game['game_id'] }}" style="flex: 1;">
+              <button class="btn" type="submit" onclick="return confirm('Remove from backlog?')" style="width: 100%;">Remove</button>
+            </form>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+
       {% if not games %}
         <p class="empty" style="padding:40px;text-align:center;color:var(--muted);">No games in backlog. Add games from the Games page!</p>
       {% endif %}
